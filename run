@@ -1,0 +1,24 @@
+#!/bin/bash
+PHP= which php
+PIDFILE="/home/manialive/manialive.pid"
+DIR="$PWD"
+ARGS=""
+DAEMON="true"
+for i in "$@"
+do
+if [ i -eq "--nodaemon" ]
+then
+	DAEMON="false"
+else
+	ARGS="$ARGS $i"
+fi
+done
+
+if [ $DAEMON == "false" ]
+then
+	echo "launching manialive with the following arguments: $ARGS"
+	$PHP $DIR/bootstrapper.php $ARGS
+else
+	echo "launching manialive daemon with the following arguments: $ARGS"
+	start-stop-daemon -S -b -m -p $PIDFILE --exec $PHP $DIR/bootstrapper.php -- $ARGS
+fi
