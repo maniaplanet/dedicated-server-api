@@ -2,6 +2,8 @@
 
 namespace ManiaLive\DedicatedApi\Xmlrpc;
 
+use ManiaLive\Config\Loader;
+
 use ManiaLive\Utilities\Console;
 
 if (!defined('LF')) define('LF', "\n");
@@ -85,7 +87,7 @@ class Client_Gbx
 		$this->bigEndianTest();
 
 		// open connection
-		$this->socket = @fsockopen($hostname, $port, $errno, $errstr);
+		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, Loader::$config->server->timeout);
 		if (!$this->socket) {
 			throw new Exception("transport error - could not open socket (error: $errno, $errstr)", -32300);
 		}
@@ -305,7 +307,19 @@ class Client_Gbx
 		$read = array($this->socket);
 		$write = NULL;
 		$except = NULL;
-		$nb = @stream_select($read, $write, $except, 0, $timeout);
+		$nb = false;
+		
+		try
+		{
+			$nb = @stream_select($read, $write, $except, 0, $timeout);
+		}
+		catch (\Exception $e)
+		{
+			if (strpos($e->getMessage(), 'Interrupted system call') === false)
+				throw $e;
+			return;
+		}
+		
 		// workaround for stream_select bug with amd64
 		if ($nb !== false)
 			$nb = count($read);
