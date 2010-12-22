@@ -61,6 +61,9 @@ class Loader
 	 */
 	protected function parse()
 	{
+		if(!file_exists($this->configFilename))
+		throw new Exception('Config file does not exists');
+		
 		$values = $this->loadINI($this->configFilename);
 		$this->debug($this->configFilename.' parsed');
 		list($values, $overrides) = $this->scanOverrides($values);

@@ -33,9 +33,22 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 	{
 		try 
 		{
+			$options = getopt(null,array(
+			'manialive_cfg::',//Display Help
+			));
+			
+			if(array_key_exists('manialive_cfg', $options))
+			{
+				$configFile = $options['manialive_cfg'];
+			}
+			else
+			{
+				$configFile = 'config.ini';
+			}
+			
 			// load configuration file
 			$loader = Loader::getInstance();
-			$loader->setConfigFilename(APP_ROOT . 'config/config.ini');
+			$loader->setConfigFilename(APP_ROOT . 'config/'.$configFile);
 			$loader->load();
 			
 			// load configureation from the command line ...
@@ -120,6 +133,7 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 	
 	function kill()
 	{
+		$this->connection->manualFlowControlEnable(false);
 		$this->running = false;
 	}
 	
