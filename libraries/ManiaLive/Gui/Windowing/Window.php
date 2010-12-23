@@ -420,10 +420,6 @@ abstract class Window extends Container implements
 		$this->view->setScale($this->getScale());
 		$this->view->window = $this;
 		
-		// check for size ...
-		if (!$this->sizeX || !$this->sizeY)
-			throw new Exception('A window needs to have a size before you are able to show it!');
-		
 		// the windowcontroller prepares the view ...
 		$this->onShow();
 		
