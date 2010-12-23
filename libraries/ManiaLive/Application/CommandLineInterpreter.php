@@ -30,13 +30,13 @@ abstract class CommandLineInterpreter
 		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell'."\n"
 		.'Usage: php index.php [args]'."\n"
 		.'Arguments:'."\n"
-		.'  --help               - display the present help'."\n"
+		.'  --help               - displays the present help'."\n"
 		.'  --rpcport=xxx        - xxx represents the xmlrpc to use for the connection to the server'."\n"
-		.'  --address=xxx        - xxx represents the adresse of the server, it should be an IP adresse or localhost'."\n"
+		.'  --address=xxx        - xxx represents the address of the server, it should be an IP address or localhost'."\n"
+		.'  --user=xxx           - xxx represents the name of the user to use for the communication. It should be User, Admin or SuperAdmin'."\n"
 		.'  --password=xxx       - xxx represents the password relative to --user Argument'."\n"
-		.'  --dedicated_cfg=xxx  - xxx represents the name of the config file to use to get the connection data'."\n"
-		.'  --manialive_cfg=xxx  - xxx represents the name of the ini file present in the ManiaLive\'s config folder'
-		.'  --user=xxx           - xxx represents the name of the user to use for the communication. It should be User, Admin or SuperAdmin'."\n";
+		.'  --dedicated_cfg=xxx  - xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated\'s config file.'."\n"
+		.'  --manialive_cfg=xxx  - xxx represents the name of the ManiaLive\'s configuration file. This file should be present in the ManiaLive\'s config file.'."\n";
 
 		if(array_key_exists('help', $options))
 		{
