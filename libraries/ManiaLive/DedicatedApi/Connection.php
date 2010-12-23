@@ -477,12 +477,24 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatSendServerMessageToLanguage(array $messages, $multicall = false)
+	function chatSendServerMessageToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
 		if(!is_array($messages))
 		throw new InvalidArgumentException('messages = '.print_r($messages,true));
+		
+		if($receiver == null)
+		$receiverString = '';
+		elseif($receiver instanceof Player)
+		$receiverString = $receiver->login;
+		elseif(is_array($receiver))
+		{
+			$receiverString = Player::getPropertyFromArray($receiver, 'login');
+			$receiverString = implode(',', $receiverString);
+		}
+		else 
+		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 
-		$params = array($messages);
+		$params = array($messages, $receiverString);
 		return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
 	}
 
@@ -528,12 +540,24 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatSendToLanguage(array $messages, $multicall = false)
+	function chatSendToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
 		if(!is_array($messages))
 		throw new InvalidArgumentException('messages = '.print_r($messages,true));
+		
+		if($receiver == null)
+		$receiverString = '';
+		elseif($receiver instanceof Player)
+		$receiverString = $receiver->login;
+		elseif(is_array($receiver))
+		{
+			$receiverString = Player::getPropertyFromArray($receiver, 'login');
+			$receiverString = implode(',', $receiverString);
+		}
+		else 
+		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 
-		$params = array($messages);
+		$params = array($messages, $receiverString);
 		return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
 	}
 
@@ -1604,6 +1628,20 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
+	/**
+	 * Sets up- and download speed for the server in kbps.
+	 * @param integer $rates
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function setConnectionRates($rates, $multicall = false)
+	{
+		if (!is_int($rates))
+			throw new InvalidArgumentException('rates = '.print_r($rates, true));
+		
+		return $this->execute(ucfirst(__FUNCTION__),array($rates),$multicall);
+	}
+	
 	/**
 	 * Allow clients to download challenges from the server.
 	 * @param bool $allow

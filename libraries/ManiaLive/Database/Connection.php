@@ -23,10 +23,10 @@ abstract class Connection
 	 * @return \ManiaLive\Database\Connection
 	 * @throws NotSupportedException
 	 */
-	static function getConnection($host = APP_DATABASE_HOST,
-								  $username = APP_DATABASE_USER,
-								  $password = APP_DATABASE_PASSWORD,
-								  $database = APP_DATABASE_NAME,
+	static function getConnection($host = 'localhost',
+								  $username = 'root',
+								  $password = '',
+								  $database = 'manialive',
 								  $type = 'MySQL',
 								  $port = null)
 	{
@@ -90,6 +90,8 @@ abstract class Connection
 	abstract function getDatabase();
 	
 	abstract function tableExists($table);
+	
+	abstract function getHandle();
 	
 	static function startMeasuring(Connection $con)
 	{

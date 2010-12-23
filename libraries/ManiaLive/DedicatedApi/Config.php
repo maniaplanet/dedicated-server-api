@@ -8,6 +8,7 @@ class Config extends \ManiaLive\Config\Configurable
 	public $port;
 	public $password;
 	public $user;
+	public $timeout;
 	
 	function validate()
 	{
@@ -15,6 +16,7 @@ class Config extends \ManiaLive\Config\Configurable
 		$this->setDefault('port', 5000);
 		$this->setDefault('user', 'SuperAdmin');
 		$this->setDefault('password', 'SuperAdmin');
+		$this->setDefault('timeout', 1);
 	}
 }
 

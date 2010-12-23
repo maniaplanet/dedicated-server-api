@@ -86,6 +86,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 * Pay attention that depending on what
 	 * system configuration you have
 	 * more or less threads are making sense!
+	 * @return integer
 	 */
 	function createThread()
 	{
@@ -298,11 +299,23 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function receiveResponses()
 	{
-		// fetch results from the database ...
-		$results = $this->database->query("SELECT proc_id, thread_id, cmd, cmd_id, result FROM cmd WHERE done=1");
+		$results = null;
+		
+		// try to fetch results from the database ...
+		sqlite_busy_timeout($this->database->getHandle(), 100);
+		try
+		{
+			$results = $this->database->query("SELECT proc_id, thread_id, cmd, cmd_id, result FROM cmd WHERE done=1");
+		}
+		catch (\Exception $ex)
+		{
+			if (strpos($ex->getMessage(), 'database is locked') === false)
+				throw $ex;
+		}
+		sqlite_busy_timeout($this->database->getHandle(), 60000);
 		
 		// no jobs that are finished ...
-		if (!$results->recordAvailable())
+		if ($results == null || !$results->recordAvailable())
 			return;
 		
 		// do anything with them ...

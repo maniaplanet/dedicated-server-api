@@ -40,6 +40,11 @@ class Connection extends \ManiaLive\Database\Connection
 		// don't need to set utf8 ...
 	}
 
+	function getHandle()
+	{
+		return $this->connection;
+	}
+	
 	function setCharset($charset)
 	{
 		throw new NotSupportedException;

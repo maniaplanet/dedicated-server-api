@@ -3,7 +3,6 @@
 namespace ManiaLive\Gui\Windowing;
 
 use ManiaLive\Gui\Toolkit\Drawable;
-use ManiaLive\Gui\Toolkit\Elements\Element;
 use ManiaLive\Gui\Toolkit\Layouts\AbstractLayout;
 use ManiaLive\Gui\Toolkit\Manialink;
 
@@ -213,12 +212,14 @@ abstract class Control extends Container implements Drawable, Containable
 		{
 			if ($component instanceof Control)
 			{
-				$component->setPositionZ($this->z_cur);
+				if (!$component->getPosZ())
+					$component->setPositionZ($this->z_cur);
 				$this->z_cur += $component->save();
 			}
 			else
 			{
-				$component->setPositionZ($this->z_cur);
+				if (!$component->getPosZ())
+					$component->setPositionZ($this->z_cur);
 				$this->z_cur += Z_OFFSET;
 				$component->save();
 			}

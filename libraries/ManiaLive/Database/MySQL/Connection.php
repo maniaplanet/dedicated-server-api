@@ -53,6 +53,11 @@ class Connection extends \ManiaLive\Database\Connection
 		self::setCharset('utf8');
 	}
 
+	function getHandle()
+	{
+		return $this->connection;
+	}
+	
 	function setCharset($charset)
 	{
 		if(function_exists('mysql_set_charset'))

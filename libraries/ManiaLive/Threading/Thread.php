@@ -264,6 +264,7 @@ class Thread
 	/**
 	 * Processes the queue of buffered Commands.
 	 * Only if possible and if the Thread/Process is available.
+	 * change: send a chunk only.
 	 */
 	function sendBufferedCommands()
 	{
@@ -320,16 +321,18 @@ class Thread
 		
 		// build query ...
 		$query = '';
+		$i = 0;
+		
 		foreach ($this->commands as $cid => $command)
 		{
+			if (++$i > Loader::$config->threading->chunk_size) break;
 			$query .= 'INSERT INTO cmd (proc_id, thread_id, cmd, cmd_id, param, done, datestamp) VALUES ';
-			$query .= '(\'' . $this->pid .'\', \'' . $this->id . '\', \'' . $command->name .'\', \'' . $cid .'\', \'' . base64_encode(serialize($command->param)) .'\', 0, \'' . time() .'\');';
-			$this->commands_sent[$cid] = $command;
+			$query .= '(\'' . $this->pid .'\', \'' . $this->id . '\', \'' . $command->name .'\', \'' . $command->id .'\', \'' . base64_encode(serialize($command->param)) .'\', 0, \'' . time() .'\');';
+			$this->commands_sent[$command->id] = $command;
 			$this->commands_sent_count++;
 			$this->command_count--;
+			unset($this->commands[$command->id]);
 		}
-		
-		$this->commands = array();
 		
 		// thread is busy now
 		self::$db->execute($query);
@@ -354,6 +357,8 @@ class Thread
 		
 		if (!$this->isBusy())
 			$this->busy_started = null;
+		else
+			$this->busy_started = time();
 		
 		// is active ...
 		$this->setState(1);

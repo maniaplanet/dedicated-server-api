@@ -82,6 +82,14 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 * @var array
 	 */
 	private $settings;
+	/**
+	 * @var \ManiaLive\Threading\ThreadPool
+	 */
+	private $threadpool;
+	/**
+	 * @var integer
+	 */
+	private $threadId;
 	
 	final function __construct()
 	{
@@ -104,6 +112,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->connection = Connection::getInstance();
 		$this->plugin_handler = PluginHandler::getInstance();
 		$this->storage = Storage::getInstance();
+		$this->threadPool = \ManiaLive\Threading\ThreadPool::getInstance();
+		$this->threadId = false;
 	}
 	
 	/**
@@ -290,9 +300,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 * @param string $name
 	 * @return bool
 	 */
-	final public function isPluginLoaded($plugin_id)
+	final public function isPluginLoaded($plugin_id, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
 	{
-		return $this->plugin_handler->isPluginLoaded($plugin_id);
+		return $this->plugin_handler->isPluginLoaded($plugin_id, $min, $max);
 	}
 	
 	// Helpers
@@ -431,6 +441,41 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	}
 	
 	/**
+	 * Creates a new Thread.
+	 * @return integer
+	 */
+	protected function createThread()
+	{
+		if ($this->threadId === false)
+			$this->threadId = $this->threadPool->createThread();
+		else
+			return false;
+		return $this->threadId;
+	}
+	
+	/**
+	 * Assigns work only to the thread that has been created by this plugin.
+	 * @param \ManiaLive\Threading\Runnable $work
+	 */
+	protected function sendWorkToOwnThread(\ManiaLive\Threading\Runnable $work, $callback = null)
+	{
+		if ($callback != null) $callback = array($this, $callback);
+		if ($this->threadId !== false)
+			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback), $this->threadId);
+	}
+	
+	/**
+	 * Assign work to a thread.
+	 * @param \ManiaLive\Threading\Runnable $work
+	 */
+	protected function sendWorkToThread(\ManiaLive\Threading\Runnable $work, $callback = null)
+	{
+		if ($callback != null) $callback = array($this, $callback);
+		if ($this->threadPool->getThreadCount() > 0)
+			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback));
+	}
+	
+	/**
 	 * Registers a chatcommand at the Interpreter.
 	 * @param string $command_name
 	 * @param integer $parameter_count
@@ -439,7 +484,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 * @param array[string] $authorizedLogin
 	 * @return \ManiaLive\Features\ChatCommand\Command
 	 */
-	final function registerChatCommand($command_name, $callback_method = null, $parameter_count = 0, $add_login = false, $authorizedLogin = array())
+	final function registerChatCommand($command_name, $callback_method, $parameter_count = 0, $add_login = false, $authorizedLogin = array())
 	{
 		$this->restrictIfUnloaded();
 		$cmd = new Command($command_name, $parameter_count, $authorizedLogin);

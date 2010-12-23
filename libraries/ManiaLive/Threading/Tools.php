@@ -16,6 +16,7 @@ class Tools
 	 * Returns the database Connection
 	 * that is being used to communicate
 	 * between the threads.
+	 * @return \ManiaLive\Database\SQLite\Connection
 	 */
 	static function getDb($main_pid = null)
 	{

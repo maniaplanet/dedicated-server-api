@@ -220,7 +220,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 		}
 		
 		// add calling plugin as first parameter ...
-		array_splice($method_args, 0, 0, array($plugin_calling->getId()));
+		array_unshift($method_args, $plugin_calling->getId());
 		
 		// try to get the method we want to call from the owner-plugin
 		$method = $plugin->getPublicMethod($plugin_method);
@@ -247,9 +247,11 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 	 * @param string $name
 	 * @return bool Whether the Plugin is loaded or not.
 	 */
-	final public function isPluginLoaded($plugin_id)
+	final public function isPluginLoaded($plugin_id, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
 	{
-		return isset($this->plugins[$plugin_id]);
+		return (isset($this->plugins[$plugin_id])
+			&& ($this->plugins[$plugin_id]->getVersion() >= $min || $min == Dependency::NO_LIMIT)
+			&& ($this->plugins[$plugin_id]->getVersion() <= $max || $max == Dependency::NO_LIMIT));
 	}
 	
 	/**
