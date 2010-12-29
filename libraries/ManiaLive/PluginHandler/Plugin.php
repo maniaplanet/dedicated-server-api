@@ -91,7 +91,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 */
 	private $threadId;
 	
-	final function __construct()
+	final function __construct($plugin_id)
 	{
 		$this->settings = array();
 		$this->events_application = false;
@@ -105,6 +105,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$class_path = get_class($this);
 		$items = explode('\\', $class_path);
 
+		$this->id = $plugin_id;
 		$this->name = $items[count($items)-2];
 		$this->author = $items[count($items)-3];
 		$this->setVersion(1);
@@ -153,7 +154,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 */
 	final public function getId()
 	{
-		return $this->author.'\\'.$this->name;
+		return $this->id;
 	}
 	
 	/**
@@ -220,7 +221,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$args = func_get_args();
 		array_shift($args);
 		array_shift($args);
-		$this->plugin_handler->callPublicMethod($this, $plugin_id, $method_name, $args);
+		return $this->plugin_handler->callPublicMethod($this, $plugin_id, $method_name, $args);
 	}
 	
 	/**

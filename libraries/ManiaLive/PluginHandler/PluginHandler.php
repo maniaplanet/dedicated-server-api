@@ -85,7 +85,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 			// check whether plugin could be loaded ...
 			if (class_exists($class_name))
 			{
-				$plugin = new $class_name();
+				$plugin = new $class_name($path);
 				
 				// init plugin ...
 				$plugin->onInit();
@@ -226,7 +226,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 		$method = $plugin->getPublicMethod($plugin_method);
 		
 		// invoke it ...
-		$method->invokeArgs($plugin, $method_args);
+		return $method->invokeArgs($plugin, $method_args);
 	}
 	
 	/**
