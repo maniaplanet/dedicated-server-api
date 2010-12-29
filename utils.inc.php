@@ -22,7 +22,7 @@ define('APP_ROOT', __DIR__ . '/');
  * Debugging mode switch.
  * @var bool
  */
-define('APP_DEBUG', true);
+define('APP_DEBUG', false);
 
 // figure out the operating system
 $os = strtoupper(substr(php_uname('s'), 0, 3));
