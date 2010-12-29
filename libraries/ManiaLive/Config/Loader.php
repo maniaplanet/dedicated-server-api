@@ -239,7 +239,6 @@ class Loader
 	protected function debug($message)
 	{
 		error_log($message . APP_NL, 3, APP_ROOT . '/logs/Loader_' . getmypid() . '.txt');
-		echo $this->debugPrefix.' '.$message."\n";
 	}
 }
 
