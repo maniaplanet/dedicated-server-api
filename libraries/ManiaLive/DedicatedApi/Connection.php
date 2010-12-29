@@ -146,6 +146,18 @@ class Connection extends \ManiaLive\Utilities\Singleton
 			return $this->xmlrpcClient->getResponse();
 		}
 	}
+	
+	/**
+	 * Given the name of a method, return an array of legal signatures. 
+	 * Each signature is an array of strings. 
+	 * The first item of each signature is the return type, and any others items are parameter types.
+	 * @param string $methodName
+	 * @return array
+	 */
+	function methodSignature($methodName)
+	{
+		return $this->execute('system.methodSignature', array( $methodName ));
+	}
 
 	/**
 	 * Change the password for the specified login/user.
@@ -473,29 +485,58 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * The parameter is an array of structures {Lang='??', Text='...'}.
 	 * If no matching language is found, the last text in the array is used.
 	 * @param array $messages
+	 * @param Player|array[Player] $playerId
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
 	function chatSendServerMessageToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
-		if(!is_array($messages))
-		throw new InvalidArgumentException('messages = '.print_r($messages,true));
-		
 		if($receiver == null)
-		$receiverString = '';
+		{
+			$params = array($messages);
+			return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
+		}
 		elseif($receiver instanceof Player)
-		$receiverString = $receiver->login;
+		{
+			$player = $receiver;
+			$find = false;
+			$i = 0;
+			while(!$find && $i < count($messages))
+			{
+				if($player->language == $messages[$i++]['Lang'])
+				{
+					$find = true;
+				}
+			}
+			$message = $messages[$i - 1]['Text'];
+			return $this->chatSend($message, $player, $multicall);
+		}
 		elseif(is_array($receiver))
 		{
-			$receiverString = Player::getPropertyFromArray($receiver, 'login');
-			$receiverString = implode(',', $receiverString);
+			foreach($messages as $index =>$message)
+			{
+				$players = array();
+				foreach($receiver as $key => $player)
+				{
+					if($player->language == $message['Lang'])
+					{
+						$players[] = $player;
+						unset($receiver[$key]);
+					}
+					elseif($index == count($messages) - 1)
+					{
+						$players[] = $player;
+						unset($receiver[$key]);
+					}
+				}
+				if(count($players))
+				$this->chatSendServerMessage($message['Text'], $players, $multicall);
+			}
+			return;
 		}
 		else 
 		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
-
-		$params = array($messages, $receiverString);
-		return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
 	}
 
 	/**
@@ -536,29 +577,58 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * The parameter is an array of structures {Lang='??', Text='...'}.
 	 * If no matching language is found, the last text in the array is used.
 	 * @param array $messages
+	 * @param null|Player|array[Player] $receiver
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
 	function chatSendToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
-		if(!is_array($messages))
-		throw new InvalidArgumentException('messages = '.print_r($messages,true));
-		
 		if($receiver == null)
-		$receiverString = '';
+		{
+			$params = array($messages);
+			return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
+		}
 		elseif($receiver instanceof Player)
-		$receiverString = $receiver->login;
+		{
+			$player = $receiver;
+			$find = false;
+			$i = 0;
+			while(!$find && $i < count($messages))
+			{
+				if($player->language == $messages[$i++]['Lang'])
+				{
+					$find = true;
+				}
+			}
+			$message = $messages[$i - 1]['Text'];
+			return $this->chatSend($message, $player, $multicall);
+		}
 		elseif(is_array($receiver))
 		{
-			$receiverString = Player::getPropertyFromArray($receiver, 'login');
-			$receiverString = implode(',', $receiverString);
+			foreach($messages as $index =>$message)
+			{
+				$players = array();
+				foreach($receiver as $key => $player)
+				{
+					if($player->language == $message['Lang'])
+					{
+						$players[] = $player;
+						unset($receiver[$key]);
+					}
+					elseif($index == count($messages) - 1)
+					{
+						$players[] = $player;
+						unset($receiver[$key]);
+					}
+				}
+				if(count($players))
+				$this->chatSend($message['Text'], $players, $multicall);
+			}
+			return;
 		}
 		else 
 		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
-
-		$params = array($messages, $receiverString);
-		return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
 	}
 
 	/**
