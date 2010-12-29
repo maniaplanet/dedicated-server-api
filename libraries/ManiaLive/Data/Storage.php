@@ -16,14 +16,14 @@ use ManiaLive\DedicatedApi\Structures\Player;
 use ManiaLive\DedicatedApi\Connection;
 
 /**
- * TODO same for Challenges between challenge's index, filename, and UID
- * Singleton class containing every data about players and Spectators
  * @author Philippe Melot
  * @package ManiaLive
  * @subpackage Data
  */
 class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener, \ManiaLive\Application\Listener, \ManiaLive\Features\Tick\Listener
 {
+	protected $disconnetedPlayers = array();
+
 	public $players = array();
 	public $spectators = array();
 	public $ranking = array();
@@ -54,7 +54,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	public $serverLogin;
 
 	protected $ticks = 0;
-	
+
 	/**
 	 * @return \ManiaLive\Data\Storage
 	 */
@@ -62,7 +62,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	{
 		return parent::getInstance();
 	}
-	
+
 	protected function __construct()
 	{
 		\ManiaLive\Event\Dispatcher::register(\ManiaLive\DedicatedApi\Callback\Event::getClass(), $this);
@@ -79,12 +79,12 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$players = $connexion->getPlayerList(-1, 0);
 		foreach ($players as $player)
 		{
-			
+				
 			// flo - 10.12.2010: login unknown fix
 			try
 			{
 				$details = $connexion->getDetailedPlayerInfo($player->login);
-				
+
 				foreach ($details as $key => $value)
 				{
 					if($value)
@@ -93,7 +93,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 						$player->$param = $value;
 					}
 				}
-	
+
 				if($player->spectatorStatus % 10 == 0)
 				{
 					$this->players[$player->login] = $player;
@@ -106,7 +106,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			catch (\Exception $e) {}
 		}
 
-		$this->challenges = $connexion->getChallengeList(-1,0);		
+		$this->challenges = $connexion->getChallengeList(-1,0);
 		$currentIndex = $connexion->getCurrentChallengeIndex();
 		$nextIndex = $connexion->getNextChallengeIndex();
 		$this->nextChallenge = $this->challenges[$nextIndex];
@@ -119,13 +119,29 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$this->server = $connexion->getServerOptions();
 		$this->gameInfos = $connexion->getCurrentGameInfo();
 		$this->serverLogin = $connexion->getMainServerPlayerInfo()->login;
-
-		\ManiaLive\Event\Dispatcher::unregister(\ManiaLive\Application\Event::getClass(), $this);
 	}
 
 	function onRun() {}
 	function onPreLoop() {}
-	function onPostLoop() {}
+	
+	function onPostLoop()
+	{
+		foreach ($this->disconnetedPlayers as $key => $login)
+		{
+			if(array_key_exists($login, $this->spectators))
+			{
+				$this->spectators[$login] = null;
+				unset($this->spectators[$login]);
+			}
+			elseif (array_key_exists($login, $this->players))
+			{
+				$this->players[$login] = null;
+				unset($this->players[$login]);
+			}
+			unset($this->disconnetedPlayers[$key]);
+		}
+	}
+	
 	function onTerminate() {}
 	#endRegion
 
@@ -136,7 +152,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		{
 			$playerInfos = Connection::getInstance()->getPlayerInfo($login, 1);
 			$details = Connection::getInstance()->getDetailedPlayerInfo($login);
-			
+				
 			foreach ($details as $key => $value)
 			{
 				if($value)
@@ -145,7 +161,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 					$playerInfos->$param = $value;
 				}
 			}
-	
+
 			if($isSpectator)
 			{
 				$this->spectators[$login] = $playerInfos;
@@ -155,29 +171,21 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				$this->players[$login] = $playerInfos;
 			}
 		}
-		
+
 		// if player can not be added to array, then we stop the onPlayerConnect event!
 		catch (\Exception $e)
 		{
 			if ($e->getCode() == -1000 && $e->getMessage() == 'Login unknown.')
-				throw new SilentCriticalEventException($e->getMessage());
+			throw new SilentCriticalEventException($e->getMessage());
 			else
-				throw new CriticalEventException($e->getMessage());
+			throw new CriticalEventException($e->getMessage());
 		}
 	}
-	
+
 	function onPlayerDisconnect($login)
 	{
-		$player = null;
-		if(array_key_exists($login, $this->spectators))
-		{
-			unset($this->spectators[$login]);
-		}
-		elseif (array_key_exists($login, $this->players))
-		{
-			$player = $this->players[$login];
-			unset($this->players[$login]);
-		}
+		$this->disconnetedPlayers[] = $login;
+		$this->getPlayerObject($login)->isConnected = false;
 
 		foreach($this->ranking as $key => $player)
 		{
@@ -195,7 +203,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function onServerStart() {}
 	function onServerStop() {}
 	function onBeginRace($challenge)
-	{		
+	{
 		$gameInfos = Connection::getInstance()->getCurrentGameInfo();
 		if($gameInfos != $this->gameInfos)
 		{
@@ -241,7 +249,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function onEndRound()
 	{
 		// TODO find a better way to handle the -1000 "no race in progress" error ...
-		try 
+		try
 		{
 			if(count($this->players) || count($this->spectators))
 			{
@@ -259,14 +267,14 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	}
 
 	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
-	
+
 	// Flo: dispatch events and update rankings on new personal best time
 	// or score - depending on game mode!
 	function onPlayerFinish($playerUid, $login, $timeOrScore)
 	{
 		if (!isset($this->players[$login])) return;
 		$player = $this->players[$login];
-		
+
 		switch ($this->gameInfos->gameMode)
 		{
 			case Connection::GAMEMODE_STUNTS:
@@ -274,31 +282,31 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$old_score = $player->score;
 					$player->score = $timeOrScore;
-					
+						
 					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
 					$this->updateRanking($rankings);
-					
+						
 					if ($player->score == $timeOrScore)
-						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_SCORE, array($player, $old_score, $timeOrScore)));
+					Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_SCORE, array($player, $old_score, $timeOrScore)));
 				}
 				break;
-				
+
 			default:
 				if (($timeOrScore < $player->bestTime || $player->bestTime <= 0) && $timeOrScore > 0)
 				{
 					$old_best = $player->bestTime;
 					$player->bestTime = $timeOrScore;
-					
+						
 					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
 					$this->updateRanking($rankings);
-					
+						
 					if ($player->bestTime == $timeOrScore)
-						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_TIME, array($player, $old_best, $timeOrScore)));
+					Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_TIME, array($player, $old_best, $timeOrScore)));
 				}
 				break;
-		}		
+		}
 	}
-	
+
 	function onPlayerIncoherence($playerUid, $login) {}
 	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
 	function onTunnelDataReceived($playerUid, $login, $data) {}
@@ -328,58 +336,62 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		// also added event below
 		//$this->currentChallenge = $this->challenges[$curChallengeIndex];
 		$this->nextChallenge = $this->challenges[$nextChallengeIndex];
-	
+
 	}
 
 	function onPlayerInfoChanged($playerInfo)
 	{
-		if($playerInfo['SpectatorStatus'] % 10 == 0)
+		
+		$playerInfo = Player::fromArray($playerInfo);
+		if($playerInfo->spectator == 0)
 		{
-			if(array_key_exists($playerInfo['Login'], $this->players))
+			if(array_key_exists($playerInfo->login, $this->players))
 			{
 				foreach ($playerInfo as $key => $info)
 				{
 					$key = lcfirst($key);
-					$this->players[$playerInfo['Login']]->$key = $info;
+					$this->players[$playerInfo->login]->$key = $info;
 				}
 			}
-			elseif(array_key_exists($playerInfo['Login'], $this->spectators))
+			elseif(array_key_exists($playerInfo->login, $this->spectators))
 			{
-				$this->players[$playerInfo['Login']] = $this->spectators[$playerInfo['Login']];
+				$this->players[$playerInfo->login] = $this->spectators[$playerInfo->login];
 
-				unset($this->spectators[$playerInfo['Login']]);
+				unset($this->spectators[$playerInfo->login]);
 
 				foreach ($playerInfo as $key => $info)
 				{
 					$key = lcfirst($key);
-					$this->players[$playerInfo['Login']]->$key = $info;
+					$this->players[$playerInfo->login]->$key = $info;
 				}
 			}
 		}
 		else
 		{
-			if(array_key_exists($playerInfo['Login'], $this->spectators))
+			if(array_key_exists($playerInfo->login, $this->spectators))
 			{
 				foreach ($playerInfo as $key => $info)
 				{
 					$key = lcfirst($key);
-					$this->spectators[$playerInfo['Login']]->$key = $info;
+					$this->spectators[$playerInfo->login]->$key = $info;
 				}
 			}
-			elseif(array_key_exists($playerInfo['Login'], $this->players))
+			elseif(array_key_exists($playerInfo->login, $this->players))
 			{
-				$this->spectators[$playerInfo['Login']] = $this->players[$playerInfo['Login']];
+				$this->spectators[$playerInfo->login] = $this->players[$playerInfo->login];
 
-				unset($this->players[$playerInfo['Login']]);
+				unset($this->players[$playerInfo->login]);
 
 				foreach ($playerInfo as $key => $info)
 				{
 					$key = lcfirst($key);
-					$this->spectators[$playerInfo['Login']]->$key = $info;
+					$this->spectators[$playerInfo->login]->$key = $info;
 				}
 			}
 		}
+		unset($playerInfo);
 	}
+	
 	function onManualFlowControlTransition($transition) {}
 	#endRegion
 
@@ -389,9 +401,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		if((count($this->players) || count($this->spectators)) && $this->ticks++ % 15 === 0)
 		{
 			// Flo: I think this is not needed anymore
-			// since the rankings are updated on new best times or scores 
+			// since the rankings are updated on new best times or scores
 			// and also on end of round!
-		
+
 			//$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
 
 			//$this->updateRanking($rankings);
@@ -400,7 +412,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		}
 	}
 	#endRegion
-	
+
 	/**
 	 * Give a Player Object for the corresponding login
 	 * @param string $login
@@ -417,7 +429,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	protected function updateRanking($rankings)
 	{
 		// Flo: changed to be able to dispatch ranking modified event
-	
+
 		$changed = array();
 		foreach($rankings as $ranking)
 		{
@@ -425,7 +437,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			{
 				$player = $this->players[$ranking->login];
 				$rank_old = $player->rank;
-				
+
 				$player->playerId = $ranking->playerId;
 				$player->rank = $ranking->rank;
 				$player->bestTime = $ranking->bestTime;
@@ -435,14 +447,14 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				$player->ladderScore = $ranking->ladderScore;
 
 				if ($rank_old != $player->rank)
-					Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_RANK, array($player, $rank_old, $player->rank)));
-				
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_RANK, array($player, $rank_old, $player->rank)));
+
 				$this->ranking[$ranking->rank] = $this->players[$ranking->login];
 			}
 			elseif (array_key_exists($ranking->login, $this->spectators))
 			{
 				$spectator = $this->spectators[$ranking->login];
-				
+
 				$spectator->playerId = $ranking->playerId;
 				$spectator->rank = $ranking->rank;
 				$spectator->bestTime = $ranking->bestTime;
@@ -450,7 +462,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				$spectator->score = $ranking->score;
 				$spectator->nbrLapsFinished = $ranking->nbrLapsFinished;
 				$spectator->ladderScore = $ranking->ladderScore;
-				
+
 				$this->ranking[$ranking->rank] = $this->spectators[$ranking->login];
 			}
 		}
