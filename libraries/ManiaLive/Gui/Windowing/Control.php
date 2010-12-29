@@ -22,6 +22,7 @@ abstract class Control extends Container implements Drawable, Containable
 {
 	protected $parent;
 	protected $z_cur;
+	protected $z_forced;
 	/**
 	 * @var \ManiaLive\Gui\Toolkit\Layouts\AbstractLayout
 	 */
@@ -52,6 +53,16 @@ abstract class Control extends Container implements Drawable, Containable
 	 * and add them to the Control's intern container.
 	 */
 	abstract protected function initializeComponents();
+	
+	/**
+	 * This will prevent the windowing system from overriding
+	 * the z-value for this control and its subelements.
+	 * @param unknown_type $z
+	 */
+	function forceZ($z)
+	{
+		$this->z_forced = $z;
+	}
 	
 	/**
 	 * Apply a Layout onto all subcontrols.
@@ -157,7 +168,10 @@ abstract class Control extends Container implements Drawable, Containable
 			return;
 			
 		// reset z depth ...
-		$this->z_cur = 0;
+		if ($this->z_forced)
+			$this->z_cur = $this->z_forced;
+		else
+			$this->z_cur = 0;
 		
 		// apply prefilter ...
 		$this->beforeDraw();
@@ -212,14 +226,12 @@ abstract class Control extends Container implements Drawable, Containable
 		{
 			if ($component instanceof Control)
 			{
-				if (!$component->getPosZ())
-					$component->setPositionZ($this->z_cur);
+				$component->setPositionZ($this->z_cur);
 				$this->z_cur += $component->save();
 			}
 			else
 			{
-				if (!$component->getPosZ())
-					$component->setPositionZ($this->z_cur);
+				$component->setPositionZ($this->z_cur);
 				$this->z_cur += Z_OFFSET;
 				$component->save();
 			}
