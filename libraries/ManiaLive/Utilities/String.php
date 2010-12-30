@@ -77,4 +77,30 @@ abstract class String
 		return self::stripColors($string);
 	}
 	
+	/**
+	 * Formats a rank of a player into a readable format.
+	 * For instance: 1 -> first, 2 -> second, 6 -> 6th
+	 * @param integer $rank
+	 * @return string
+	 */
+	static function formatRank($rank)
+	{
+		$rankstr = '';
+		switch ($rank)
+		{
+			case 1:
+				$rankstr = 'first';
+				break;
+			case 2:
+				$rankstr = 'second';
+				break;
+			case 3:
+				$rankstr = 'third';
+				break;
+			default:
+				$rankstr = $record->rank . 'th';
+				break;
+		}
+		return $rankstr;
+	}
 }
