@@ -878,7 +878,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		throw new InvalidArgumentException('message = '.print_r($message,true));
 
 		$params = array($player->playerId,$message);
-		return $this->execute('kickId', $params, $multicall);
+		return $this->execute('KickId', $params, $multicall);
 	}
 
 	/**
