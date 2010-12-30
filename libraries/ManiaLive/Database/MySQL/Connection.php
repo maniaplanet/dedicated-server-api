@@ -10,13 +10,16 @@ use ManiaLive\Database\NotConnectedException;
 use ManiaLive\Database\Exception;
 use ManiaLive\Database\ConnectionException;
 
-class Connection extends \ManiaLive\Database\Connection
+class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Features\Tick\Listener
 {
 	protected $connection;
 	protected $host;
 	protected $user;
 	protected $password;
 	protected $database;
+
+	protected $connectionTimeout = 900;
+	protected $tick = 0;
 
 	function __construct($host, $username, $password, $database, $port)
 	{
@@ -26,7 +29,20 @@ class Connection extends \ManiaLive\Database\Connection
 		$this->password = $password;
 		$this->clientFlags = 0;
 		$this->referenceCount = 0;
+		$this->connect($database);
+	}
 
+	function onTick()
+	{
+		if(++$this->tick % $this->connectionTimeout == 0)
+		{
+			$this->tick = 0;
+			$this->disconnect();
+		}
+	}
+
+	protected function connect($database)
+	{
 		// Connection
 		try
 		{
@@ -51,17 +67,19 @@ class Connection extends \ManiaLive\Database\Connection
 
 		// Default Charset : UTF8
 		self::setCharset('utf8');
+		\ManiaLive\Event\Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
 	}
 
 	function getHandle()
 	{
 		return $this->connection;
 	}
-	
+
 	function setCharset($charset)
 	{
 		if(function_exists('mysql_set_charset'))
 		{
+			if(!$this->isConnected()) $this->connect($this->database);
 			if(!mysql_set_charset($charset, $this->connection))
 			{
 				throw new Exception;
@@ -76,18 +94,16 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function select($database)
 	{
-		if($database != $this->database)
+		$this->database = $database;
+		if(!mysql_select_db($this->database, $this->connection))
 		{
-			$this->database = $database;
-			if(!mysql_select_db($this->database, $this->connection))
-			{
-				throw new SelectionException(mysql_error($this->connection), mysql_errno($this->connection));
-			}
+			throw new SelectionException(mysql_error($this->connection), mysql_errno($this->connection));
 		}
 	}
 
 	function quote($string)
 	{
+		if(!$this->isConnected()) $this->connect($this->database);
 		return '\''.mysql_real_escape_string($string, $this->connection).'\'';
 	}
 
@@ -97,6 +113,7 @@ class Connection extends \ManiaLive\Database\Connection
 	 */
 	function query($query)
 	{
+		if(!$this->isConnected()) $this->connect($this->database);
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -114,6 +131,7 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function execute($query)
 	{
+		if(!$this->isConnected()) $this->connect($this->database);
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -130,17 +148,19 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function affectedRows()
 	{
+		if(!$this->isConnected()) $this->connect($this->database);
 		return mysql_affected_rows($this->connection);
 	}
 
 	function insertID()
 	{
+		if(!$this->isConnected()) $this->connect($this->database);
 		return mysql_insert_id($this->connection);
 	}
 
 	function isConnected()
 	{
-		return (!$this->connection);
+		return $this->connection;
 	}
 
 	function disconnect()
@@ -149,6 +169,8 @@ class Connection extends \ManiaLive\Database\Connection
 		{
 			throw new DisconnectionException;
 		}
+		$this->connection = null;
+		\ManiaLive\Event\Dispatcher::unregister(\ManiaLive\Features\Tick\Event::getClass(), $this);
 	}
 
 	function getDatabase()
@@ -158,6 +180,7 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function tableExists($table_name)
 	{
+		if(!$this->isConnected()) $this->connect($this->database);
 		$table = $this->query("SHOW TABLES LIKE '".$table_name."'");
 		return ($table->recordCount() > 0);
 	}
