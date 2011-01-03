@@ -457,7 +457,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Get the current ratios for passing votes.
 	 * @return array
 	 */
-	function getCallVoteRatios($multicall = false)
+	function getCallVoteRatios()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -1139,7 +1139,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	/**
 	 * Gets whether buddy notifications are enabled for login, or '' to get the global setting.
 	 * @param $player $playerLogin the object Player, or null for global setting
-	 * @param bool $multicall
+	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
 	function getBuddyNotification(Player $player)
