@@ -22,7 +22,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	{
 		return parent::getInstance();
 	}
-
+	
 	protected function __construct()
 	{
 		Dispatcher::register(\ManiaLive\DedicatedApi\Callback\Event::getClass(), $this);
@@ -32,9 +32,9 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		$command->log = false;
 		$command->help = 'Display all visible commands to a player it takes no parameter';
 		$command->callback = array($this, 'help');
-
+		
 		$this->register($command);
-
+		
 		$command = new Command('man', 1);
 		$command->addLoginAsFirstParameter = true;
 		$command->help = 'Display help for every commands you give as parameter'."\n".
@@ -43,7 +43,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		$command->callback = array($this, 'man');
 
 		$this->register($command);
-
+		
 		$command = new Command('man', 2);
 		$command->addLoginAsFirstParameter = true;
 		$command->help = 'Display help for the command with the corresponding parameters'."\n".
@@ -70,7 +70,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		{
 			if(isset($this->registeredCommands[strtolower($commandName)][$parametersCount]))
 			return 2;
-			else
+			else 
 			return 1;
 		}
 		return 0;
@@ -80,7 +80,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	{
 		return $this->registeredCommands;
 	}
-
+	
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
 	{
 		// TODO Handle params such as "a string with spaces"
@@ -103,7 +103,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 				if($i + 1 < count($tmpResult))
 				$parameters[] = $tmpResult[$i+1];
 			}
-				
+			
 			if($parameters)
 			{
 				$command = substr(array_shift($parameters), 1);
@@ -117,7 +117,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 						{
 							Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text);
 						}
-
+						
 						if($commandObject->addLoginAsFirstParameter)
 						{
 							array_unshift($parameters, $login);
@@ -135,9 +135,9 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 				{
 					$player = Storage::getInstance()->getPlayerObject($login);
 					if ($player)
-					Connection::getInstance()->chatSendServerMessage(
+						Connection::getInstance()->chatSendServerMessage(
 							'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.', 
-					Storage::getInstance()->getPlayerObject($login), true);
+							Storage::getInstance()->getPlayerObject($login), true);
 				}
 			}
 		}
@@ -146,7 +146,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	function help($login)
 	{
 		$connection = Connection::getInstance();
-
+		
 		$commandeAvalaible = array();
 		foreach ($this->registeredCommands as $commands)
 		{
@@ -158,12 +158,12 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 				}
 			}
 		}
-
+		
 		$receiver = Storage::getInstance()->getPlayerObject($login);
-
+		
 		$connection->chatSendServerMessage('Available commands: '.implode(', ', $commandeAvalaible), $receiver, true);
 	}
-
+	
 	function man($login, $commandName, $parametersCount = -1)
 	{
 		$commandName = strtolower($commandName);
@@ -192,10 +192,10 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 			{
 				$text = 'This command does not exists use help to see available commands';
 			}
-		}
-		else
+		} 	
+		else 
 		$text = 'This command does not exists use help to see available commands';
-
+		
 		Connection::getInstance()->chatSendServerMessage($text, $receiver, true);
 	}
 
