@@ -315,9 +315,12 @@ class Client_Gbx
 		}
 		catch (\Exception $e)
 		{
-			if (strpos($e->getMessage(), 'Interrupted system call') === false)
+			if (strpos($e->getMessage(), 'Invalid CRT') !== false)
+				$nb = true;
+			elseif (strpos($e->getMessage(), 'Interrupted system call') !== false)
+				return;
+			else
 				throw $e;
-			return;
 		}
 		
 		// workaround for stream_select bug with amd64
@@ -369,7 +372,19 @@ class Client_Gbx
 			$read = array($this->socket);
 			$write = NULL;
 			$except = NULL;
-			$nb = @stream_select($read, $write, $except, 0, $timeout);
+			
+			try
+			{
+				$nb = @stream_select($read, $write, $except, 0, $timeout);
+			}
+			catch (\Exception $ex)
+			{
+				if (strpos($e->getMessage(), 'Invalid CRT') !== false)
+					$nb = true;
+				else
+					throw $e;
+			}
+			
 			// workaround for stream_select bug with amd64
 			if ($nb !== false)
 				$nb = count($read);

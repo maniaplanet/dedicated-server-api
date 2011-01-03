@@ -71,6 +71,8 @@ class Config extends Configurable
 		$this->setDefault('globalErrorLog', false);
 		
 		$this->setDefault('maxErrorCount', false);
+		
+		$this->setDefault('logsPrefix', '');
 	}
 }
 
