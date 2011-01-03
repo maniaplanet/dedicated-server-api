@@ -158,7 +158,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	{
 		return $this->execute('system.methodSignature', array( $methodName ));
 	}
-
+	
 	/**
 	 * Change the password for the specified login/user.
 	 * @param string $username
@@ -191,13 +191,12 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Returns a struct with the Name, Version and Build of the application remotely controled.
-	 * @param bool $multicall
 	 * @return ManiaLive\DedicatedApi\Structures\Version
 	 * @throws InvalidArgumentException
 	 */
-	function getVersion($multicall = false)
+	function getVersion()
 	{
-		$result = $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__));
 		return Structures\Version::fromArray($result);
 	}
 
@@ -368,12 +367,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	/**
 	 * Returns the vote currently in progress.
 	 * The returned structure is { CallerLogin, CmdName, CmdParam }.
-	 * @param bool $multicall
 	 * @return ManiaLive\DedicatedApi\Structures\Vote
 	 */
-	function getCurrentCallVote($multicall = false)
+	function getCurrentCallVote()
 	{
-		return Vote::fromArray($this->execute(ucfirst(__FUNCTION__), array(), $multicall));
+		return Vote::fromArray($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -395,12 +393,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	/**
 	 * Get the current and next timeout for waiting for votes.
 	 * The struct returned contains two fields 'CurrentValue' and 'NextValue'.
-	 * @param bool $multicall
 	 * @return array
 	 */
-	function getCallVoteTimeOut($multicall = false)
+	function getCallVoteTimeOut()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -422,12 +419,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	/**
 	 * Get the current default ratio for passing a vote.
 	 * This value lies between 0 and 1.
-	 * @param bool $multicall
 	 * @return double
 	 */
-	function getCallVoteRatio($multicall = false)
+	function getCallVoteRatio()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -459,12 +455,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Get the current ratios for passing votes.
-	 * @param array $multicall
 	 * @return array
 	 */
 	function getCallVoteRatios($multicall = false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -544,8 +539,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		$params = array($message);
 		elseif(is_array($players))
 		{
-			$params[] = implode(',', Player::getPropertyFromArray($players, 'login'));
-			$method .= 'ToLogin';
+			if(count($players))
+			{
+				$params[] = implode(',', Player::getPropertyFromArray($players, 'login'));
+				$method .= 'ToLogin';
+			}
 		}
 		elseif($players instanceof Player)
 		{
@@ -616,7 +614,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 	}
 
-	/**
+		/**
 	 * Send a text message to every Player or the a specified Player.
 	 * If Player is null, the message will be delivered to every Player
 	 * @param string $message
@@ -636,8 +634,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		$params = array($message);
 		elseif(is_array($players))
 		{
-			$params[] = implode(',', Player::getPropertyFromArray($players, 'login'));
-			$method .= 'ToLogin';
+			if(count($players))
+			{
+				$params[] = implode(',', Player::getPropertyFromArray($players, 'login'));
+				$method .= 'ToLogin';
+			}
 		}
 		elseif($players instanceof Player)
 		{
@@ -652,12 +653,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Returns the last chat lines. Maximum of 40 lines.
-	 * @param bool $multicall
 	 * @return array
 	 */
-	function getChatLines($multicall = false)
+	function getChatLines()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -838,12 +838,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Returns the latest results from the current manialink page,
 	 * as an array of structs {string Login, int PlayerId, int Result}
 	 * Result==0 -> no answer, Result>0.... -> answer from the player.
-	 * @param bool $multicall
 	 * @return array
 	 */
-	function getManialinkPageAnswers($multicall = false)
+	function getManialinkPageAnswers()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -927,18 +926,17 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Each structure contains the following fields : Login, ClientName and IPAddress.
 	 * @param int $length specifies the maximum number of infos to be returned
 	 * @param int $offset specifies the starting index in the list
-	 * @param bool $multicall
 	 * @return array[DedicatedApi\Structures\Player] The list is an array of object. Each object is an instance of DedicatedApi\Structures\Player
 	 * @throws InvalidArgumentException
 	 */
-	function getBanList($length, $offset, $multicall = false)
+	function getBanList($length, $offset)
 	{
 		if(!is_int($length))
 		throw new InvalidArgumentException('length = '.print_r($length,true));
 		if(!is_int($offset))
 		throw new InvalidArgumentException('offset = '.print_r($offset,true));
 
-		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
 	}
 
@@ -984,18 +982,17 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Each structure contains the following fields : Login.
 	 * @param int $length specifies the maximum number of infos to be returned
 	 * @param int $offset specifies the starting index in the list
-	 * @param bool $multicall
 	 * @return array[DedicatedApi\Structures\Player] The list is an array of structures. Each structure contains the following fields : Login.
 	 * @throws InvalidArgumentException
 	 */
-	function getBlackList($length, $offset, $multicall = false)
+	function getBlackList($length, $offset)
 	{
 		if(!is_int($length))
 		throw new InvalidArgumentException('length = '.print_r($length,true));
 		if(!is_int($offset))
 		throw new InvalidArgumentException('offset = '.print_r($offset,true));
 
-		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
 	}
 
@@ -1071,18 +1068,17 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Each structure contains the following fields : Login.
 	 * @param int $length specifies the maximum number of infos to be returned
 	 * @param int $offset specifies the starting index in the list
-	 * @param bool $multicall
 	 * @return array[DedicatedApi\Structures\Player] The list is an array of structures. Each structure contains the following fields : Login.
 	 * @throws InvalidArgumentException
 	 */
-	function getGuestList($length, $offset, $multicall = false)
+	function getGuestList($length, $offset)
 	{
 		if(!is_int($length))
 		throw new InvalidArgumentException('length = '.print_r($length,true));
 		if(!is_int($offset))
 		throw new InvalidArgumentException('offset = '.print_r($offset,true));
 
-		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
 	}
 
@@ -1144,17 +1140,16 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Gets whether buddy notifications are enabled for login, or '' to get the global setting.
 	 * @param $player $playerLogin the object Player, or null for global setting
 	 * @param bool $multicall
-	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function getBuddyNotification(Player $player, $multicall = false)
+	function getBuddyNotification(Player $player)
 	{
 		if(is_null($player))
 		$params = array('');
 		else
 		$params = array($player->login);
 
-		return $this->execute(ucfirst(__FUNCTION__), $params, $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), $params);
 	}
 
 	/**
@@ -1239,7 +1234,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		if(!is_string($callback))
 		throw new InvalidArgumentException('callback = '.print_r($callback, true));
 
-		return $this->execute(ucfirst(__FUNCTION__), array($message, $callback), $multicall);
+		return $this->execute('Echo', array($message, $callback), $multicall);
 	}
 
 	/**
@@ -1283,18 +1278,17 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * Each structure contains the following fields : Login.
 	 * @param int $length specifies the maximum number of infos to be returned
 	 * @param int $offset specifies the starting index in the list
-	 * @param bool $multicall
 	 * @return array[DedicatedApi\Structures\Player] The list is an array of structures. Each structure contains the following fields : Login.
 	 * @throws InvalidArgumentException
 	 */
-	function getIgnoreList($length, $offset, $multicall = false)
+	function getIgnoreList($length, $offset)
 	{
 		if(!is_int($length))
 		throw new InvalidArgumentException('length = '.print_r($length,true));
 		if(!is_int($offset))
 		throw new InvalidArgumentException('offset = '.print_r($offset,true));
 
-		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
 	}
 
@@ -1362,39 +1356,36 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * State, StateName and TransactionId.
 	 * Possible enum values are: CreatingTransaction, Issued, ValidatingPayement, Payed, Refused, Error.
 	 * @param int $billId
-	 * @param bool $multicall
 	 * @return Bill
 	 * @throws InvalidArgumentException
 	 */
-	function getBillState($billId, $multicall = false)
+	function getBillState($billId)
 	{
 		if(!is_int($billId))
 		throw new InvalidArgumentException('billId = '.print_r($billId, true));
 
-		$result = $this->execute(ucfirst(__FUNCTION__), array($billId), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__), array($billId));
 		return Structures\Bill::fromArray($result);
 	}
 
 	/**
 	 * Returns the current number of coppers on the server account.
-	 * @param bool $multicall
 	 * @return int
 	 */
-	function getServerCoppers($multicall = false)
+	function getServerCoppers()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
 	 * Get some system infos.
 	 * Return a struct containing:
 	 * PublishedIp, Port, P2PPort, ServerLogin, ServerPlayerId
-	 * @param bool $multicall
 	 * @return ManiaLive\DedicatedApi\Structures\SystemInfos
 	 */
-	function getSystemInfo($multicall = false)
+	function getSystemInfo()
 	{
-		$result = $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		$result = $this->execute(ucfirst(__FUNCTION__));
 		return Structures\SystemInfos::fromArray($result);
 	}
 
@@ -1415,12 +1406,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Get the server name in utf8 format.
-	 * @param bool $multicall
 	 * @return string
 	 */
-	function getServerName($multicall = false)
+	function getServerName()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -1440,12 +1430,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Get the server comment in utf8 format.
-	 * @param bool $multicall
 	 * @return string
 	 */
-	function getServerComment($multicall = false)
+	function getServerComment()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -1466,22 +1455,20 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Get whether the server wants to be hidden from the public server list.
-	 * @param bool $multicall
 	 * @return string
 	 */
-	function getHideServer($multicall = false)
+	function getHideServer()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
 	 * Returns true if this is a relay server.
-	 * @param bool $multicall
 	 * @return bool
 	 */
-	function isRelayServer($multicall = false)
+	function isRelayServer()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -1502,12 +1489,12 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	/**
 	 * Get the server password if called as Admin or Super Admin, else returns if a password is needed or not.
 	 * Get the server name in utf8 format.
-	 * @param bool $multicall
 	 * @return bool|string
 	 */
-	function getServerPassword($multicall = false)
+	function getServerPassword()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		$params = array();
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -1527,12 +1514,11 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Get the password for spectator mode if called as Admin or Super Admin, else returns if a password is needed or not.
-	 * @param bool $multicall
 	 * @return bool|string
 	 */
-	function getServerPasswordForSpectator($multicall = false)
+	function getServerPasswordForSpectator()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -1558,9 +1544,9 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @return array
 	 * @throws InvalidArgumentException
 	 */
-	function getMaxPlayers($multicall = false)
+	function getMaxPlayers()
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
