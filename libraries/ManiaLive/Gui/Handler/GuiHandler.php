@@ -53,7 +53,7 @@ class GuiHandler extends \ManiaLive\Utilities\Singleton implements Listener
 	 * Add a Manialink to a group, this group is identified by its recipients
 	 * @param Manialink $manialink
 	 * @param mixed $recipients it can be null, an int or a string
-	 * @return DisplayableGroup
+	 * @return \ManiaLive\Gui\Handler\Group
 	 */
 	function getGroup()
 	{
