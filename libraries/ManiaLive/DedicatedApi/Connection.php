@@ -1343,7 +1343,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 		if(is_null($toPlayer))
 		$toPlayer = '';
-		else
+		elseif($toPlayer instanceof Player)
 		$toPlayer = $toPlayer->login;
 
 		return $this->execute(ucfirst(__FUNCTION__), array($fromPlayer, $amount, $label, $toPlayer), $multicall);
