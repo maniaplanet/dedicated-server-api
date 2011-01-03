@@ -159,7 +159,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 		{
 			// look whether dependent plugin exists at all
 			$dep_plugin_name = $dependency->getPluginId();
-			if (isset($this->plugins[$de]))
+			if (isset($this->plugins[$dep_plugin_name]))
 			{
 				$dependent_plugin = $this->plugins[$dep_plugin_name];
 				
