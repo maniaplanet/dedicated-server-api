@@ -335,7 +335,10 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		// Flo: onBeginChallenge will fetch full challenge information
 		// also added event below
 		//$this->currentChallenge = $this->challenges[$curChallengeIndex];
+		if(array_key_exists($nextChallengeIndex, $this->challenges))
 		$this->nextChallenge = $this->challenges[$nextChallengeIndex];
+		else
+		$this->nextChallenge = null;
 
 	}
 
@@ -364,6 +367,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 					$key = lcfirst($key);
 					$this->players[$playerInfo->login]->$key = $info;
 				}
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($playerInfo, 'spectator')));
 			}
 		}
 		else
@@ -387,6 +391,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 					$key = lcfirst($key);
 					$this->spectators[$playerInfo->login]->$key = $info;
 				}
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($playerInfo, 'player')));
 			}
 		}
 		unset($playerInfo);
@@ -433,7 +438,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$changed = array();
 		foreach($rankings as $ranking)
 		{
-			if(array_key_exists($ranking->login, $this->players))
+			if($ranking->rank == 0)
+			continue;
+			elseif(array_key_exists($ranking->login, $this->players))
 			{
 				$player = $this->players[$ranking->login];
 				$rank_old = $player->rank;

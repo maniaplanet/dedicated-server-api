@@ -607,5 +607,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	function onPlayerNewBestTime($player, $best_old, $best_new) {}
 	
 	function onPlayerNewRank($player, $rank_old, $rank_new) {}
+	
+	function onPlayerChangeSide($player, $oldSide) {}
 }
 ?>

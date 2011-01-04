@@ -7,6 +7,7 @@ class Event extends \ManiaLive\Event\Event
 	const ON_PLAYER_NEW_BEST_TIME = 1;
 	const ON_PLAYER_NEW_RANK = 2;
 	const ON_PLAYER_NEW_BEST_SCORE = 3;
+	const ON_PLAYER_CHANGE_SIDE = 4;
 	
 	protected $onWhat;
 	protected $params;
