@@ -106,23 +106,30 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 			$class_name = get_class($plugin);
 			$class = new \ReflectionClass($class_name);
 			$properties = $class->getProperties();
+			$plugin_id = $plugin->getId();
+			$available = array();
 			
 			// foreach public static property ...
 			foreach ($properties as $property)
 			{
 				if (!$property->isStatic() || !$property->isPublic()) continue;
 				
-				$plugin_id = $plugin->getId();
 				$property_name = $property->getName();
 				$settings = Loader::$config->plugins->$plugin_id;
+				$available[$property_name] = true;
 				
+				// if it is overwritten by the config
 				if (isset($settings[$property_name]))
 				{
-					Console::printDebug("Overwriting config property '$property_name' with value '".print_r($settings[$property_name],true)."'");
+					Console::printDebug("Overwriting config property '$plugin_id.$property_name' with value '".print_r($settings[$property_name],true)."'");
 					$class_name::$$property_name = $settings[$property_name];
-					unset($settings[$property_name]);
 				}
 			}
+			
+			// report every config setting that could not be used!
+			foreach (Loader::$config->plugins->$plugin_id as $key => $value)
+				if (!isset($available[$key]))
+					Console::println("[Attention] '$plugin_id.$key' is not a valid setting!");
 		}
 		
 		foreach ($this->plugins as $plugin)
@@ -173,6 +180,20 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 					&& $dependency->getMaxVersion() != Dependency::NO_LIMIT)
 					throw new DependencyTooNewException($plugin, $dependency);
 			}
+			
+			// special case, check for core.
+			elseif ($dep_plugin_name == 'ManiaLive')
+			{
+				if (\ManiaLiveApplication\Version < $dependency->getMinVersion()
+					&& $dependency->getMinVersion() != Dependency::NO_LIMIT)
+					throw new DependencyTooOldException($plugin, $dependency);
+					
+				if (\ManiaLiveApplication\Version > $dependency->getMaxVersion()
+					&& $dependency->getMaxVersion() != Dependency::NO_LIMIT)
+					throw new DependencyTooNewException($plugin, $dependency);
+			}
+			
+			// dependent plugin is not loaded!
 			else
 			{
 				// dependent plugin has not been found!

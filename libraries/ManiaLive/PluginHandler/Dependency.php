@@ -77,7 +77,7 @@ class DependencyTooOldException extends \Exception
 	function __construct($plugin, $dependency)
 	{
 		// build message ...
-		$message = 'Plugin "' . $plugin->getId() . '" needs the plugin "' . $dependency->getPluginId();
+		$message = 'Plugin "' . $plugin->getId() . '" needs "' . $dependency->getPluginId();
 		$message .= '" to be at least version ' . $dependency->getMinVersion() . '!';
 		
 		parent::__construct($message);
