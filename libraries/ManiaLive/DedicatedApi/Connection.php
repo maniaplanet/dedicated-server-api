@@ -1340,13 +1340,15 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		throw new InvalidArgumentException('amount = '.print_r($amount, true));
 		if(!is_string($label))
 		throw new InvalidArgumentException('label = '.print_r($label, true));
-
+		if(is_null($fromPlayer))
+		throw new InvalidArgumentException('from Player must be set');
+		
 		if(is_null($toPlayer))
 		$toPlayer = '';
 		elseif($toPlayer instanceof Player)
 		$toPlayer = $toPlayer->login;
 
-		return $this->execute(ucfirst(__FUNCTION__), array($fromPlayer, $amount, $label, $toPlayer), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($fromPlayer->login, $amount, $label, $toPlayer), $multicall);
 	}
 
 	/**
