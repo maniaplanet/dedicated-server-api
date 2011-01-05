@@ -40,7 +40,17 @@ implements \ManiaLive\Features\Tick\Listener
 	 */
 	function checkUpdate()
 	{
-		$version = intval(file_get_contents('http://manialink.manialive.com/public/version'));
+		$version = 0;
+		
+		try
+		{
+			$version = intval(file_get_contents('http://manialink.manialive.com/public/version'));
+		}
+		catch(\Exception $e)
+		{
+			if (strstr($e->getMessage(), 'failed to open stream') === false)
+				throw $e;
+		}
 		
 		if ($version > \ManiaLiveApplication\Version)
 		{
