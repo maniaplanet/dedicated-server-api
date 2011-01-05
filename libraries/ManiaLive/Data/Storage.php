@@ -429,6 +429,8 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		return $this->players[$login];
 		elseif(array_key_exists($login, $this->spectators))
 		return $this->spectators[$login];
+		else
+		return null;
 	}
 
 	protected function updateRanking($rankings)

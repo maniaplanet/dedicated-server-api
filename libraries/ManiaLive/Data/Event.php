@@ -28,6 +28,7 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_PLAYER_NEW_BEST_TIME: $method = 'onPlayerNewBestTime'; break;
 			case self::ON_PLAYER_NEW_RANK: $method = 'onPlayerNewRank'; break;
 			case self::ON_PLAYER_NEW_BEST_SCORE: $method = 'onPlayerNewBestScore'; break;
+			case self::ON_PLAYER_CHANGE_SIDE: $method = 'onPlayerChangeSide'; break;
 		}
 		
 		if ($method != null)
