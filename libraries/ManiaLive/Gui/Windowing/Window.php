@@ -322,8 +322,8 @@ abstract class Window extends Container implements
 			$group = GuiHandler::getInstance()->getGroup();
 		else
 		{
-			if (!isset(Storage::getInstance()->players[$login])) return;
-			$player = Storage::getInstance()->players[$login];
+			$player = Storage::getInstance()->getPlayerObject($login);
+			if (!$player) return;
 			$group = GuiHandler::getInstance()->getGroup($player);
 		}
 		
