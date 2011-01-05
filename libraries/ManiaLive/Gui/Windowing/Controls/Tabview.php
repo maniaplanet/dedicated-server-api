@@ -47,25 +47,24 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		foreach ($this->tabs as $i => $tab)
 		{
 			// start building fan element for tab
-			$frame = new Frame(14, 3);
-			
-			$ui = new Bgs1(14, 3);
-			if ($i == $this->active_id)
-				$ui->setSubStyle(Bgs1::NavButtonBlink);
-			else
-				$ui->setSubStyle(Bgs1::NavButton);
-			$ui->setAction($this->callback('clickOnTab', $i));
-			$frame->addComponent($ui);
-			
-			$ui = new Label(14, 3);
-			$ui->setPosition(1, 0.4);
-			$ui->setTextSize(2);
-			$ui->setTextColor('fff');
-			$ui->setText($tab->getTitle());
-			$frame->addComponent($ui);
-			
-			// add button to the tab fan
-			$this->tab_fan->addComponent($frame);
+			$frame = new Frame(0, 0, $this->tab_fan);
+			$frame->setSize(14, 3);
+			{
+				$ui = new Bgs1(14, 3);
+				if ($i == $this->active_id)
+					$ui->setSubStyle(Bgs1::NavButtonBlink);
+				else
+					$ui->setSubStyle(Bgs1::NavButton);
+				$ui->setAction($this->callback('clickOnTab', $i));
+				$frame->addComponent($ui);
+				
+				$ui = new Label(14, 3);
+				$ui->setPosition(1, 0.4);
+				$ui->setTextSize(2);
+				$ui->setTextColor('fff');
+				$ui->setText($tab->getTitle());
+				$frame->addComponent($ui);
+			}
 		}
 		
 		// change tab content if it has been switched

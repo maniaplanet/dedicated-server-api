@@ -14,6 +14,9 @@ class ButtonResizeable extends \ManiaLive\Gui\Windowing\Control
 	
 	function initializeComponents()
 	{
+		$this->sizeX = $this->getParam(0);
+		$this->sizeY = $this->getParam(1);
+		
 		$this->button = new Bgs1InRace();
 		$this->button->setSubStyle(Bgs1InRace::BgButton);
 		$this->addComponent($this->button);

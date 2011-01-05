@@ -12,13 +12,17 @@ use ManiaLive\Gui\Windowing\Control;
 
 class Panel extends Control
 {
-	protected $title;
-	protected $main;
-	protected $titleBg;
-	protected $header;
+	public $title;
+	public $titleBg;
+	public $main;
+	public $header;
+	public $btn_close;
 	
 	function initializeComponents()
 	{
+		$this->sizeX = $this->getParam(0);
+		$this->sizeY = $this->getParam(1);
+		
 		// form background ...
 		$this->main = new Quad();
 		$this->main->setStyle(DefaultStyles::Panel_Style);
