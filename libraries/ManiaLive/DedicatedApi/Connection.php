@@ -474,50 +474,74 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 */
 	function chatSendServerMessageToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
-		if($receiver == null)
+		if(!is_array($messages))
+		throw new InvalidArgumentException('messages = '.print_r($messages,true));
+		
+		$signature = $this->methodSignature(ucfirst(__FUNCTION__));
+		$signature = $signature[0];
+		if(count($signature) == 3)
 		{
-			return $this->execute(ucfirst(__FUNCTION__), array($messages), $multicall);
-		}
-		elseif($receiver instanceof Player)
-		{
-			$player = $receiver;
-			$find = false;
-			$i = 0;
-			while(!$find && $i < count($messages))
+			if($receiver == null)
+			$receiverString = '';
+			elseif($receiver instanceof Player)
+			$receiverString = $receiver->login;
+			elseif(is_array($receiver))
 			{
-				if($player->language == $messages[$i++]['Lang'])
-				{
-					$find = true;
-				}
+				$receiverString = Player::getPropertyFromArray($receiver, 'login');
+				$receiverString = implode(',', $receiverString);
 			}
-			$message = $messages[$i - 1]['Text'];
-			return $this->chatSendServerMessage($message, $player, $multicall);
-		}
-		elseif(is_array($receiver))
-		{
-			foreach($messages as $index =>$message)
-			{
-				$players = array();
-				foreach($receiver as $key => $player)
-				{
-					if($player->language == $message['Lang'])
-					{
-						$players[] = $player;
-						unset($receiver[$key]);
-					}
-					elseif($index == count($messages) - 1)
-					{
-						$players[] = $player;
-						unset($receiver[$key]);
-					}
-				}
-				if(count($players))
-				$this->chatSendServerMessage($message['Text'], $players, $multicall);
-			}
-			return;
+			else 
+			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+			
+			return $this->execute(ucfirst(__FUNCTION__), array($messages, $receiverString), $multicall);
 		}
 		else 
-		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+		{
+			if($receiver == null)
+			{
+				return $this->execute(ucfirst(__FUNCTION__), $params = array($messages), $multicall);
+			}
+			elseif($receiver instanceof Player)
+			{
+				$player = $receiver;
+				$find = false;
+				$i = 0;
+				while(!$find && $i < count($messages))
+				{
+					if($player->language == $messages[$i++]['Lang'])
+					{
+						$find = true;
+					}
+				}
+				$message = $messages[$i - 1]['Text'];
+				return $this->chatSendServerMessage($message, $player, $multicall);
+			}
+			elseif(is_array($receiver))
+			{
+				foreach($messages as $index =>$message)
+				{
+					$players = array();
+					foreach($receiver as $key => $player)
+					{
+						if($player->language == $message['Lang'])
+						{
+							$players[] = $player;
+							unset($receiver[$key]);
+						}
+						elseif($index == count($messages) - 1)
+						{
+							$players[] = $player;
+							unset($receiver[$key]);
+						}
+					}
+					if(count($players))
+					$this->chatSendServerMessage($message['Text'], $players, $multicall);
+				}
+				return;
+			}
+			else 
+			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+		}
 	}
 
 	/**
@@ -568,53 +592,77 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 */
 	function chatSendToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
-		if($receiver == null)
+		if(!is_array($messages))
+		throw new InvalidArgumentException('messages = '.print_r($messages,true));
+
+		$signature = $this->methodSignature(ucfirst(__FUNCTION__));
+		$signature = $signature[0];
+		if(count($signature) == 3)
 		{
-			return $this->execute(ucfirst(__FUNCTION__), array($messages), $multicall);
-		}
-		elseif($receiver instanceof Player)
-		{
-			$player = $receiver;
-			$find = false;
-			$i = 0;
-			while(!$find && $i < count($messages))
+			if($receiver == null)
+			$receiverString = '';
+			elseif($receiver instanceof Player)
+			$receiverString = $receiver->login;
+			elseif(is_array($receiver))
 			{
-				if($player->language == $messages[$i++]['Lang'])
-				{
-					$find = true;
-				}
+				$receiverString = Player::getPropertyFromArray($receiver, 'login');
+				$receiverString = implode(',', $receiverString);
 			}
-			$message = $messages[$i - 1]['Text'];
-			return $this->chatSend($message, $player, $multicall);
-		}
-		elseif(is_array($receiver))
-		{
-			foreach($messages as $index =>$message)
-			{
-				$players = array();
-				foreach($receiver as $key => $player)
-				{
-					if($player->language == $message['Lang'])
-					{
-						$players[] = $player;
-						unset($receiver[$key]);
-					}
-					elseif($index == count($messages) - 1)
-					{
-						$players[] = $player;
-						unset($receiver[$key]);
-					}
-				}
-				if(count($players))
-				$this->chatSend($message['Text'], $players, $multicall);
-			}
-			return;
+			else 
+			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+			
+			return $this->execute(ucfirst(__FUNCTION__), array($messages, $receiverString), $multicall);
 		}
 		else 
-		throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+		{
+			if($receiver == null)
+			{
+				return $this->execute(ucfirst(__FUNCTION__), array($messages), $multicall);
+			}
+			elseif($receiver instanceof Player)
+			{
+				$player = $receiver;
+				$find = false;
+				$i = 0;
+				while(!$find && $i < count($messages))
+				{
+					if($player->language == $messages[$i++]['Lang'])
+					{
+						$find = true;
+					}
+				}
+				$message = $messages[$i - 1]['Text'];
+				return $this->chatSend($message, $player, $multicall);
+			}
+			elseif(is_array($receiver))
+			{
+				foreach($messages as $index =>$message)
+				{
+					$players = array();
+					foreach($receiver as $key => $player)
+					{
+						if($player->language == $message['Lang'])
+						{
+							$players[] = $player;
+							unset($receiver[$key]);
+						}
+						elseif($index == count($messages) - 1)
+						{
+							$players[] = $player;
+							unset($receiver[$key]);
+						}
+					}
+					if(count($players))
+					$this->chatSend($message['Text'], $players, $multicall);
+				}
+				return;
+			}
+			else 
+			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+		}
 	}
 
-		/**
+	/**
 	 * Send a text message to every Player or the a specified Player.
 	 * If Player is null, the message will be delivered to every Player
 	 * @param string $message
