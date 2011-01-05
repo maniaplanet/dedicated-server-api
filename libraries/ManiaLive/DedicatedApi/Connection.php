@@ -3016,12 +3016,24 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 */
-	function chooseChallenge($filename, $multicall = false)
+	function chooseNextChallenge($filename, $multicall = false)
 	{
 		if(!is_string($filename))
 		throw new InvalidArgumentException('filename = '.print_r($filename,true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
+	}
+	
+	/**
+	 * @deprecated
+	 * @param string $filename
+	 * @param bool $multicall
+	 * @throws InvalidArgumentException
+	 * @return bool
+	 */
+	function chooseChallenge($filename, $multicall = false)
+	{
+		return $this->chooseNextChallenge($filename, $multicall);
 	}
 
 	/**
@@ -3032,12 +3044,24 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @throws InvalidArgumentException
 	 * @return int
 	 */
-	function chooseChallengeList(array $filenames, $multicall = false)
+	function chooseNextChallengeList(array $filenames, $multicall = false)
 	{
 		if(!is_array($filenames))
 		throw new InvalidArgumentException('filenames = '.print_r($filenames,true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
+	}
+	
+	/**
+	 * @deprecated
+	 * @param array $filenames
+	 * @param bool $multicall
+	 * @throws InvalidArgumentException
+	 * @return int
+	 */
+	function chooseChallengeList(array $filenames, $multicall = false)
+	{
+		return $this->chooseNextChallengeList($filenames, $multicall);
 	}
 
 	/**
