@@ -98,7 +98,7 @@ abstract class String
 				$rankstr = 'third';
 				break;
 			default:
-				$rankstr = $record->rank . 'th';
+				$rankstr = $rank . 'th';
 				break;
 		}
 		return $rankstr;

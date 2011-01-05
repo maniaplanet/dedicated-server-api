@@ -44,7 +44,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		// check if library's enabled ...
 		if (!extension_loaded('SQLite'))
 		{
-			Console::println("Threading will be disabled, you need to enable the 'SQLite' extension on your system!");
+			Console::println("Threading will be disabled, enable the 'SQLite' extension on your system!");
 			self::$threading_enabled = false;
 		}
 		else
@@ -68,7 +68,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		else
 		{
 			// just print some information ...
-			Console::println('Attention: Threading disabled, trying to emulate - this will cause performance downgrades!');
+			Console::println('[Attention] Threading disabled - this may cause performance issues!');
 			$this->logger->write("Application started with threading disabled!");
 			
 			// create emulated thread number 0 ...
