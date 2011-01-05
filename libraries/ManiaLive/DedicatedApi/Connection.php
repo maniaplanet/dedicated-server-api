@@ -3025,18 +3025,6 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	}
 	
 	/**
-	 * @deprecated
-	 * @param string $filename
-	 * @param bool $multicall
-	 * @throws InvalidArgumentException
-	 * @return bool
-	 */
-	function chooseChallenge($filename, $multicall = false)
-	{
-		return $this->chooseNextChallenge($filename, $multicall);
-	}
-
-	/**
 	 * Set as next challenges the list of challenges with the specified filenames, if they are present in the selection.
 	 * The list of challenges to remove is an array of strings.
 	 * @param array $filenames
@@ -3052,18 +3040,6 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
 	}
 	
-	/**
-	 * @deprecated
-	 * @param array $filenames
-	 * @param bool $multicall
-	 * @throws InvalidArgumentException
-	 * @return int
-	 */
-	function chooseChallengeList(array $filenames, $multicall = false)
-	{
-		return $this->chooseNextChallengeList($filenames, $multicall);
-	}
-
 	/**
 	 * Set a list of challenges defined in the playlist with the specified filename
 	 * as the current selection of the server, and load the gameinfos from the same file.
