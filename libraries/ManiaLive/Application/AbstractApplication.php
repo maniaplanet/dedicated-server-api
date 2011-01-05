@@ -14,8 +14,6 @@ use ManiaLive\Event\Dispatcher;
 use ManiaLive\Gui\Handler\GuiHandler;
 use ManiaLive\Features\Tick\Ticker;
 
-set_error_handler('\ManiaLive\Application\ErrorHandling::createExcpetionFromError');
-
 abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 {
 	const USLEEP_DELAY = 15000;
@@ -31,6 +29,8 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 	
 	protected function __construct()
 	{
+		set_error_handler('\ManiaLive\Application\ErrorHandling::createExcpetionFromError');
+		
 		try 
 		{
 			$options = getopt(null,array(
