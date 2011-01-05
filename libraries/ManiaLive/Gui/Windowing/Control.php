@@ -30,18 +30,17 @@ abstract class Control extends Container implements Drawable, Containable
 	protected $scale;
 	protected $initializing;
 	protected $fid;
+	protected $params;
 	
 	static $controlcount = 0;
 	static $names;
 	
-	final function __construct($sizeX = 0, $sizeY = 0)
-	{
-		$this->sizeX = $sizeX;
-		$this->sizeY = $sizeY;
-		
+	final function __construct()
+	{	
 		$this->z_cur = 0;
 		$this->scale = null;
 		$this->layout = null;
+		$this->params = func_get_args();
 		
 		$this->initializing = true;
 		$this->initializeComponents();
@@ -53,6 +52,21 @@ abstract class Control extends Container implements Drawable, Containable
 	 * and add them to the Control's intern container.
 	 */
 	abstract protected function initializeComponents();
+	
+	/**
+	 * Get a construct parameter.
+	 */
+	final protected function getParam($num)
+	{
+		if (isset($this->params[$num]))
+		{
+			return $this->params[$num];
+		}
+		else
+		{
+			return null;
+		}
+	}
 	
 	/**
 	 * This will prevent the windowing system from overriding
