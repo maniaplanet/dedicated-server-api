@@ -1,0 +1,66 @@
++-------------------------------------------+
+|			ManiaLive Changelog				|
+|	Authors by:								|
+|	 - Philippe "farfa" Melot				|
+| 	- Maxime "Gouxim" Raoust				|
+| 	- Florian "aseco" Schnell				|
+|	Copyright NADEO (C) 2010-2011			|
+|	see LICENSE file for more details		|
++-------------------------------------------+
+
++-------------------------------------------+
+|					Legend					|
++-------------------------------------------+
+- represents a bug fix
+* represents an important change
++ represents a new Feature
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r1453 (29 dec. 2010)	|
++-------------------------------------------+
++/- Player object is not destroy on disconnection but at the end of the loop
++ Possibility to send message in different languages (chatSendServerMessageToLanguage & chatSendToLanguage) to a list of player (just put the list as a second argument)
++ Checking for updates regularly.
++ Error reporting is set on startup.
++ plugins can be in subpackages/folders.
++ added method to force z position for a control
++ removed debug messages
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r1462 (1 jan. 2011)	|
++-------------------------------------------+
++/- added automatic database keep-alive.
++ added method to convert rank to string to the Utilities\String class.
++/- chat commands are no longer case sensitive.
++ added "man" command
+- fixed issue 2: http://code.google.com/p/manialive/issues/detail?id=2&can=1
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r1545 (4 jan. 2011)	|
++-------------------------------------------+
+- CRT issue 10: http://code.google.com/p/manialive/issues/detail?id=10
+- addDependency issue 9: http://code.google.com/p/manialive/issues/detail?id=9
+- sendBill issue 8: http://code.google.com/p/manialive/issues/detail?id=8
+- cancelVote issue 7: http://code.google.com/p/manialive/issues/detail?id=7
++ execute call optimistation
+- fixed callPublicMethod to return result.
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r1627 (5 jan. 2011)	|
++-------------------------------------------+
+- fixed issue 6.
+- refixed issue 8.
+- fixed issue 11.
++ added method to request constructor method for the control class.
+- fixed a bug when a spectator could not close a window.
++ added possibility to set dependency on a specific manialive version.
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r1685 (6 jan. 2011)	|
++-------------------------------------------+
+* clean code to respect guidelines
++ add Filter module abstraction (see http://fr2.php.net/manual/en/book.filter.php) (can be used to check command line parameters)
++ added automatic update script
++ changed the run scripts to use a centralized php path (run.ini)
+- fixed issue in the Thread.php: 'Index unknown'
+- fixed bug when spectator could not interact with windowing system (may be related to issue 13).
