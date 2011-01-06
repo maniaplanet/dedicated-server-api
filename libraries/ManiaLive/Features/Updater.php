@@ -47,7 +47,7 @@ implements \ManiaLive\Features\Tick\Listener
 		
 		try
 		{
-			$version = intval(file_get_contents('http://manialink.manialive.com/public/version'));
+			$version = intval(file_get_contents('http://manialink.manialive.com/version'));
 		}
 		catch(\Exception $e)
 		{

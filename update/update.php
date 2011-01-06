@@ -52,7 +52,7 @@ echo '> Checking remote ManiaLive version ...' . NL;
 try
 {
 	// connect to manialive server to get the latest release's version.
-	$versionRemote = file_get_contents('http://manialink.manialive.com/public/version');
+	$versionRemote = file_get_contents('http://manialink.manialive.com/version');
 	$versionRemote = intval($versionRemote);
 }
 catch (\Exception $ex)
