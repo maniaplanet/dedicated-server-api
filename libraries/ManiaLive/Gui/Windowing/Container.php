@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -10,7 +13,6 @@ use ManiaLive\Gui\Toolkit\Component;
  * Ensures that each object that is added will be informed about it.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 abstract class Container extends Component
 {
@@ -31,7 +33,9 @@ abstract class Container extends Component
 	function addComponent(Drawable $component)
 	{
 		if ($component instanceof Containable)
+		{
 			$component->onIsAdded($this);
+		}
 		
 		$this->components[] = $component;
 	}

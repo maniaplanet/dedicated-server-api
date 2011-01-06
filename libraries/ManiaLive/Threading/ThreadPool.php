@@ -1,11 +1,13 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Threading;
 
 use ManiaLive\Config\Loader;
-
 use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Threading\Commands\QuitCommand;
-
 use ManiaLive\Utilities\Console;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Threading\Tools;
@@ -19,25 +21,25 @@ use ManiaLive\Database\SQLite\Connection;
  * ThreadPool will then assign Jobs
  * to the Threads to (hopefully) get
  * best performance ...
+ * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Features\Tick\Listener
 {
 	private $threads;
-	private $threads_pending;
-	private $threads_count;
+	private $threadsPending;
+	private $threadsCount;
 	private $database;
 	private $logger;
-	static $threading_enabled = false;
-	static $threads_died_count = 0;
-	static $avg_response_time = null;
+	static $threadingEnabled = false;
+	static $threadsDiedCount = 0;
+	static $avgResponseTime = null;
 	
 	function __construct()
 	{
 		$this->threads = array();
-		$this->threads_pending = array();
-		$this->threads_count = 0;
+		$this->threadsPending = array();
+		$this->threadsCount = 0;
 		$this->logger = Logger::getLog('main', 'threading');
 		$this->database = null;
 		
@@ -45,15 +47,15 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		if (!extension_loaded('SQLite'))
 		{
 			Console::println("Threading will be disabled, enable the 'SQLite' extension on your system!");
-			self::$threading_enabled = false;
+			self::$threadingEnabled = false;
 		}
 		else
 		{
-			self::$threading_enabled = Loader::$config->threading->enabled;
+			self::$threadingEnabled = Loader::$config->threading->enabled;
 		}
 		
 		// continue depending whether threading is enabled or not ...
-		if (self::$threading_enabled)
+		if (self::$threadingEnabled)
 		{
 			$this->database = Tools::getDb();
 			
@@ -90,7 +92,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function createThread()
 	{
-		if (self::$threading_enabled)
+		if (self::$threadingEnabled)
 		{
 			// create thread ...
 			$thread = Thread::Create();
@@ -99,7 +101,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 			$this->logger->write("Thread with ID " . $thread->getId() . " has been started!");
 			
 			// increase thread count
-			$this->threads_count++;
+			$this->threadsCount++;
 			
 			return $thread->getId();
 		}
@@ -118,7 +120,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function removeThread($id)
 	{
-		if (self::$threading_enabled)
+		if (self::$threadingEnabled)
 		{
 			// check whether thread exists ...
 			if (array_key_exists($id, $this->threads))
@@ -142,14 +144,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function getThread($id)
 	{
-		if (isset($this->threads[$id]))
-		{
-			return $this->threads[$id];
-		}
-		else
-		{
-			return null;
-		}
+		return (isset($this->threads[$id]) ? $this->threads[$id] : null);
 	}
 	
 	/**
@@ -207,7 +202,10 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 			$thread_prev = $thread_cur;
 		}
 		
-		if ($thread_id == null) $thread_id = $thread_first->getId();
+		if ($thread_id == null) 
+		{
+			$thread_id = $thread_first->getId();
+		}
 		
 		Console::printDebug('Command has been assigned to thread #' . $thread_id);
 		
@@ -220,7 +218,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function onTick()
 	{
-		if (self::$threading_enabled)
+		if (self::$threadingEnabled)
 		{
 			// afterwards collect responses,
 			// current jobs may response next tick ...
@@ -310,13 +308,17 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		catch (\Exception $ex)
 		{
 			if (strpos($ex->getMessage(), 'database is locked') === false)
+			{
 				throw $ex;
+			}
 		}
 		sqlite_busy_timeout($this->database->getHandle(), 60000);
 		
 		// no jobs that are finished ...
 		if ($results == null || !$results->recordAvailable())
+		{
 			return;
+		}
 		
 		// do anything with them ...
 		$ids = array();
@@ -353,7 +355,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		{
 			if ($thread->getState() == 4)
 			{
-				self::$threads_died_count++;
+				self::$threadsDiedCount++;
 				
 				Console::printDebug('Detected dead Thread with ID ' . $thread->getId() . ' - running Process #' . $thread->getPid() . '!');
 				
@@ -370,7 +372,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function getThreadCount()
 	{
-		return $this->threads_count;
+		return $this->threadsCount;
 	}
 	
 	function __destruct()

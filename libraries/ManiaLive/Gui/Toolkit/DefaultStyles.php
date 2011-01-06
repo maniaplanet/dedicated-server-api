@@ -3,6 +3,7 @@
  * @author Maxime Raoust
  * @copyright 2009-2010 NADEO 
  */
+
 namespace ManiaLive\Gui\Toolkit;
 
 use ManiaLive\Gui\Toolkit\Elements\Label;

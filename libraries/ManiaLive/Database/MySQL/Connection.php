@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Database\MySQL;
 
@@ -79,7 +82,11 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 	{
 		if(function_exists('mysql_set_charset'))
 		{
-			if(!$this->isConnected()) $this->connect($this->database);
+			if(!$this->isConnected())
+			{
+				$this->connect($this->database);
+			}
+			
 			if(!mysql_set_charset($charset, $this->connection))
 			{
 				throw new Exception;
@@ -103,7 +110,10 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 
 	function quote($string)
 	{
-		if(!$this->isConnected()) $this->connect($this->database);
+		if(!$this->isConnected())
+		{
+			$this->connect($this->database);
+		}
 		return '\''.mysql_real_escape_string($string, $this->connection).'\'';
 	}
 
@@ -113,7 +123,10 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 	 */
 	function query($query)
 	{
-		if(!$this->isConnected()) $this->connect($this->database);
+		if(!$this->isConnected())
+		{
+			$this->connect($this->database);
+		}
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -131,7 +144,10 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 
 	function execute($query)
 	{
-		if(!$this->isConnected()) $this->connect($this->database);
+		if(!$this->isConnected())
+		{
+			$this->connect($this->database);
+		}
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -148,13 +164,19 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 
 	function affectedRows()
 	{
-		if(!$this->isConnected()) $this->connect($this->database);
+		if(!$this->isConnected())
+		{
+			$this->connect($this->database);
+		}
 		return mysql_affected_rows($this->connection);
 	}
 
 	function insertID()
 	{
-		if(!$this->isConnected()) $this->connect($this->database);
+		if(!$this->isConnected())
+		{
+			$this->connect($this->database);
+		}
 		return mysql_insert_id($this->connection);
 	}
 
@@ -180,7 +202,10 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 
 	function tableExists($table_name)
 	{
-		if(!$this->isConnected()) $this->connect($this->database);
+		if(!$this->isConnected())
+		{
+			$this->connect($this->database);
+		}
 		$table = $this->query("SHOW TABLES LIKE '".$table_name."'");
 		return ($table->recordCount() > 0);
 	}

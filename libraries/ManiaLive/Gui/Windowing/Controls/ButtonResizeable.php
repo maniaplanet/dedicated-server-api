@@ -1,16 +1,25 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
 use ManiaLive\Gui\Toolkit\Elements\Bgs1InRace;
-
 use ManiaLive\Gui\Toolkit\Elements\Label;
 use ManiaLive\Gui\Toolkit\Elements\Button;
 
+/**
+ * Use this button if you need something
+ * more dynamic, you can't change size for
+ * standard buttons.
+ * 
+ * @author Florian Schnell
+ */
 class ButtonResizeable extends \ManiaLive\Gui\Windowing\Control
 {
-	private $button;
-	private $label;
+	protected $button;
+	protected $label;
 	
 	function initializeComponents()
 	{

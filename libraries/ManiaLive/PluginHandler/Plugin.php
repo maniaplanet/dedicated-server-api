@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\PluginHandler;
 
@@ -28,7 +31,6 @@ use ManiaLive\DedicatedApi\Connection;
  * located in the config folder.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	implements \ManiaLive\Threading\Listener,
@@ -102,12 +104,14 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->dependencies = array();
 		$this->methods = array();
 		
-		$class_path = get_class($this);
-		$items = explode('\\', $class_path);
+		$classPath = get_class($this);
+		$items = explode('\\', $classPath);
 
 		$this->id = $plugin_id;
-		$this->name = $items[count($items)-2];
-		$this->author = $items[count($items)-3];
+		array_shift($items);
+		array_pop($items);
+		$this->name = array_pop($items);
+		$this->author = array_shift($items);
 		$this->setVersion(1);
 		
 		$this->connection = Connection::getInstance();
@@ -198,7 +202,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 			$method = new \ReflectionMethod($this, $name);
 			
 			if (!$method->isPublic())
+			{
 				throw new Exception('The method "'.$name.'" must be declared as public!');
+			}
 			
 			$this->methods[$name] = $method;
 		}
@@ -263,9 +269,13 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 			foreach ($parameters as $parameter)
 			{
 				if ($parameter->allowsNull())
+				{
 					$info['parameters'][] = '['.$parameter->name.']';
+				}
 				else
+				{
 					$info['parameters'][] = $parameter->name;
+				}
 			}
 			
 			$methods[] = $info;
@@ -306,6 +316,16 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		return $this->plugin_handler->isPluginLoaded($plugin_id, $min, $max);
 	}
 	
+	/**
+	 * Retrieve an array of all the public methods
+	 * of a specific plugin.
+	 * @param string $plugin_id
+	 */
+	final public function getPluginPublicMethods($plugin_id)
+	{
+		return $this->plugin_handler->getPublicMethods($plugin_id);
+	}
+	
 	// Helpers
 	
 	/**
@@ -316,7 +336,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	{
 		$this->restrictIfUnloaded();
 		if (!$this->events_application)
+		{
 			Dispatcher::register(\ManiaLive\Application\Event::getClass(), $this);
+		}
 		$this->events_application = true;
 	}
 	
@@ -337,7 +359,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	{
 		$this->restrictIfUnloaded();
 		if (!$this->events_tick)
+		{
 			Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		}
 		$this->events_tick = true;
 	}
 	
@@ -361,7 +385,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	{
 		$this->restrictIfUnloaded();
 		if (!$this->events_server)
+		{
 			Dispatcher::register(\ManiaLive\DedicatedApi\Callback\Event::getClass(), $this);
+		}
 		$this->events_server = true;
 	}
 	
@@ -383,7 +409,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	{
 		$this->restrictIfUnloaded();
 		if (!$this->events_storage)
+		{
 			Dispatcher::register(\ManiaLive\Data\Event::getClass(), $this);
+		}
 		$this->events_storage = true;
 	}
 	
@@ -405,7 +433,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	{
 		$this->restrictIfUnloaded();
 		if (!$this->events_windowing)
+		{
 			Dispatcher::register(\ManiaLive\Gui\Windowing\Event::getClass(), $this);
+		}
 		$this->events_windowing = true;
 	}
 	
@@ -427,7 +457,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	{
 		$this->restrictIfUnloaded();
 		if (!$this->events_threading)
+		{
 			Dispatcher::register(\ManiaLive\Threading\Event::getClass(), $this);
+		}
 		$this->events_threading = true;
 	}
 	
@@ -448,9 +480,13 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	protected function createThread()
 	{
 		if ($this->threadId === false)
+		{
 			$this->threadId = $this->threadPool->createThread();
+		}
 		else
+		{
 			return false;
+		}
 		return $this->threadId;
 	}
 	
@@ -460,9 +496,14 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 */
 	protected function sendWorkToOwnThread(\ManiaLive\Threading\Runnable $work, $callback = null)
 	{
-		if ($callback != null) $callback = array($this, $callback);
+		if ($callback != null)
+		{
+			$callback = array($this, $callback);
+		}
 		if ($this->threadId !== false)
+		{
 			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback), $this->threadId);
+		}
 	}
 	
 	/**
@@ -471,9 +512,14 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 */
 	protected function sendWorkToThread(\ManiaLive\Threading\Runnable $work, $callback = null)
 	{
-		if ($callback != null) $callback = array($this, $callback);
+		if ($callback != null)
+		{
+			$callback = array($this, $callback);
+		}
 		if ($this->threadPool->getThreadCount() > 0)
+		{
 			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback));
+		}
 	}
 	
 	/**

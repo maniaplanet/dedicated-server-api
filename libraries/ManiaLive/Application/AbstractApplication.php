@@ -1,4 +1,7 @@
 <?php 
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Application;
 
@@ -33,26 +36,15 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		
 		try 
 		{
-			$options = getopt(null,array(
-			'manialive_cfg::',//Display Help
-			));
 			
-			if(array_key_exists('manialive_cfg', $options))
-			{
-				$configFile = $options['manialive_cfg'];
-			}
-			else
-			{
-				$configFile = 'config.ini';
-			}
-			
+			$configFile = CommandLineInterpreter::preConfigLoad();
 			// load configuration file
 			$loader = Loader::getInstance();
 			$loader->setConfigFilename(APP_ROOT . 'config/'.$configFile);
 			$loader->load();
 			
 			// load configureation from the command line ...
-			CommandLineInterpreter::read();
+			CommandLineInterpreter::postConfigLoad();
 		
 			// add logfile prefix ...
 			if (Loader::$config->logsPrefix != null)

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
@@ -111,9 +114,13 @@ class Format extends Element
 	protected function postFilter()
 	{
 		if($this->textSize !== null)
-		$this->xml->setAttribute('textsize', $this->textSize);
+		{
+			$this->xml->setAttribute('textsize', $this->textSize);
+		}
 		if($this->textColor !== null)
-		$this->xml->setAttribute('textcolor', $this->textColor);
+		{
+			$this->xml->setAttribute('textcolor', $this->textColor);
+		}
 	}
 }
 

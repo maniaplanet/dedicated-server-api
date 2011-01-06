@@ -2,8 +2,8 @@
 /**
  * @author Maxime Raoust
  * @copyright 2009-2010 NADEO 
- * @package ManiaMod
  */
+
 namespace ManiaLive\Gui\Toolkit\Cards;
 
 use ManiaLive\Gui\Toolkit as Toolkit;
@@ -85,9 +85,13 @@ class Navigation extends Elements\Quad
 	{
 		$item = new NavigationButton($this->sizeX-1);
 		if($topItem)
+		{
 			$this->items[] = $item;
+		}
 		else
+		{
 			$this->bottomItems[] = $item;
+		}
 		
 		$this->lastItem = $item;
 	}

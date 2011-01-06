@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Gui\Toolkit\Cards;
 
 use ManiaLive\Gui\Toolkit\Elements\Quad;
@@ -120,11 +124,17 @@ class Dialog extends Advanced
 	function setSize($width, $height)
 	{
 		// set width
-		if ($width < self::width_min) $width = self::width_min;
+		if ($width < self::width_min)
+		{
+			$width = self::width_min;
+		}
 			$this->width = $width;
 			
 		// set height
-		if ($height < self::height_min) $height = self::height_min;
+		if ($height < self::height_min)
+		{
+			$height = self::height_min;
+		}
 			$this->height = $height;
 	}
 	
@@ -148,7 +158,9 @@ class Dialog extends Advanced
 	function display($login)
 	{
 		if (!GuiHandler::isDisplayed($this->getID(), $login))
+		{
 			$this->number = ++self::$count;
+		}
 		
 		$btnc = $this->buttons;
 		
@@ -166,11 +178,17 @@ class Dialog extends Advanced
 		$btnc = $this->buttons;
 		
 		// set min window height ...
-		if ($this->height < self::height_min) $this->height = self::height_min;
+		if ($this->height < self::height_min)
+		{
+			$this->height = self::height_min;
+		}
 		
 		// calculate space for one button ...
 		$width_min = (self::button_width * $btn_num) + self::button_spacing * 2;
-		if ($width_min > $this->width) $this->width = $width_min;
+		if ($width_min > $this->width)
+		{
+			$this->width = $width_min;
+		}
 		
 		// calculate space between buttons ...
 		$btn_spacing = (($this->width - self::button_spacing * 2) / $btn_num) - self::button_width;
@@ -260,14 +278,22 @@ class Dialog extends Advanced
 		
 		// darken background
 		if ($this->blurred)
+		{
 			$ui = new Bgs1(130, 100);
+		}
 		else
+		{
 			$ui = new Bgs1InRace(130, 100);
+		}
 			
 		if ($this->blurred)
+		{
 			$ui->setSubStyle(Bgs1::NavButton);
+		}
 		else
+		{
 			$ui->setSubStyle(Bgs1InRace::BgWindow3);
+		}
 		$ui->setHalign('center');
 		$ui->setValign('center');
 		$ui->setPosition(0, 0, $this->z);
@@ -283,9 +309,15 @@ class Dialog extends Advanced
 		{
 			return;
 		}
-		if (!array_key_exists($action, $this->callbacks)) return;
+		if (!array_key_exists($action, $this->callbacks))
+		{
+			return;
+		}
 		$callback_func = array($plugin, $this->callbacks[$action]);
-		if (is_callable($callback_func)) call_user_func($callback_func, $playerUid, $login, $this);
+		if (is_callable($callback_func))
+		{
+			call_user_func($callback_func, $playerUid, $login, $this);
+		}
 	}
 }
 

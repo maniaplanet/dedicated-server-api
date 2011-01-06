@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
@@ -305,7 +308,9 @@ abstract class Element extends Component implements Drawable
 	final function save()
 	{
 		if ($this->visible === false)
+		{
 			return;
+		}
 		
 		// Optional pre filtering
 		$this->preFilter();
@@ -317,9 +322,13 @@ abstract class Element extends Component implements Drawable
 			$layout->preFilter($this);
 			$this->posX += $layout->xIndex;
 			if (Manialink::isYSwapped())
+			{
 				$this->posY -= $layout->yIndex;
+			}
 			else
+			{
 				$this->posY += $layout->yIndex;
+			}
 			$this->posZ += $layout->zIndex;
 		}
 
@@ -333,11 +342,15 @@ abstract class Element extends Component implements Drawable
 			if($this->posX || $this->posY || $this->posZ)
 			{
 				if (Manialink::isYSwapped())
+				{
 					$this->xml->setAttribute('posn',
 					$this->posX.' '.(-$this->posY).' '.$this->posZ);
+				}
 				else
+				{
 					$this->xml->setAttribute('posn',
 					$this->posX.' '.$this->posY.' '.$this->posZ);
+				}
 			}
 
 			// Add size
@@ -348,41 +361,69 @@ abstract class Element extends Component implements Drawable
 
 			// Add alignement
 			if($this->halign !== null)
-			$this->xml->setAttribute('halign', $this->halign);
+			{
+				$this->xml->setAttribute('halign', $this->halign);
+			}
 			if($this->valign !== null)
-			$this->xml->setAttribute('valign', $this->valign);
+			{
+				$this->xml->setAttribute('valign', $this->valign);
+			}
 			if($this->scale !== null)
-			$this->xml->setAttribute('scale', $this->scale);
+			{
+				$this->xml->setAttribute('scale', $this->scale);
+			}
 
 			// Add styles
 			if($this->style !== null)
-			$this->xml->setAttribute('style', $this->style);
+			{
+				$this->xml->setAttribute('style', $this->style);
+			}
 			if($this->subStyle !== null)
-			$this->xml->setAttribute('substyle', $this->subStyle);
+			{
+				$this->xml->setAttribute('substyle', $this->subStyle);
+			}
 			if($this->bgcolor !== null)
-			$this->xml->setAttribute('bgcolor', $this->bgcolor);
+			{
+				$this->xml->setAttribute('bgcolor', $this->bgcolor);
+			}
 
 			// Add links
 			if($this->addPlayerId !== null && Manialink::$linksEnabled)
-			$this->xml->setAttribute('addplayerid', $this->addPlayerId);
+			{
+				$this->xml->setAttribute('addplayerid', $this->addPlayerId);
+			}
 			if($this->manialink !== null && Manialink::$linksEnabled)
-			$this->xml->setAttribute('manialink', $this->manialink);
+			{
+				$this->xml->setAttribute('manialink', $this->manialink);
+			}
 			if($this->url !== null && Manialink::$linksEnabled)
-			$this->xml->setAttribute('url', $this->url);
+			{
+				$this->xml->setAttribute('url', $this->url);
+			}
 			if($this->maniazone !== null && Manialink::$linksEnabled)
-			$this->xml->setAttribute('maniazone', $this->maniazone);
+			{
+				$this->xml->setAttribute('maniazone', $this->maniazone);
+			}
 
 			// Add action
 			if($this->action !== null && Manialink::$linksEnabled)
-			$this->xml->setAttribute('action', $this->action);
+			{
+				$this->xml->setAttribute('action', $this->action);
+			}
 			if($this->actionKey !== null && Manialink::$linksEnabled)
-			$this->xml->setAttribute('actionkey', $this->actionKey);
+			{
+				$this->xml->setAttribute('actionkey', $this->actionKey);
+			}
 
 			// Add images
 			if($this->image !== null)
-			$this->xml->setAttribute('image', $this->image);
+			{
+				$this->xml->setAttribute('image', $this->image);
+			}
 			if($this->imageFocus !== null)
-			$this->xml->setAttribute('imagefocus', $this->imageFocus);
+			{
+				$this->xml->setAttribute('imagefocus', $this->imageFocus);
+			}
 		}
 
 		// Layout post filtering

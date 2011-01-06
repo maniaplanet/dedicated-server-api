@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
@@ -7,6 +10,12 @@ use ManiaLive\Gui\Toolkit\Elements\BgsPlayerCard;
 use ManiaLive\Gui\Toolkit\Elements\Label;
 use ManiaLive\Gui\Toolkit\Elements\Bgs1;
 
+/**
+ * Tabview component like it is known from any
+ * windowing system.
+ * 
+ * @author Florian Schnell
+ */
 class Tabview extends \ManiaLive\Gui\Windowing\Control
 {
 	protected $tabs;
@@ -52,9 +61,13 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 			{
 				$ui = new Bgs1(14, 3);
 				if ($i == $this->active_id)
+				{
 					$ui->setSubStyle(Bgs1::NavButtonBlink);
+				}
 				else
+				{
 					$ui->setSubStyle(Bgs1::NavButton);
+				}
 				$ui->setAction($this->callback('clickOnTab', $i));
 				$frame->addComponent($ui);
 				
@@ -120,7 +133,9 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 	function getTab($id)
 	{
 		if (isset($this->tabs[$id]))
+		{
 			return $this->tabs[$id];
+		}
 	}
 	
 	/**
@@ -139,8 +154,12 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 	function destroy()
 	{
 		if ($this->tabs != null)
+		{
 			foreach ($this->tabs as $tab)
+			{
 				$tab->destroy();
+			}
+		}
 		$this->tabs = null;
 		parent::destroy();
 	}

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Windows;
 
@@ -10,6 +13,9 @@ use ManiaLive\Gui\Windowing\Controls\Panel;
 
 use ManiaLive\Gui\Toolkit\Elements\Label;
 
+/**
+ * @author Florian Schnell
+ */
 class Dialog extends \ManiaLive\Gui\Windowing\Window
 {
 	public $labels;

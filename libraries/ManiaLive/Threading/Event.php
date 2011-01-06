@@ -1,7 +1,13 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Threading;
 
+/**
+ * @author Florian Schnell
+ */
 class Event extends \ManiaLive\Event\Event
 {
 	const ON_THREAD_START = 1;
@@ -46,6 +52,8 @@ class Event extends \ManiaLive\Event\Event
 		}
 		
 		if ($method != null)
+		{
 			call_user_func_array(array($listener, $method), $params);
+		}
 	}
 }

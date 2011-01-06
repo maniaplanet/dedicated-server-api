@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Windows;
 
@@ -6,6 +9,9 @@ use ManiaLive\Gui\Toolkit\Elements\Icons64x64_1;
 use ManiaLive\Gui\Toolkit\Elements\Label;
 use ManiaLive\Gui\Windowing\Controls\Panel;
 
+/**
+ * @author Florian Schnell
+ */
 class Info extends \ManiaLive\Gui\Windowing\Window
 {
 	protected $title;

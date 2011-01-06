@@ -1,66 +1,89 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\DedicatedApi\Xmlrpc;
 
-class Value {
+class Value 
+{
 	public $data;
 	public $type;
 
-	function __construct($data, $type = false) {
+	function __construct($data, $type = false) 
+	{
 		$this->data = $data;
-		if (!$type) {
+		if (!$type) 
+		{
 			$type = $this->calculateType();
 		}
 		$this->type = $type;
-		if ($type == 'struct') {
+		if ($type == 'struct') 
+		{
 			// Turn all the values in the array into new Value objects
-			foreach ($this->data as $key => $value) {
+			foreach ($this->data as $key => $value) 
+			{
 				$this->data[$key] = new Value($value);
 			}
 		}
-		if ($type == 'array') {
-			for ($i = 0, $j = count($this->data); $i < $j; $i++) {
+		if ($type == 'array') 
+		{
+			for ($i = 0, $j = count($this->data); $i < $j; $i++) 
+			{
 				$this->data[$i] = new Value($this->data[$i]);
 			}
 		}
 	}
 
-	function calculateType() {
-		if ($this->data === true || $this->data === false) {
+	function calculateType() 
+	{
+		if ($this->data === true || $this->data === false) 
+		{
 			return 'boolean';
 		}
-		if (is_integer($this->data)) {
+		if (is_integer($this->data)) 
+		{
 			return 'int';
 		}
-		if (is_double($this->data)) {
+		if (is_double($this->data)) 
+		{
 			return 'double';
 		}
 		// Deal with IXR object types base64 and date
-		if (is_object($this->data) && $this->data instanceof Date) {
+		if (is_object($this->data) && $this->data instanceof Date) 
+		{
 			return 'date';
 		}
-		if (is_object($this->data) && $this->data instanceof Base64) {
+		if (is_object($this->data) && $this->data instanceof Base64) 
+		{
 			return 'base64';
 		}
 		// If it is a normal PHP object convert it into a struct
-		if (is_object($this->data)) {
+		if (is_object($this->data)) 
+		{
 			$this->data = get_object_vars($this->data);
 			return 'struct';
 		}
-		if (!is_array($this->data)) {
+		if (!is_array($this->data)) 
+		{
 			return 'string';
 		}
 		// We have an array - is it an array or a struct?
-		if ($this->isStruct($this->data)) {
+		if ($this->isStruct($this->data)) 
+		{
 			return 'struct';
-		} else {
+		} 
+		else 
+		{
 			return 'array';
 		}
 	}
 
-	function getXml() {
+	function getXml() 
+	{
 		// Return XML for this value
-		switch ($this->type) {
+		switch ($this->type) 
+		{
 			case 'boolean':
 				return '<boolean>' . ($this->data ? '1' : '0') . '</boolean>';
 				break;
@@ -75,7 +98,8 @@ class Value {
 				break;
 			case 'array':
 				$return = '<array><data>' . LF;
-				foreach ($this->data as $item) {
+				foreach ($this->data as $item) 
+				{
 					$return .= '	<value>' . $item->getXml() . '</value>' . LF;
 				}
 				$return .= '</data></array>';
@@ -83,7 +107,8 @@ class Value {
 				break;
 			case 'struct':
 				$return = '<struct>' . LF;
-				foreach ($this->data as $name => $value) {
+				foreach ($this->data as $name => $value) 
+				{
 					$return .= '	<member><name>' . $name . '</name><value>';
 					$return .= $value->getXml() . '</value></member>' . LF;
 				}
@@ -98,11 +123,14 @@ class Value {
 		return false;
 	}
 
-	function isStruct($array) {
+	function isStruct($array) 
+	{
 		// Nasty function to check if an array is a struct or not
 		$expected = 0;
-		foreach ($array as $key => $value) {
-			if ((string)$key != (string)$expected) {
+		foreach ($array as $key => $value) 
+		{
+			if ((string)$key != (string)$expected) 
+			{
 				return true;
 			}
 			$expected++;

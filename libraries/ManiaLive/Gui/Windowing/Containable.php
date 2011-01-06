@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -7,7 +10,6 @@ namespace ManiaLive\Gui\Windowing;
  * when stored in an object of type Container.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 interface Containable
 {

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Gui\Handler;
 
 use ManiaLive\Utilities\Console;
@@ -7,8 +11,6 @@ define('ID_MAX', pow(2,32) - 1);
 
 /**
  * Generates IDs for Windows and Actions.
- * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class IDGenerator
 {
@@ -26,7 +28,9 @@ class IDGenerator
 		
 		// check whether any more windows can be created ...
 		if (self::checkForOverflow())
+		{
 			throw new \OverflowException('There are too many Manialinks already!');
+		}
 		
 		// pretty dirty, but because stringfunctions are php inbuilt they are very fast!
 		// generate binary string of upcounted value, then reverse and shift zeros from the right.
@@ -59,7 +63,9 @@ class IDGenerator
 	{
 		// check for the windows ...
 		if (!key_exists($manialink_id, self::$action_counter))
+		{
 			throw new \Exception('There is no Manialink with this ID, or it has not been created using ManialinkHandle!');
+		}
 		
 		// check for an overflow in case of too many actions or windows ...
 		if (self::$action_max < ++self::$action_counter[$manialink_id])
@@ -71,7 +77,9 @@ class IDGenerator
 			// this will enable action creation for windows that haven't reached
 			// the bounds yet ...
 			if (self::checkForOverflow())
+			{
 				throw new \OverflowException('This window has too many actions yet!');
+			}
 		}
 		
 		// Console::printDebug('Action #' . self::$action_counter[$manialink_id] . ' assigned.');

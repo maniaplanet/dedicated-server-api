@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Features\ChatCommand;
 
@@ -9,8 +12,8 @@ use ManiaLive\Event\Dispatcher;
 
 class Documentation extends Singleton implements Listener
 {
-	protected $plugins_commands;
-	protected $current_commands;
+	protected $pluginsCommands;
+	protected $currentCommands;
 	
 	/**
 	 * @return \ManiaLive\Features\ChatCommand\Documentation
@@ -22,8 +25,8 @@ class Documentation extends Singleton implements Listener
 	
 	protected function __construct()
 	{
-		$this->plugins_commands = array();
-		$this->current_commands = array();
+		$this->pluginsCommands = array();
+		$this->currentCommands = array();
 		Dispatcher::register(\ManiaLive\PluginHandler\Event::getClass(), $this);
 	}
 	
@@ -45,9 +48,12 @@ class Documentation extends Singleton implements Listener
 		$buffer[] = '<h1>ManiaLive Chat Command Documentation</h1>';
 		$buffer[] = '<div style="margin-left:20px;">';
 		
-		foreach ($this->plugins_commands as $module => $commands)
+		foreach ($this->pluginsCommands as $module => $commands)
 		{
-			if (empty($commands)) continue;
+			if (empty($commands))
+			{
+				continue;
+			}
 			
 			$buffer[] = '<h2 style="text-decoration:underline">' . $module . '</h2>';
 			$buffer[] = '<div style="margin-left:20px;margin-bottom:10px;">';
@@ -58,9 +64,13 @@ class Documentation extends Singleton implements Listener
 				{
 					$modifier = null;
 					if ($command->isPublic)
+					{
 						$modifier = '<i><font color="#000099">public</font></i> ';
+					}
 					else
+					{
 						$modifier = '<i><font color="#990000">hidden</font></i> ';
+					}
 					
 					$buffer[] = '<div style="margin-bottom:10px;">';
 					$buffer[] =  $modifier . '<b>' . $command->name . '</b> (' . $args . ') <br />';
@@ -80,17 +90,17 @@ class Documentation extends Singleton implements Listener
 		fclose($fhandle);
 	}
 	
-	function registerCommandsFor($module_name)
+	function registerCommandsFor($moduleName)
 	{
 		$commands = Interpreter::getInstance()->getRegisteredCommands();
-		$plugin_commands = array_diff_assoc($commands, $this->current_commands);
-		$this->current_commands = $commands;
-		$this->plugins_commands[$module_name] = $plugin_commands;
+		$pluginCommands = array_diff_assoc($commands, $this->currentCommands);
+		$this->currentCommands = $commands;
+		$this->pluginsCommands[$moduleName] = $pluginCommands;
 	}
 	
-	function onPluginLoaded($plugin_id)
+	function onPluginLoaded($pluginId)
 	{
-		$this->registerCommandsFor($plugin_id);
+		$this->registerCommandsFor($pluginId);
 	}
 }
 

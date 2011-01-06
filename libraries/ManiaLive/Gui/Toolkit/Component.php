@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit;
 
@@ -59,13 +62,19 @@ abstract class Component
 	function setPosition($posX = null, $posY = null, $posZ = null)
 	{
 		if ($posX !== null)
+		{
 			$this->posX = $posX;
+		}
 			
 		if ($posY !== null)
+		{
 			$this->posY = $posY;
+		}
 			
 		if ($posZ !== null)
+		{
 			$this->posZ = $posZ;
+		}
 		
 		$this->onMove();
 	}

@@ -1,7 +1,18 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
+/**
+ * Frame element will move all its content
+ * when position changes.
+ * You can also apply a layout that is applied
+ * to all its subcomponents.
+ * 
+ * @author Florian Schnell
+ */
 class Frame extends \ManiaLive\Gui\Windowing\Control
 {
 	function initializeComponents()

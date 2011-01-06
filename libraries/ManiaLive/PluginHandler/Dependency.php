@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 namespace ManiaLive\PluginHandler;
 
 /**
@@ -9,13 +12,12 @@ namespace ManiaLive\PluginHandler;
  * the handler to stop loading of the Plugin.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 final class Dependency
 {
 	private $min;
 	private $max;
-	private $plugin_id;
+	private $pluginId;
 	const NO_LIMIT = null;
 
 	/**
@@ -23,15 +25,19 @@ final class Dependency
 	 * @param $min The version which the Plugin at least has to have.
 	 * @param $max Maximum version that is known to be supported.
 	 */
-	function __construct($plugin_id, $min = self::NO_LIMIT, $max = self::NO_LIMIT)
+	function __construct($pluginId, $min = self::NO_LIMIT, $max = self::NO_LIMIT)
 	{
 		// check parameters ...
 		if (!is_numeric($min) && $min != self::NO_LIMIT)
+		{
 			throw new InvalidArgumentException('Dependency minimum needs to be an integer!');
+		}
 		if (!is_numeric($max) && $max != self::NO_LIMIT)
+		{
 			throw new InvalidArgumentException('Dependency maximum needs to be an integer!');
+		}
 		
-		$this->plugin_id = $plugin_id;
+		$this->pluginId = $pluginId;
 		$this->min = $min;
 		$this->max = $max;
 	}
@@ -48,7 +54,7 @@ final class Dependency
 	
 	public function getPluginId()
 	{
-		return $this->plugin_id;
+		return $this->pluginId;
 	}
 }
 

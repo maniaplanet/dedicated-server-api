@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -16,13 +19,12 @@ use ManiaLive\Gui\Toolkit\Manialink;
  * it making use of the getWindow method.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 abstract class Control extends Container implements Drawable, Containable
 {
 	protected $parent;
-	protected $z_cur;
-	protected $z_forced;
+	protected $zCur;
+	protected $zForced;
 	/**
 	 * @var \ManiaLive\Gui\Toolkit\Layouts\AbstractLayout
 	 */
@@ -37,7 +39,7 @@ abstract class Control extends Container implements Drawable, Containable
 	
 	final function __construct()
 	{	
-		$this->z_cur = 0;
+		$this->zCur = 0;
 		$this->scale = null;
 		$this->layout = null;
 		$this->params = func_get_args();
@@ -58,14 +60,7 @@ abstract class Control extends Container implements Drawable, Containable
 	 */
 	final protected function getParam($num)
 	{
-		if (isset($this->params[$num]))
-		{
-			return $this->params[$num];
-		}
-		else
-		{
-			return null;
-		}
+		return (isset($this->params[$num]) ? $this->params[$num] : null);
 	}
 	
 	/**
@@ -75,7 +70,7 @@ abstract class Control extends Container implements Drawable, Containable
 	 */
 	function forceZ($z)
 	{
-		$this->z_forced = $z;
+		$this->zForced = $z;
 	}
 	
 	/**
@@ -117,7 +112,9 @@ abstract class Control extends Container implements Drawable, Containable
 		array_shift($args);
 		
 		if (!is_array($callback))
+		{
 			$callback = array($this, $callback);
+		}
 		
 		array_splice($args, 0, 0, array($callback));
 			
@@ -132,10 +129,15 @@ abstract class Control extends Container implements Drawable, Containable
 	protected function getWindow()
 	{
 		if ($this->initializing)
+		{
 			throw new Exception('You can not call ' . __FUNCTION__ . ' during the initializeComponents method within a Control!');
+		}
 		
 		$me = $this;
-		while (isset($me->parent)) $me = $me->parent;
+		while (isset($me->parent))
+		{
+			$me = $me->parent;
+		}
 		return $me->window;
 	}
 	
@@ -179,13 +181,12 @@ abstract class Control extends Container implements Drawable, Containable
 	final function save()
 	{
 		if (!$this->isVisible())
+		{
 			return;
+		}
 			
 		// reset z depth ...
-		if ($this->z_forced)
-			$this->z_cur = $this->z_forced;
-		else
-			$this->z_cur = 0;
+		$this->zCur = ($this->zForced ? $this->zForced : 0);
 		
 		// apply prefilter ...
 		$this->beforeDraw();
@@ -195,19 +196,31 @@ abstract class Control extends Container implements Drawable, Containable
 		{
 			// horizontal alignment ...
 			if ($this->halign == 'right')
+			{
 				$posx = $this->posX - $this->getRealSizeX();
+			}
 			elseif ($this->halign == 'center')
+			{
 				$posx = $this->posX - $this->getRealSizeX() / 2;
+			}
 			else
+			{
 				$posx = $this->posX;
+			}
 				
 			// vertical alignment ...
 			if ($this->valign == 'bottom')
+			{
 				$posy = $this->posY - $this->getRealSizeY();
+			}
 			elseif ($this->valign == 'center')
+			{
 				$posy = $this->posY - $this->getRealSizeY() / 2;
+			}
 			else
+			{
 				$posy = $this->posY;
+			}
 		}
 		else
 		{
@@ -233,20 +246,22 @@ abstract class Control extends Container implements Drawable, Containable
 			Manialink::beginFrame($posx, $posy, $this->posZ, $this->scale, clone $this->layout);
 		}
 		else 
+		{
 			Manialink::beginFrame($posx, $posy, $this->posZ, $this->scale);
+		}
 		
 		// render each element contained by the control and set z values ...
 		foreach ($this->components as $component)
 		{
 			if ($component instanceof Control)
 			{
-				$component->setPositionZ($this->z_cur);
-				$this->z_cur += $component->save();
+				$component->setPositionZ($this->zCur);
+				$this->zCur += $component->save();
 			}
 			else
 			{
-				$component->setPositionZ($this->z_cur);
-				$this->z_cur += Z_OFFSET;
+				$component->setPositionZ($this->zCur);
+				$this->zCur += Z_OFFSET;
 				$component->save();
 			}
 		}
@@ -262,7 +277,7 @@ abstract class Control extends Container implements Drawable, Containable
 		// post filtering of the drawing process ...
 		$this->afterDraw();
 		
-		return $this->z_cur;
+		return $this->zCur;
 	}
 	
 	/**
@@ -277,8 +292,10 @@ abstract class Control extends Container implements Drawable, Containable
 		foreach ($this->components as $component)
 		{
 			if ($component instanceof Control)
+			{
 				$component->destroy();
-				$component = null;
+			}
+			$component = null;
 		}
 		$this->components = array();
 	}

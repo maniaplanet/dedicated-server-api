@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Handler;
 
@@ -7,11 +10,7 @@ use ManiaLive\Utilities\Console;
 use ManiaLive\DedicatedApi\Connection;
 
 /**
- *
  * This class represents a group of players who will receive some manialinks to display
- * @author Philippe Melot
- * @copyright NADEO (c) 2010
- * 
  */
 class Group
 {

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Threading;
 
@@ -16,8 +19,8 @@ use ManiaLive\Database\SQLite\Connection;
  * using the OS' abilities.
  * This is why performance and stability can vary depending
  * on your system-type.
+ * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class Thread
 {
@@ -62,30 +65,30 @@ class Thread
 	 * processed.
 	 * @var integer
 	 */
-	private $command_count;
+	private $commandCount;
 	/**
 	 * Commands that were sent to the server, but
 	 * of which we didn't get any response yet.
 	 * @var array[Command]
 	 */
-	private $commands_sent;
+	private $commandsSent;
 	/**
 	 * How many commands have been sent yet without
 	 * getting a response?
 	 * @var integer
 	 */
-	private $commands_sent_count;
+	private $commandsSentCount;
 	/**
 	 * When has the ping signal been sent to the
 	 * process?
 	 * @var integer
 	 */
-	private $ping_started;
+	private $pingStarted;
 	/**
 	 * When did the thread enter busy state?
 	 * @var integer
 	 */
-	private $busy_started;
+	private $busyStarted;
 	/**
 	 * Counts Process instances
 	 * @var integer
@@ -104,14 +107,14 @@ class Thread
 		
 		// commands waiting ...
 		$this->commands = array();
-		$this->command_count = 0;
+		$this->commandCount = 0;
 		
 		// commands currently being processed ...
-		$this->commands_sent = array();
-		$this->commands_sent_count = 0;
+		$this->commandsSent = array();
+		$this->commandsSentCount = 0;
 		
 		// database stuff ...
-		if (ThreadPool::$threading_enabled)
+		if (ThreadPool::$threadingEnabled)
 		{
 			self::$db = Tools::getDb();
 			
@@ -206,7 +209,9 @@ class Thread
 		// try to start process ...
 		$phandle = popen($command, 'r');
 		if ($phandle === false)
+		{
 			throw new Exception('Process with ID #' . $pid . ' could not be started!');
+		}
 		pclose($phandle);
 		
 		return $pid;
@@ -229,7 +234,7 @@ class Thread
 	 */
 	function isBusy()
 	{
-		return ($this->commands_sent_count > 0);
+		return ($this->commandsSentCount > 0);
 	}
 	
 	/**
@@ -244,8 +249,8 @@ class Thread
 		$query = "INSERT INTO cmd(proc_id, thread_id, cmd, cmd_id, param, done, datestamp) VALUES('" . $this->pid . "', '" . $this->id . "', '" . $command->name . "', " . $command->getId() . ", '" . $param . "', 0, '" . time() . "');";
 		self::$db->execute($query);
 		
-		$this->commands_sent_count++;
-		$this->commands_sent[$command->getId()] = $command;
+		$this->commandsSentCount++;
+		$this->commandsSent[$command->getId()] = $command;
 	}
 	
 	/**
@@ -255,7 +260,7 @@ class Thread
 	 */
 	function addCommandToBuffer(Command $command)
 	{
-		$this->command_count++;
+		$this->commandCount++;
 		$command->thread_id = $this->id;
 		$command->time_sent = microtime(true);
 		$this->commands[$command->getId()] = $command;
@@ -275,7 +280,7 @@ class Thread
 		// maybe it got killed? ping!
 		if ($this->getState() == 2)
 		{
-			if (time() - $this->ping_started > Loader::$config->threading->ping_timeout)
+			if (time() - $this->pingStarted > Loader::$config->threading->ping_timeout)
 			{
 				$this->setState(4);
 				Dispatcher::dispatch(new Event($this, Event::ON_THREAD_DIES));
@@ -288,7 +293,7 @@ class Thread
 		// maybe it hung up, you can only wait and see ...
 		if ($this->isBusy())
 		{
-			if (time() - $this->busy_started > Loader::$config->threading->busy_timeout)
+			if (time() - $this->busyStarted > Loader::$config->threading->busy_timeout)
 			{
 				$this->setState(4);
 				Dispatcher::dispatch(new Event($this, Event::ON_THREAD_TIMES_OUT));
@@ -298,12 +303,14 @@ class Thread
 		}
 		
 		// only continue if there are commands to be processed ...
-		if ($this->command_count == 0)
+		if ($this->commandCount == 0)
 		{
 			// state is now unknown, next send will require a ping
 			// to see whether process is still running.
 			if ($this->getState() == 1)
+			{
 				$this->setState(0);
+			}
 				
 			return;
 		}
@@ -325,18 +332,21 @@ class Thread
 		
 		foreach ($this->commands as $cid => $command)
 		{
-			if (++$i > Loader::$config->threading->chunk_size) break;
+			if (++$i > Loader::$config->threading->chunk_size) 
+			{
+				break;
+			}
 			$query .= 'INSERT INTO cmd (proc_id, thread_id, cmd, cmd_id, param, done, datestamp) VALUES ';
 			$query .= '(\'' . $this->pid .'\', \'' . $this->id . '\', \'' . $command->name .'\', \'' . $command->id .'\', \'' . base64_encode(serialize($command->param)) .'\', 0, \'' . time() .'\');';
-			$this->commands_sent[$command->id] = $command;
-			$this->commands_sent_count++;
-			$this->command_count--;
+			$this->commandsSent[$command->id] = $command;
+			$this->commandsSentCount++;
+			$this->commandCount--;
 			unset($this->commands[$command->id]);
 		}
 		
 		// thread is busy now
 		self::$db->execute($query);
-		$this->busy_started = time();
+		$this->busyStarted = time();
 			
 		// current state is unkown ...
 		$this->setState(0);
@@ -349,16 +359,25 @@ class Thread
 	 */
 	function receiveResponse($cid, $result)
 	{
-		$command = $this->commands_sent[$cid];
+		if (!isset($this->commandsSent[$cid]))
+		{
+			return;
+		}
+
+		$command = $this->commandsSent[$cid];
 		$command->result = $result;
 		$callback = $command->callback;
-		unset($this->commands_sent[$cid]);
-		$this->commands_sent_count--;
+		unset($this->commandsSent[$cid]);
+		$this->commandsSentCount--;
 		
 		if (!$this->isBusy())
-			$this->busy_started = null;
+		{
+			$this->busyStarted = null;
+		}
 		else
-			$this->busy_started = time();
+		{
+			$this->busyStarted = time();
+		}
 		
 		// is active ...
 		$this->setState(1);
@@ -368,14 +387,14 @@ class Thread
 			call_user_func($callback, $command);
 			
 		// calculate average response time
-		if (ThreadPool::$avg_response_time == null)
+		if (ThreadPool::$avgResponseTime == null)
 		{
-			ThreadPool::$avg_response_time = (microtime(true) - $command->time_sent);
+			ThreadPool::$avgResponseTime = (microtime(true) - $command->time_sent);
 		}
 		else
 		{
-			ThreadPool::$avg_response_time += (microtime(true) - $command->time_sent);
-			ThreadPool::$avg_response_time /= 2;
+			ThreadPool::$avgResponseTime += (microtime(true) - $command->time_sent);
+			ThreadPool::$avgResponseTime /= 2;
 		}
 	}
 	
@@ -386,7 +405,7 @@ class Thread
 	function ping()
 	{		
 		// track time needed until there's a response ...
-		$this->ping_started = time();
+		$this->pingStarted = time();
 		
 		$this->setState(2);
 		$ping = new PingCommand();
@@ -409,10 +428,10 @@ class Thread
 		// restart new process with new id ...
 		$this->pid = self::LaunchProcess();
 		$this->log = Logger::getLog($this->getPid(), 'threading');
-		$this->busy_started = time();
-		$this->ping_started = null;
-		$this->commands_sent = array();
-		$this->commands_sent_count = 0;
+		$this->busyStarted = time();
+		$this->pingStarted = null;
+		$this->commandsSent = array();
+		$this->commandsSentCount = 0;
 		$this->setState(0);
 		$this->ping();
 		
@@ -430,7 +449,9 @@ class Thread
 	function setState($state)
 	{
 		if ($state >= 0 && $state <= 4)
+		{
 			$this->state = $state;
+		}
 	}
 	
 	/**
@@ -448,7 +469,7 @@ class Thread
 	 */
 	function getCommandCount()
 	{
-		return $this->command_count;
+		return $this->commandCount;
 	}
 	
 	/**

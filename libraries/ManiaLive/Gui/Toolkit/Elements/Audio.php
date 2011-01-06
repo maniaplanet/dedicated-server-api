@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
@@ -52,9 +55,13 @@ class Audio extends Music
 	{
 		parent::postFilter();
 		if($this->play !== null)
-		$this->xml->setAttribute('play', $this->play);
+		{
+			$this->xml->setAttribute('play', $this->play);
+		}
 		if($this->looping !== null)
-		$this->xml->setAttribute('looping', $this->looping);
+		{
+			$this->xml->setAttribute('looping', $this->looping);
+		}
 	}
 }
 

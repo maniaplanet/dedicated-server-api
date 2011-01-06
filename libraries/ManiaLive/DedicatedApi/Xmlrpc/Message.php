@@ -1,8 +1,12 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\DedicatedApi\Xmlrpc;
 
-class Message {
+class Message 
+{
 	public $message;
 	public $messageType;  // methodCall / methodResponse / fault
 	public $faultCode;
@@ -20,15 +24,18 @@ class Message {
 	// The XML parser
 	protected $_parser;
 
-	function __construct ($message) {
+	function __construct ($message) 
+	{
 		$this->message = $message;
 	}
 
-	function parse() {
+	function parse() 
+	{
 		
 		// first remove the XML declaration
 		$this->message = preg_replace('/<\?xml(.*)?\?'.'>/', '', $this->message);
-		if (trim($this->message) == '') {
+		if (trim($this->message) == '') 
+		{
 			return false;
 		}
 		$this->_parser = xml_parser_create();
@@ -38,7 +45,8 @@ class Message {
 		xml_set_object($this->_parser, $this);
 		xml_set_element_handler($this->_parser, 'tag_open', 'tag_close');
 		xml_set_character_data_handler($this->_parser, 'cdata');
-		if (!xml_parse($this->_parser, $this->message)) {
+		if (!xml_parse($this->_parser, $this->message)) 
+		{
 			/* die(sprintf('GbxRemote XML error: %s at line %d',
 			               xml_error_string(xml_get_error_code($this->_parser)),
 			               xml_get_current_line_number($this->_parser))); */
@@ -46,16 +54,19 @@ class Message {
 		}
 		xml_parser_free($this->_parser);
 		// Grab the error messages, if any
-		if ($this->messageType == 'fault') {
+		if ($this->messageType == 'fault') 
+		{
 			$this->faultCode = $this->params[0]['faultCode'];
 			$this->faultString = $this->params[0]['faultString'];
 		}
 		return true;
 	}
 
-	function tag_open($parser, $tag, $attr) {
+	function tag_open($parser, $tag, $attr) 
+	{
 		$this->currentTag = $tag;
-		switch ($tag) {
+		switch ($tag) 
+		{
 			case 'methodCall':
 			case 'methodResponse':
 			case 'fault':
@@ -73,13 +84,16 @@ class Message {
 		}
 	}
 
-	function cdata($parser, $cdata) {
+	function cdata($parser, $cdata) 
+	{
 		$this->_currentTagContents .= $cdata;
 	}
 
-	function tag_close($parser, $tag) {
+	function tag_close($parser, $tag) 
+	{
 		$valueFlag = false;
-		switch ($tag) {
+		switch ($tag) 
+		{
 			case 'int':
 			case 'i4':
 				$value = (int)trim($this->_currentTagContents);
@@ -140,22 +154,29 @@ class Message {
 				break;
 		}
 
-		if ($valueFlag) {
+		if ($valueFlag) 
+		{
 			/*
 			if (!is_array($value) && !is_object($value)) {
 				$value = trim($value);
 			}
 			*/
-			if (count($this->_arraystructs) > 0) {
+			if (count($this->_arraystructs) > 0) 
+			{
 				// Add value to struct or array
-				if ($this->_arraystructstypes[count($this->_arraystructstypes)-1] == 'struct') {
+				if ($this->_arraystructstypes[count($this->_arraystructstypes)-1] == 'struct') 
+				{
 					// Add to struct
 					$this->_arraystructs[count($this->_arraystructs)-1][$this->_currentStructName[count($this->_currentStructName)-1]] = $value;
-				} else {
+				} 
+				else 
+				{
 					// Add to array
 					$this->_arraystructs[count($this->_arraystructs)-1][] = $value;
 				}
-			} else {
+			} 
+			else 
+			{
 				// Just add as a paramater
 				$this->params[] = $value;
 			}

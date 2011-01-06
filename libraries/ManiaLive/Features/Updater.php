@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Features;
 
@@ -7,8 +10,8 @@ use ManiaLive\Event\Dispatcher;
 
 /**
  * Checks for updates periodically.
+ *
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class Updater extends \ManiaLive\Utilities\Singleton
 implements \ManiaLive\Features\Tick\Listener
@@ -49,7 +52,9 @@ implements \ManiaLive\Features\Tick\Listener
 		catch(\Exception $e)
 		{
 			if (strstr($e->getMessage(), 'failed to open stream') === false)
+			{
 				throw $e;
+			}
 		}
 		
 		if ($version > \ManiaLiveApplication\Version)

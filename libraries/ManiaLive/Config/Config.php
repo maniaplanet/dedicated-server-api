@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Config;
 
@@ -50,6 +53,8 @@ class Config extends Configurable
 	
 	public $maxErrorCount;
 	
+	public $dedicatedPath;
+	
 	function validate()
 	{
 		// set this depending on os.
@@ -73,6 +78,8 @@ class Config extends Configurable
 		$this->setDefault('maxErrorCount', false);
 		
 		$this->setDefault('logsPrefix', '');
+		
+		$this->setDefault('dedicatedPath', APP_ROOT);
 	}
 }
 

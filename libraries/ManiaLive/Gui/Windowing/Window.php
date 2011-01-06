@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -42,7 +45,6 @@ const Z_MAX = 32;
  * The onShow method prepares the Window for the Screen and can be used to configure Elements and Controls.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 abstract class Window extends Container implements
 	\ManiaLive\Gui\Handler\Listener,
@@ -52,14 +54,14 @@ abstract class Window extends Container implements
 	private $id;
 	private $callbacks;
 	private $login;
-	private $is_hidden;
+	private $isHidden;
 	private $dialog;
-	private $window_handler;
+	private $windowHandler;
 	private $header;
 	
-	protected $links_deactivated;
+	protected $linksDeactivated;
 	protected $view;
-	protected $playervalues;
+	protected $playerValues;
 	protected $autohide;
 	protected $useClassicPositioning;
 	
@@ -78,14 +80,14 @@ abstract class Window extends Container implements
 	{
 		$this->translationElement = null;
 		$this->useClassicPositioning = false;
-		$this->window_handler = WindowHandler::getInstance();
+		$this->windowHandler = WindowHandler::getInstance();
 		$this->autohide = false;
-		$this->playervalues = array();
+		$this->playerValues = array();
 		$this->below = array();
-		$this->links_deactivated = false;
+		$this->linksDeactivated = false;
 		$this->callbacks = array();
 		$this->login = $login;
-		$this->is_hidden = true;
+		$this->isHidden = true;
 		$this->id = \ManiaLive\Gui\Handler\IDGenerator::generateManialinkID();
 		Dispatcher::register(\ManiaLive\Gui\Handler\Event::getClass(), $this);
 		Dispatcher::register(Event::getClass(), $this);
@@ -162,7 +164,6 @@ abstract class Window extends Container implements
 	
 	/**
 	 * 
-	 * Enter description here ...
 	 * @param $seconds
 	 */
 	public function setAutohide($seconds)
@@ -173,12 +174,10 @@ abstract class Window extends Container implements
 	
 	/**
 	 * 
-	 * Enter description here ...
 	 */
 	public function getAutohide()
 	{
-		if (!$this->autohide) return false;
-		return $this->autohide - time();
+		return (!$this->autohide ? false : $this->autohide - time());
 	}
 	
 	/**
@@ -225,11 +224,16 @@ abstract class Window extends Container implements
 		array_shift($args);
 		
 		// there is no callback specified!
-		if ($callback == null) return;
+		if ($callback == null)
+		{
+			return;
+		}
 		
 		// prepare ...
 		if (!is_array($callback))
+		{
 			$callback = array($this, $callback);
+		}
 		
 		// add parameters to callback ...
 		$callback = array($callback, $args);
@@ -286,30 +290,38 @@ abstract class Window extends Container implements
 	 */
 	public function centerOnBelow()
 	{
-		$min_x = 0;
-		$min_y = 0;
-		$max_x = 0;
-		$max_y = 0;
+		$minX = 0;
+		$minY = 0;
+		$maxX= 0;
+		$maxY = 0;
 		
 		// build rectangle from subwindows ...
 		foreach ($this->below as $window)
 		{
-			if ($window->getPosX() < $min_x)
-				$min_x = $window->getBorderLeft();
+			if ($window->getPosX() < $minX)
+			{
+				$minX = $window->getBorderLeft();
+			}
 				
-			if ($window->getBorderTop() < $min_y)
-				$min_y = $window->getBorderTop();
+			if ($window->getBorderTop() < $minY)
+			{
+				$minY = $window->getBorderTop();
+			}
 		
-			if ($window->getBorderRight() > $max_x)
-				$max_x = $window->getBorderRight();
+			if ($window->getBorderRight() > $maxX)
+			{
+				$maxX = $window->getBorderRight();
+			}
 				
-			if ($window->getBorderBottom() > $max_y)
-				$max_y = $window->getBorderBottom();
+			if ($window->getBorderBottom() > $maxY)
+			{
+				$maxY = $window->getBorderBottom();
+			}
 		}
 		
 		// set position to the rectangle's center
-		$this->setPositionX(($min_x + $max_x) / 2 - $this->getSizeX() / 2);
-		$this->setPositionY(($min_y + $max_y) / 2 - $this->getSizeY() / 2);
+		$this->setPositionX(($minX + $maxX) / 2 - $this->getSizeX() / 2);
+		$this->setPositionY(($minY + $maxY) / 2 - $this->getSizeY() / 2);
 	}
 	
 	/**
@@ -319,16 +331,21 @@ abstract class Window extends Container implements
 	{
 		// get group ...
 		if ($login == null)
+		{
 			$group = GuiHandler::getInstance()->getGroup();
+		}
 		else
 		{
 			$player = Storage::getInstance()->getPlayerObject($login);
-			if (!$player) return;
+			if (!$player)
+			{
+				return;
+			}
 			$group = GuiHandler::getInstance()->getGroup($player);
 		}
 		
 		// show the window ...
-		if ($this->is_hidden)
+		if ($this->isHidden)
 		{
 			$group->displayableGroup->addDisplayable(new Blank($this->id));
 		}
@@ -348,18 +365,22 @@ abstract class Window extends Container implements
 		
 		// call recover function when Window state changes
 		// from hidden to visible
-		if ($this->is_hidden)
+		if ($this->isHidden)
+		{
 			$this->onRecover();
+		}
 		
-		$this->is_hidden = false;
+		$this->isHidden = false;
 		
 		// generate view object ...
 		$this->initDisplayable();
 		
 		if ($this->login != null)
+		{
 			$login = $this->login;
+		}
 			
-		$this->window_handler->add($this, $login);
+		$this->windowHandler->add($this, $login);
 	}
 	
 	/**
@@ -368,7 +389,7 @@ abstract class Window extends Container implements
 	 */
 	public function hide($login = null)
 	{
-		$this->is_hidden = true;
+		$this->isHidden = true;
 		$this->uptodate = false;
 		$this->below = array();
 		
@@ -379,10 +400,12 @@ abstract class Window extends Container implements
 		$this->onHide();
 		
 		if ($this->login != null)
+		{
 			$login = $this->login;
+		}
 		
 		// add to drawstack button ...
-		$this->window_handler->add($this, $login);
+		$this->windowHandler->add($this, $login);
 	}
 	
 	/**
@@ -406,7 +429,7 @@ abstract class Window extends Container implements
 	 */
 	protected function initDisplayable()
 	{
-		$this->is_hidden = false;
+		$this->isHidden = false;
 		
 		// delete old view references ...
 		if ($this->view)
@@ -440,10 +463,12 @@ abstract class Window extends Container implements
 	 */
 	public function setPlayerValue($name, $value)
 	{
-		if (!isset($this->playervalues[$this->getRecipient()]))
-			$this->playervalues[$this->getRecipient()] = array();
+		if (!isset($this->playerValues[$this->getRecipient()]))
+		{
+			$this->playerValues[$this->getRecipient()] = array();
+		}
 			
-		$this->playervalues[$this->getRecipient()][$name] = $value;
+		$this->playerValues[$this->getRecipient()][$name] = $value;
 	}
 	
 	/**
@@ -453,10 +478,14 @@ abstract class Window extends Container implements
 	 */
 	public function getPlayerValue($name)
 	{
-		if (isset($this->playervalues[$this->getRecipient()][$name]))
-			return $this->playervalues[$this->getRecipient()][$name];
+		if (isset($this->playerValues[$this->getRecipient()][$name]))
+		{
+			return $this->playerValues[$this->getRecipient()][$name];
+		}
 		else
+		{
 			return null;
+		}
 	}
 	
 	/**
@@ -484,7 +513,7 @@ abstract class Window extends Container implements
 	 */
 	public function deactivateLinks()
 	{
-		$this->links_deactivated = true;
+		$this->linksDeactivated = true;
 	}
 	
 	/**
@@ -493,7 +522,7 @@ abstract class Window extends Container implements
 	 */
 	public function activateLinks()
 	{
-		$this->links_deactivated = false;
+		$this->linksDeactivated = false;
 	}
 	
 	/**
@@ -501,7 +530,7 @@ abstract class Window extends Container implements
 	 */
 	public function getLinksDeactivated()
 	{
-		return $this->links_deactivated;
+		return $this->linksDeactivated;
 	}
 	
 	/**
@@ -545,7 +574,7 @@ abstract class Window extends Container implements
 	 */
 	public function isShown()
 	{
-		return !$this->is_hidden;
+		return !$this->isHidden;
 	}
 	
 	/**
@@ -571,8 +600,10 @@ abstract class Window extends Container implements
 	public function destroy()
 	{
 		// we're closing ..
-		if (!$this->is_hidden)
+		if (!$this->isHidden)
+		{
 			$this->onHide();
+		}
 		
 		// remove events	
 		Dispatcher::unregister(\ManiaLive\Gui\Handler\Event::getClass(), $this);
@@ -598,7 +629,9 @@ abstract class Window extends Container implements
 		foreach ($this->components as $component)
 		{
 			if ($component instanceof \ManiaLive\Gui\Windowing\Control)
+			{
 				$component->destroy();
+			}
 		}
 		
 		// finally remove actions from window

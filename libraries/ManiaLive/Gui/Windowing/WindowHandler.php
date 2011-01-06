@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -8,9 +11,9 @@ use ManiaLive\Event\Dispatcher;
 
 /**
  * Sort windows to right order for being displayed on the screen.
- * Windows that are most bottom on the z-axis will be drawn first. 
+ * Windows that are most bottom on the z-axis will be drawn first.
+ *  
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class WindowHandler
 	extends \ManiaLive\Utilities\Singleton
@@ -38,13 +41,18 @@ class WindowHandler
 	 */
 	function onPreLoop()
 	{
-		if ($this->drawstack_count == 0) return;
+		if ($this->drawstack_count == 0) 
+		{
+			return;
+		}
 		
 		foreach ($this->drawstack as $login => $stack)
 		{
 			// if player has left the server
-			if (!isset($this->storage->players[$login]))
+			if ($this->storage->getPlayerObject($login) == null)
+			{
 				continue; // then we don't need to draw anything!
+			}
 			
 			// prepare window order ...
 			$finalstack = array();

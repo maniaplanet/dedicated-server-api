@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Database;
 
@@ -102,7 +105,9 @@ abstract class Connection
 	{
 		$duration = microtime(true) - self::$time_start[$con->id];
 		if (!isset(self::$time_avg[$con->id]))
+		{
 			self::$time_avg[$con->id] = $duration;
+		}
 		else
 		{
 			self::$time_avg[$con->id] += $duration;

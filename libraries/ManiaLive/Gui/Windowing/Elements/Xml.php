@@ -1,9 +1,18 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Elements;
 
 use ManiaLive\Gui\Toolkit\Manialink;
 
+/**
+ * Can be used to add already parsed xml to
+ * a manialink window.
+ * 
+ * @author Florian Schnell
+ */
 class Xml extends \ManiaLive\Gui\Windowing\Element
 {
 	protected $xml;

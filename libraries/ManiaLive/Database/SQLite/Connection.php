@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Database\SQLite;
 
@@ -73,7 +76,9 @@ class Connection extends \ManiaLive\Database\Connection
 	function query($query)
 	{
 		if (!$this->isConnected())
-		throw new NotConnectedException;
+		{
+			throw new NotConnectedException;
+		}
 
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Threading\Commands;
 
@@ -12,8 +15,8 @@ abstract class Command
 	public $done;
 	public $datestamp;
 	public $callback;
-	public $thread_id;
-	public $time_sent;
+	public $threadId;
+	public $timeSent;
 	
 	const Run = 'run';
 	const Quit = 'exit';
@@ -28,7 +31,7 @@ abstract class Command
 		$this->done = false;
 		$this->datestamp = time();
 		$this->callback = $callback;
-		$this->thread_id = null;
+		$this->threadId = null;
 	}
 	
 	function getId()

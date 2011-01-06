@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ * @author Florian Schnell
+ */
 
 namespace ManiaLive\Threading;
 

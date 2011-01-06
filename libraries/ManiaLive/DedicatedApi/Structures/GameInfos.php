@@ -1,22 +1,10 @@
 <?php
 /**
- *
  * Represents the Game Infos of a Dedicated TrackMania Server
- * @author Philippe Melot
  * @copyright NADEO (c) 2010
- * @package ManiaMod
- * @subpackage Structures
- *
  */
 namespace ManiaLive\DedicatedApi\Structures;
 
-/**
- *
- * Represents the Game Infos of a Dedicated TrackMania Server
- * @author Philippe Melot
- * @copyright NADEO (c) 2010
- *
- */
 class GameInfos extends AbstractStructure
 {
 	public $gameMode;

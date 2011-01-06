@@ -2,26 +2,23 @@
 /**
  * @author Maxime Raoust
  * @copyright 2009-2010 NADEO 
- * @package ManiaMod
  */
+
 namespace ManiaLive\Gui\Windowing\Controls;
+
+use ManiaLive\Utilities\Console;
+use ManiaLive\Gui\Windowing\Control;
+use ManiaLive\Gui\Toolkit\Elements as Elements;
+use ManiaLive\Gui\Toolkit as Toolkit;
+use ManiaLive\Gui\Toolkit\Component;
 
 /**
  * Page Navigator
  * Page navigation arrows at the bottom of the lists
- * @package ManiaMod
- * @subpackage GUIToolkit_Cards
+ * 
+ * @author Maxime Raoust
+ * @author Florian Schnell
  */
-use ManiaLive\Utilities\Console;
-
-use ManiaLive\Gui\Windowing\Control;
-
-use ManiaLive\Gui\Toolkit\Elements as Elements;
-
-use ManiaLive\Gui\Toolkit as Toolkit;
-
-use ManiaLive\Gui\Toolkit\Component;
-
 class PageNavigator extends Control
 {
 	public $arrowNext;

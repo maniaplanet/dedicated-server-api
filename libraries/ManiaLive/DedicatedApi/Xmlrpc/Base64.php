@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\DedicatedApi\Xmlrpc;
 
@@ -6,11 +9,13 @@ class Base64
 {
 	public $data;
 
-	function __construct($data) {
+	function __construct($data)
+	{
 		$this->data = $data;
 	}
 
-	function getXml() {
+	function getXml() 
+	{
 		return '<base64>'.base64_encode($this->data).'</base64>';
 	}
 }

@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
@@ -56,9 +59,13 @@ class Entry extends Label
 	{
 		parent::postFilter();
 		if($this->name !== null)
-		$this->xml->setAttribute('name', $this->name);
+		{
+			$this->xml->setAttribute('name', $this->name);
+		}
 		if($this->defaultValue !== null)
-		$this->xml->setAttribute('default', $this->defaultValue);
+		{
+			$this->xml->setAttribute('default', $this->defaultValue);
+		}
 	}
 }
 

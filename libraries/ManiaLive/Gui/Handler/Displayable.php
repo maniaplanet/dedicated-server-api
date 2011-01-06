@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Gui\Handler;
 
 interface Displayable

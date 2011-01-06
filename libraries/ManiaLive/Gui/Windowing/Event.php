@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -7,7 +10,6 @@ namespace ManiaLive\Gui\Windowing;
  * eg. when a window is being closed.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class Event extends \ManiaLive\Event\Event
 {

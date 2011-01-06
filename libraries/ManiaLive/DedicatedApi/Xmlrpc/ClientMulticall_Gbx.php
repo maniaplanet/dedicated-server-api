@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 // TODO XMLRPCLib: remettre les credits
 

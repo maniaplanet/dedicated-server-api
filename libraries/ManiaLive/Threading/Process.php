@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Threading;
 
 use ManiaLive\Utilities\Logger;
@@ -8,6 +12,7 @@ use ManiaLive\Database\SQLite\Connection;
  * This class is running in it's own process and is
  * being instanciated by the thread_ignitor.php.
  * A Process is being represented by a Thread on the "server" side.
+ * 
  * @author Florian Schnell
  */
 class Process
@@ -70,7 +75,9 @@ class Process
 		// connect to database ...
 		$this->db = Tools::getDb($this->parent);
 		if ($this->db->isConnected())
+		{
 			echo "DB is connected, waiting for jobs ..." . APP_NL;
+		}
 			
 		$this->incoming_job = null;
 		
@@ -107,7 +114,9 @@ class Process
 			echo 'Incoming Jobs: ' . $this->incoming_job_count . APP_NL;
 		}
 		else
+		{
 			return false;
+		}
 		
 		// process incoming jobs ...
 		while ($this->incoming_job = $result->fetchArray())

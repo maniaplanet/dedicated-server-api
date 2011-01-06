@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Threading;
 
@@ -6,6 +9,7 @@ namespace ManiaLive\Threading;
  * Jobs need to extend this class
  * before you can add them to the
  * ThreadPool!
+ * 
  * @author Florian Schnell
  */
 abstract class Runnable

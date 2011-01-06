@@ -1,22 +1,10 @@
 <?php
 /**
- *
  * Represents a Dedicated TrackMania Server Player
- * @author Philippe Melot
  * @copyright NADEO (c) 2010
- * @package ManiaMod
- * @subpackage Structures
- *
  */
 namespace ManiaLive\DedicatedApi\Structures;
 
-/**
- *
- * Represents a Dedicated TrackMania Server Player
- * @author Philippe Melot
- * @copyright NADEO (c) 2010
- *
- */
 class Player extends AbstractStructure
 {
 	public $playerId;
@@ -52,12 +40,12 @@ class Player extends AbstractStructure
 	public $ladderRanking;
 	public $flags;
 	public $isConnected = true;
-	
+
 	//Flags details
 	public $forceSpectator;
 	public $isPodiumReady;
 	public $isUsingStereoscopy;
-	
+
 	//SpectatorStatus details
 	public $spectator;
 	public $temporarySpectator;
@@ -71,33 +59,25 @@ class Player extends AbstractStructure
 	}
 
 	/**
-	 * @return Player 
+	 * @return Player
 	 */
 	static public function fromArray($array)
 	{
-		if(!is_array($array)) return $array;
-		$object = new static;
-		foreach($array as $key=>$value)
-		{
-			$key = lcfirst($key);
-			$object->$key = $value;
-			switch($key)
-			{
-				case 'flags':
-					$object->forceSpectator = $value % 10;
-					$object->isReferee = ($value / 10) % 10;
-					$object->isPodiumReady = ($value /100) % 10;
-					$object->isUsingStereoscopy = (int)($value /1000) % 10;
-					break;
-				case 'spectatorStatus':
-					$object->spectator = $value % 10;
-					$object->temporarySpectator = ($value /10) % 10;
-					$object->pureSpectator = ($value /100) % 10;
-					$object->autoTarget = ($value /1000) % 10;
-					$object->currentTargetId = (int)($value /10000);
-					break;
-			}
-		}
+		$object = parent::fromArray($array);
+
+		$object->skins = Skin::fromArrayOfArray($object->skins);
+		$object->forceSpectator = $object->flags % 10;
+		//Detail flags
+		$object->isReferee = ($object->flags / 10) % 10;
+		$object->isPodiumReady = ($object->flags /100) % 10;
+		$object->isUsingStereoscopy = (int)($object->flags /1000) % 10;
+		//Details spectatorStatus
+		$object->spectator = $object->spectatorStatus % 10;
+		$object->temporarySpectator = ($object->spectatorStatus /10) % 10;
+		$object->pureSpectator = ($object->spectatorStatus /100) % 10;
+		$object->autoTarget = ($object->spectatorStatus /1000) % 10;
+		$object->currentTargetId = (int)($object->spectatorStatus /10000);
+		
 		return $object;
 	}
 }

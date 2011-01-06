@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Utilities;
 
 use ManiaLive\Config\Loader;
@@ -18,7 +22,9 @@ class Logger
 	{
 		$id = $subfolder.'_'.$name;
 		if (isset(self::$logs[$id]))
+		{
 			return self::$logs[$id];
+		}
 		
 		$log = new Logger($name, $subfolder);
 		self::$logs[$id] = $log;
@@ -29,10 +35,15 @@ class Logger
 	{
 		// if path does not exist ...
 		if(!is_dir(Loader::$config->logsPath))
+		{
 			mkdir(Loader::$config->logsPath, "0493", true);
+		}
 			
 		// build path ...
-		if ($subfolder != '') $subfolder = $subfolder . '_';
+		if ($subfolder != '') 
+		{
+			$subfolder = $subfolder . '_';
+		}
 		
 		// append filename to path ...
 		$this->path = Loader::$config->logsPath . '/';

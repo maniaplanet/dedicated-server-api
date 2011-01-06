@@ -1,22 +1,10 @@
 <?php
 /**
- *
  * Represents the Options of a TrackMania Dedicated Server
- * @author Philippe Melot
  * @copyright NADEO (c) 2010
- * @package ManiaMod
- * @subpackage Structures
- *
  */
 namespace ManiaLive\DedicatedApi\Structures;
 
-/**
- *
- * Represents the Options of a TrackMania Dedicated Server
- * @author Philippe Melot
- * @copyright NADEO (c) 2010
- *
- */
 class ServerOptions extends AbstractStructure
 {
 	public $name;

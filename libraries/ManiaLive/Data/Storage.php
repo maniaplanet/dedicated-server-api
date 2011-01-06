@@ -1,10 +1,8 @@
 <?php
 /**
- *
- * @author Philippe Melot
- * @copyright 2009-2010 NADEO
- * @package ManiaLive
+ * @copyright NADEO (c) 2010
  */
+
 namespace ManiaLive\Data;
 
 use ManiaLive\Application\SilentCriticalEventException;
@@ -16,11 +14,9 @@ use ManiaLive\DedicatedApi\Structures\Player;
 use ManiaLive\DedicatedApi\Connection;
 
 /**
- * @author Philippe Melot
- * @package ManiaLive
- * @subpackage Data
+ * Contain every important data about the server
  */
-class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener, \ManiaLive\Application\Listener, \ManiaLive\Features\Tick\Listener
+class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener, \ManiaLive\Application\Listener
 {
 	protected $disconnetedPlayers = array();
 
@@ -53,8 +49,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	 */
 	public $serverLogin;
 
-	protected $ticks = 0;
-
 	/**
 	 * @return \ManiaLive\Data\Storage
 	 */
@@ -67,7 +61,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	{
 		\ManiaLive\Event\Dispatcher::register(\ManiaLive\DedicatedApi\Callback\Event::getClass(), $this);
 		\ManiaLive\Event\Dispatcher::register(\ManiaLive\Application\Event::getClass(), $this);
-		\ManiaLive\Event\Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
 	}
 
 	#region Implementation de l'applicationListener
@@ -79,8 +72,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$players = $connexion->getPlayerList(-1, 0);
 		foreach ($players as $player)
 		{
-				
-			// flo - 10.12.2010: login unknown fix
 			try
 			{
 				$details = $connexion->getDetailedPlayerInfo($player->login);
@@ -112,7 +103,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$this->nextChallenge = $this->challenges[$nextIndex];
 		if($currentIndex != -1)
 		{
-			// Flo: changed to fetch full information for the first track
 			$this->currentChallenge = $connexion->getCurrentChallengeInfo();
 		}
 
@@ -176,9 +166,13 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		catch (\Exception $e)
 		{
 			if ($e->getCode() == -1000 && $e->getMessage() == 'Login unknown.')
-			throw new SilentCriticalEventException($e->getMessage());
+			{
+				throw new SilentCriticalEventException($e->getMessage());
+			}
 			else
-			throw new CriticalEventException($e->getMessage());
+			{
+				throw new CriticalEventException($e->getMessage());
+			}
 		}
 	}
 
@@ -231,7 +225,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onBeginChallenge($challenge, $warmUp, $matchContinuation)
 	{
-		// Flo: added to fetch full challenge information
 		$this->currentChallenge = Challenge::fromArray($challenge);
 	}
 
@@ -268,8 +261,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
 
-	// Flo: dispatch events and update rankings on new personal best time
-	// or score - depending on game mode!
 	function onPlayerFinish($playerUid, $login, $timeOrScore)
 	{
 		if (!isset($this->players[$login])) return;
@@ -287,7 +278,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 					$this->updateRanking($rankings);
 						
 					if ($player->score == $timeOrScore)
-					Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_SCORE, array($player, $old_score, $timeOrScore)));
+					{
+						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_SCORE, array($player, $old_score, $timeOrScore)));
+					}
 				}
 				break;
 
@@ -301,7 +294,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 					$this->updateRanking($rankings);
 						
 					if ($player->bestTime == $timeOrScore)
-					Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_TIME, array($player, $old_best, $timeOrScore)));
+					{
+						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_TIME, array($player, $old_best, $timeOrScore)));
+					}
 				}
 				break;
 		}
@@ -311,7 +306,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
 	function onTunnelDataReceived($playerUid, $login, $data) {}
 
-	//TODO Gérer les modifs de la playlist
 	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified)
 	{
 		if($isListModified)
@@ -332,14 +326,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			}
 			$this->challenges = $challenges;
 		}
-		// Flo: onBeginChallenge will fetch full challenge information
-		// also added event below
-		//$this->currentChallenge = $this->challenges[$curChallengeIndex];
-		if(array_key_exists($nextChallengeIndex, $this->challenges))
-		$this->nextChallenge = $this->challenges[$nextChallengeIndex];
-		else
-		$this->nextChallenge = null;
-
+		$this->nextChallenge = (array_key_exists($nextChallengeIndex, $this->challenges) ? $this->challenges[$nextChallengeIndex] : null);
 	}
 
 	function onPlayerInfoChanged($playerInfo)
@@ -400,24 +387,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function onManualFlowControlTransition($transition) {}
 	#endRegion
 
-	#region Implementation of Features\Tick\Listener
-	function onTick()
-	{
-		if((count($this->players) || count($this->spectators)) && $this->ticks++ % 15 === 0)
-		{
-			// Flo: I think this is not needed anymore
-			// since the rankings are updated on new best times or scores
-			// and also on end of round!
-
-			//$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
-
-			//$this->updateRanking($rankings);
-
-			$this->ticks = 1;
-		}
-	}
-	#endRegion
-
 	/**
 	 * Give a Player Object for the corresponding login
 	 * @param string $login
@@ -426,22 +395,27 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function getPlayerObject($login)
 	{
 		if(array_key_exists($login, $this->players))
-		return $this->players[$login];
+		{
+			return $this->players[$login];
+		}
 		elseif(array_key_exists($login, $this->spectators))
-		return $this->spectators[$login];
+		{
+			return $this->spectators[$login];
+		}
 		else
 		return null;
 	}
 
 	protected function updateRanking($rankings)
 	{
-		// Flo: changed to be able to dispatch ranking modified event
 
 		$changed = array();
 		foreach($rankings as $ranking)
 		{
 			if($ranking->rank == 0)
-			continue;
+			{
+				continue;
+			}
 			elseif(array_key_exists($ranking->login, $this->players))
 			{
 				$player = $this->players[$ranking->login];
@@ -456,7 +430,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				$player->ladderScore = $ranking->ladderScore;
 
 				if ($rank_old != $player->rank)
-				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_RANK, array($player, $rank_old, $player->rank)));
+				{
+					Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_RANK, array($player, $rank_old, $player->rank)));
+				}
 
 				$this->ranking[$ranking->rank] = $this->players[$ranking->login];
 			}

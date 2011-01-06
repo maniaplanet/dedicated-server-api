@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing;
 
@@ -9,7 +12,6 @@ use ManiaLive\Gui\Toolkit\Manialink;
  * displayed or updated on the screen.
  * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \ManiaLive\Gui\Handler\Displayable
 {
@@ -26,7 +28,10 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \Man
 	function display($login)
 	{
 		// this view is out of date!
-		if (!$this->window) return;
+		if (!$this->window)
+		{
+			return;
+		}
 		
 		// draw window and all subcomponents ...
 		$this->save();
@@ -59,10 +64,14 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \Man
 		
 		// invert y-axis for the drawing of this displayable ...
 		if (!$this->window->getClassicPositioning())
+		{
 			Manialink::setSwappedPositioning();
+		}
 		
 		if ($this->window && $this->window->prev)
+		{
 			$this->posZ = $this->window->prev->getMaxZ();
+		}
 		
 		// search the windows below for the one with the highest z-index ...
 		$below = $this->window->getWindowsBelow();
@@ -75,12 +84,17 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \Man
 				$z = $window->getMaxZ();
 				if ($z > $z_max) $z_max = $z;
 			}
-			if ($z_max > $this->posZ) $this->posZ = $z_max;
+			if ($z_max > $this->posZ)
+			{
+				$this->posZ = $z_max;
+			}
 		}
 		
 		// an element to translate the page always needs to be on uppes level ...
 		if ($this->window && $this->window->getHeaderElement() != null)
+		{
 			$this->window->getHeaderElement()->save();
+		}
 	}
 	
 	/**
@@ -127,9 +141,7 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \Man
 	function getId()
 	{
 		// this window is out of date
-		if ($this->window === null) return null;
-		
-		return $this->window->getId();
+		return ($this->window === null ? null : $this->window->getId());
 	}
 	
 	/**
@@ -137,7 +149,7 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \Man
 	 */
 	function getMaxZ()
 	{
-		return $this->z_cur + $this->posZ;
+		return $this->zCur + $this->posZ;
 	}
 	
 	/**

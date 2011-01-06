@@ -1,6 +1,7 @@
 <?php
-
-// FIXME Find a good way to manage options/config. Re-integrate into architecture
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Application;
 
@@ -14,7 +15,23 @@ use ManiaLive\DedicatedApi\Connection;
 
 abstract class CommandLineInterpreter
 {
-	static function read()
+	static function preConfigLoad()
+	{
+		$options = getopt(null,array(
+		'manialive_cfg::',//Display Help
+		));
+		
+		if (array_key_exists('manialive_cfg', $options))
+		{
+			return $options['manialive_cfg'];
+		}
+		else
+		{
+			return 'config.ini';
+		}
+	}
+	
+	static function postConfigLoad()
 	{
 		$options = getopt(null,array(
 			'help::',//Display Help
@@ -38,13 +55,13 @@ abstract class CommandLineInterpreter
 		.'  --dedicated_cfg=xxx  - xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated\'s config file.'."\n"
 		.'  --manialive_cfg=xxx  - xxx represents the name of the ManiaLive\'s configuration file. This file should be present in the ManiaLive\'s config file.'."\n";
 
-		if(array_key_exists('help', $options))
+		if (array_key_exists('help', $options))
 		{
 			echo $help;
 			exit;
 		}
 
-		if(array_key_exists('user', $options))
+		if (array_key_exists('user', $options))
 		{
 			if($options['user'] != 'SuperAdmin' && $options['user'] != 'Admin' && $options['user'] != 'User')
 			{
@@ -55,10 +72,10 @@ abstract class CommandLineInterpreter
 			Loader::$config->server->user = $options['user'];
 		}
 
-		if(array_key_exists('cfg', $options))
+		if (array_key_exists('cfg', $options))
 		{
 			$filename = __DIR__.'\\GameData\\Config\\'.$options['cfg'];
-			if(file_exists($filename))
+			if (file_exists($filename))
 			{
 				//Load the config file
 				$dom = new \DOMDocument();
@@ -77,7 +94,7 @@ abstract class CommandLineInterpreter
 					Loader::$config->server->password = $pass;
 				}
 
-				if(array_key_exists('address', $options))
+				if (array_key_exists('address', $options))
 				{
 					Loader::$config->server->host = $options['address'];
 				}
@@ -89,12 +106,18 @@ abstract class CommandLineInterpreter
 		}
 		else
 		{
-			if(array_key_exists('rpcport', $options))
-			Loader::$config->server->port = $options['rpcport'];
-			if(array_key_exists('address', $options))
-			Loader::$config->server->host = $options['address'];
-			if(array_key_exists('password', $options))
-			Loader::$config->server->password = $options['password'];
+			if (array_key_exists('rpcport', $options))
+			{
+				Loader::$config->server->port = $options['rpcport'];
+			}
+			if (array_key_exists('address', $options))
+			{
+				Loader::$config->server->host = $options['address'];
+			}
+			if (array_key_exists('password', $options))
+			{
+				Loader::$config->server->password = $options['password'];
+			}
 		}
 	}
 }

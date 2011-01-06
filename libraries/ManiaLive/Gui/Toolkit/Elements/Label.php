@@ -1,9 +1,11 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
 use ManiaLive\Utilities\String;
-
 use ManiaLive\Gui\Toolkit\Manialink;
 use ManiaLive\Gui\Toolkit\DefaultStyles;
 
@@ -104,21 +106,33 @@ class Label extends Format
 		if($this->text !== null)
 		{
 			if(Manialink::$linksEnabled)
-			$this->xml->setAttribute('text', $this->text);
+			{
+				$this->xml->setAttribute('text', $this->text);
+			}
 			else
-			$this->xml->setAttribute('text', String::stripLinks($this->text));
+			{
+				$this->xml->setAttribute('text', String::stripLinks($this->text));
+			}
 		}
 		if($this->textid !== null)
 		{
 			if(Manialink::$linksEnabled)
-			$this->xml->setAttribute('textid', $this->textid);
+			{
+				$this->xml->setAttribute('textid', $this->textid);
+			}
 			else
-			$this->xml->setAttribute('textid', String::stripLinks($this->textid));
+			{
+				$this->xml->setAttribute('textid', String::stripLinks($this->textid));
+			}
 		}
 		if($this->autonewline !== null)
-		$this->xml->setAttribute('autonewline', $this->autonewline);
+		{
+			$this->xml->setAttribute('autonewline', $this->autonewline);
+		}
 		if($this->maxline !== null)
-		$this->xml->setAttribute('maxline', $this->maxline);
+		{
+			$this->xml->setAttribute('maxline', $this->maxline);
+		}
 	}
 }
 

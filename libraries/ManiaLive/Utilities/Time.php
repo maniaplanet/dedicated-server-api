@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Utilities;
 
@@ -9,7 +12,10 @@ class Time
 		$time = (int)$timestamp;
 		
 		$negative = ($time < 0);
-		if ($negative) $time = abs($time);
+		if ($negative)
+		{
+			$time = abs($time);
+		}
 		
 		$cent = str_pad(($time % 1000) / 10, 2, '0', STR_PAD_LEFT);
 		$time = floor($time / 1000);
@@ -18,12 +24,13 @@ class Time
 		$time = $min.':'.$sec.'.'.$cent;
 		
 		if ($signed)
-			if ($negative)
-				return '-'.$time;
-			else
-				return '+'.$time;
+		{
+			return ($negative ? '-'.$time : '+'.$time);
+		}
 		else
+		{
 			return $time;
+		}
 	}
 }
 

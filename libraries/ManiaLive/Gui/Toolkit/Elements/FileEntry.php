@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
@@ -33,7 +36,9 @@ class FileEntry extends Entry
 	{
 		parent::postFilter();
 		if($this->folder !== null)
-		$this->xml->setAttribute('folder', $this->folder);
+		{
+			$this->xml->setAttribute('folder', $this->folder);
+		}
 	}
 }
 

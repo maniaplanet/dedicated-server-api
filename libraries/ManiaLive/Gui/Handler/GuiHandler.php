@@ -1,11 +1,6 @@
 <?php
 /**
- *
- *
- * @author Philippe Melot
  * @copyright NADEO (c) 2010
- * @package ManiaMod
- * @subpackage GuiHandler
  */
 namespace ManiaLive\Gui\Handler;
 

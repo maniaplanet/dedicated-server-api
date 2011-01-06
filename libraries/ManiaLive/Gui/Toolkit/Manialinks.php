@@ -1,9 +1,13 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 namespace ManiaLive\Gui\Toolkit;
 
 /**
- * @author Philippe Melot
- * @copyright NADEO (c) 2010
+ * Represents the root elements for manialink element send to
+ * the dedicated server
+ * It contents manialink and Custom Ui data
  */
 abstract class Manialinks
 {
@@ -30,9 +34,18 @@ abstract class Manialinks
 		// Create DOM element
 		$manialink = self::$domDocument->createElement('manialink');
 		
-		if ($x)	$manialink->setAttribute('posx', $x);
-		if ($y)	$manialink->setAttribute('posy', $y);
-		if ($z)	$manialink->setAttribute('posz', $z);
+		if ($x)
+		{
+			$manialink->setAttribute('posx', $x);
+		}
+		if ($y)
+		{
+			$manialink->setAttribute('posy', $y);
+		}
+		if ($z)
+		{
+			$manialink->setAttribute('posz', $z);
+		}
 		
 		if($id)
 		{
@@ -81,9 +94,13 @@ abstract class Manialinks
 		$parameterNode->appendChild($parameterVisibility);
 
 		if($visibility)
-		$parameterVisibility->appendChild(self::$domDocument->createTextNode('true'));
+		{
+			$parameterVisibility->appendChild(self::$domDocument->createTextNode('true'));
+		}
 		else
-		$parameterVisibility->appendChild(self::$domDocument->createTextNode('false'));
+		{
+			$parameterVisibility->appendChild(self::$domDocument->createTextNode('false'));
+		}
 
 		end(self::$parentNodes)->appendChild($parameterNode);
 	}

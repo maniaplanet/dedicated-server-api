@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Threading;
 
 use ManiaLive\Utilities\Logger;
@@ -7,8 +11,8 @@ use ManiaLive\Database\SQLite\Connection;
 /**
  * Some useful functions shared among
  * the Threading classes.
+ * 
  * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 class Tools
 {
@@ -18,15 +22,15 @@ class Tools
 	 * between the threads.
 	 * @return \ManiaLive\Database\SQLite\Connection
 	 */
-	static function getDb($main_pid = null)
+	static function getDb($mainPid = null)
 	{
-		if ($main_pid === null)
+		if ($mainPid === null)
 		{
 			return Connection::getConnection('threading_' . getmypid(), null, null, null, 'SQLite');
 		}
 		else
 		{
-			return Connection::getConnection('threading_' . $main_pid, null, null, null, 'SQLite');
+			return Connection::getConnection('threading_' . $mainPid, null, null, null, 'SQLite');
 		}
 	}
 	

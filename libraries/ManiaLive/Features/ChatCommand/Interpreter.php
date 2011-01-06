@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Features\ChatCommand;
 
@@ -68,10 +71,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	{
 		if(isset($this->registeredCommands[strtolower($commandName)]))
 		{
-			if(isset($this->registeredCommands[strtolower($commandName)][$parametersCount]))
-			return 2;
-			else 
-			return 1;
+			return (isset($this->registeredCommands[strtolower($commandName)][$parametersCount]) ? 2 : 1);
 		}
 		return 0;
 	}
@@ -101,7 +101,9 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 					}
 				}
 				if($i + 1 < count($tmpResult))
-				$parameters[] = $tmpResult[$i+1];
+				{
+					$parameters[] = $tmpResult[$i+1];
+				}
 			}
 			
 			if($parameters)
@@ -135,9 +137,11 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 				{
 					$player = Storage::getInstance()->getPlayerObject($login);
 					if ($player)
+					{
 						Connection::getInstance()->chatSendServerMessage(
 							'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.', 
-							Storage::getInstance()->getPlayerObject($login), true);
+								Storage::getInstance()->getPlayerObject($login), true);
+					}
 				}
 			}
 		}
@@ -194,14 +198,15 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 			}
 		} 	
 		else 
-		$text = 'This command does not exists use help to see available commands';
+		{
+			$text = 'This command does not exists use help to see available commands';
+		}
 		
 		Connection::getInstance()->chatSendServerMessage($text, $receiver, true);
 	}
 
 	function onPlayerConnect($login, $isSpectator) {}
 	function onPlayerDisconnect($login) {}
-	// function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	function onPlayerManialinkPageAnswer($playerUid, $login, $answer) {}
 	function onEcho($internal, $public) {}
 	function onServerStart() {}

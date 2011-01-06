@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\PluginHandler;
 
@@ -18,7 +21,9 @@ class Config extends \ManiaLive\Config\Configurable
 	function __get($name)
 	{
 		if (!isset($this->plugins[$name])) $this->plugins[$name] = array();
-		return $this->plugins[$name];
+		{
+			return $this->plugins[$name];
+		}
 	}
 	
 	function validate()

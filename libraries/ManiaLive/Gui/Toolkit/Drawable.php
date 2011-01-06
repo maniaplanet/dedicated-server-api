@@ -1,12 +1,12 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit;
 
 /**
  * Can be drawn onto the Screen.
- * 
- * @author Florian Schnell
- * @copyright 2010 NADEO
  */
 interface Drawable
 {

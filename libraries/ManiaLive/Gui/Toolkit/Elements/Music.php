@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Toolkit\Elements;
 
@@ -50,7 +53,9 @@ class Music extends Element
 	protected function postFilter()
 	{
 		if($this->data !== null)
-		$this->xml->setAttribute('data', $this->data);
+		{
+			$this->xml->setAttribute('data', $this->data);
+		}
 	}
 }
 

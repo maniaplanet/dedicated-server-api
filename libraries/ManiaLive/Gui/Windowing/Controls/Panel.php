@@ -1,4 +1,7 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
@@ -10,6 +13,11 @@ use ManiaLive\Gui\Toolkit\Elements\Quad;
 use ManiaLive\Gui\Toolkit\DefaultStyles;
 use ManiaLive\Gui\Windowing\Control;
 
+/**
+ * Use this to quickly build your own windows.
+ * 
+ * @author Florian Schnell
+ */
 class Panel extends Control
 {
 	public $title;

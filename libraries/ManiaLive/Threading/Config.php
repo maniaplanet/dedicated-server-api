@@ -1,7 +1,13 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
 
 namespace ManiaLive\Threading;
 
+/**
+ * @author Florian Schnell
+ */
 class Config extends \ManiaLive\Config\Configurable
 {
 	public $enabled;

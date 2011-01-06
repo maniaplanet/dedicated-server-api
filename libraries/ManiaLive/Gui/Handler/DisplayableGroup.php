@@ -1,4 +1,8 @@
 <?php
+/**
+ * @copyright NADEO (c) 2010
+ */
+
 namespace ManiaLive\Gui\Handler;
 
 use ManiaLive\Utilities\Console;
@@ -32,6 +36,10 @@ class DisplayableGroup
 	protected $global = null;
 	protected $showCustomUi = false;
 	
+	/**
+	 * Add a Displayable to the group
+	 * @param Displayable $displayable
+	 */
 	function addDisplayable(Displayable $displayable)
 	{
 		if (isset($this->displayables_by_id[$displayable->getId()]))
@@ -52,11 +60,20 @@ class DisplayableGroup
 		$this->displayables_by_id[$displayable->getId()] = true;
 	}
 	
+	/**
+	 * Get the displayables
+	 * @return array[Displayable]
+	 */
 	function getDisplayables()
 	{
 		return $this->displayables;
 	}
 
+	/**
+	 * Return the XML of the displayable for the given login
+	 * @param $login
+	 * @return string
+	 */
 	function getXml($login)
 	{
 		Manialinks::load();
@@ -74,7 +91,6 @@ class DisplayableGroup
 			Manialinks::endManialink();
 		}
 
-		//TODO find a way to make this optionnal
 		if($this->showCustomUi)
 		{
 			Manialinks::beginCustomUi();
@@ -99,71 +115,113 @@ class DisplayableGroup
 		return Manialinks::getXml();
 	}
 
+	/**
+	 * Show Notice graphique interface
+	 */
 	function showNoticeUi()
 	{
 		$this->changeVisibility('notice', true);
 	}
 
+	/**
+	 * Hide Notice graphique interface
+	 */
 	function hideNoticeUi()
 	{
 		$this->changeVisibility('notice', false);
 	}
 
+	/**
+	 * Show Challenge Infos
+	 */
 	function showChallengeInfoUi()
 	{
 		$this->changeVisibility('challengeInfo', true);
 	}
 
+	/**
+	 * Hide Challenge Infos
+	 */
 	function hideChallengeInfoUi()
 	{
 		$this->changeVisibility('challengeInfo', false);
 	}
 
+	/**
+	 * Show Chat
+	 */
 	function showChatUi()
 	{
 		$this->changeVisibility('chat', true);
 	}
 
+	/**
+	 * Hide Chat
+	 */
 	function hideChatUi()
 	{
 		$this->changeVisibility('chat', false);
 	}
 
+	/**
+	 * Show Checkpoint List
+	 */
 	function showCheckpointListUi()
 	{
 		$this->changeVisibility('checkpointList', true);
 	}
 
+	/**
+	 * Hide Checkpoint List
+	 */
 	function hideCheckpointListUi()
 	{
 		$this->changeVisibility('checkpointList', false);
 	}
 
+	/**
+	 * Show Round Score
+	 */
 	function showRoundScoresUi()
 	{
 		$this->changeVisibility('roundScores', true);
 	}
 
+	/**
+	 * Hide Round Score
+	 */
 	function hideRoundScoresUi()
 	{
 		$this->changeVisibility('roundScores', false);
 	}
 
+	/**
+	 * Show Score table
+	 */
 	function showScoretableUi()
 	{
 		$this->changeVisibility('scoretable', true);
 	}
 
+	/**
+	 * Hide Score table
+	 */
 	function hideScoretableUi()
 	{
 		$this->changeVisibility('scoretable', false);
 	}
 
+	/**
+	 * Show the entire interface
+	 */
 	function showGlobalUi()
 	{
 		$this->changeVisibility('global', true);
 	}
 
+	/**
+	 * Hide the entire interface
+	 */
 	function hideGlobalUi()
 	{
 		$this->changeVisibility('global', false);
