@@ -1,6 +1,27 @@
 #!/bin/bash
-PHP= which php
-PIDFILE="/home/manialive/manialive.pid"
+
+# read run configuration
+exec<run.ini
+while read line
+do
+	# do not read comments
+	if [ `echo | awk '{ print substr("'"$line"'",1,1) }'` != ";" ] ; then
+	
+		# seperate key and value
+		key=`echo "$line" | awk -F"=" '{print $1}'`
+		value=`echo "$line" | awk -F"=" '{print $2}'`
+		
+		# store php path
+		if [ $key = "phpPath" ] ; then
+			PHP=`echo $value`
+		fi
+	fi
+done
+
+if [ $PHP = "" ] ; then
+	PHP=`which php`
+fi
+
 DIR="$PWD"
 ARGS=""
 DAEMON="true"
@@ -20,5 +41,5 @@ then
 	$PHP $DIR/bootstrapper.php $ARGS
 else
 	echo "launching manialive daemon with the following arguments: $ARGS"
-	start-stop-daemon -S -b -m -p $PIDFILE --exec $PHP $DIR/bootstrapper.php -- $ARGS
+	start-stop-daemon -S -b -m --exec $PHP $DIR/bootstrapper.php -- $ARGS
 fi

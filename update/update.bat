@@ -1,3 +1,10 @@
 @echo off
-php.exe update.php
+
+REM read configuration file
+FOR /F "tokens=2 delims==" %%a IN ('find "phpPath" ^<..\run.ini') DO SET phpPath=%%a
+
+IF _%phpPath%==_ SET phpPath="php.exe"
+
+%phpPath% update.php
+
 pause
