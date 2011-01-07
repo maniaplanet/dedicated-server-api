@@ -42,7 +42,7 @@
 - addDependency issue 9: http://code.google.com/p/manialive/issues/detail?id=9
 - sendBill issue 8: http://code.google.com/p/manialive/issues/detail?id=8
 - cancelVote issue 7: http://code.google.com/p/manialive/issues/detail?id=7
-+ execute call optimistation
++ execute call optimisation
 - fixed callPublicMethod to return result.
 
 +-------------------------------------------+
