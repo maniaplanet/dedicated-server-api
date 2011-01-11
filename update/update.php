@@ -65,68 +65,118 @@ echo '> Remote ManiaLive is at version ' . $versionRemote . NL;
 // no need to update when there's already the latest version installed
 if ($versionLocal >= $versionRemote)
 {
-	die ('> Local version is already uptodate, taking no action!' . NL);
+	echo 'Local version is the same or even newer than the remote one.' . NL;
+	echo 'Do you want to proceed? (y/n):';
+	
+	$in = strtolower(trim(fgets(STDIN)));
+	if ($in != 'y')
+	{
+		die ('> Local version is already uptodate, taking no action!' . NL);
+	}
+	
+	echo NL;
 }
 
 echo '> Searching ManiaLive release package ...' . NL;
 
 $package = 'ManiaLive_1.0_r' . $versionRemote . '.zip';
-$url = 'http://manialive.googlecode.com/files/' . $package . '';
+$url = 'http://manialive.googlecode.com/files/' . $package;
 
-if (file_exists($url)) die('ERROR: File could not be found!');
+// create temporary folder
+if (!is_dir('./temp'))
+{
+	echo "> Creating temporary directory ..." .NL;
+	mkdir('./temp');
+}
 
-echo "> downloading '" . $package . "' ..." .NL;
+echo "> Downloading '" . $package . "' ..." .NL;
 
 // download and save the package
-$data = file_get_contents($url);
+$data = @file_get_contents($url);
+
+// check for errors
+if ($data === false)
+{
+	die('ERROR: The file could not be retrieved from the server!' . NL);
+}
+
+echo "> OK." . NL;
+
 file_put_contents('./temp/' . $package, $data);
 
-echo '> extract files ...' . NL;
+echo NL;
 
+echo 'Everything is in place.' . NL;
+echo '[local: ' . $versionLocal . '] ---> [remote: ' . $versionRemote . ']' . NL;
+echo 'Do you want to update ManiaLive now? (y/n):';
+
+// parsing user input
+$in = strtolower(trim(fgets(STDIN)));
+if ($in != 'y')
+{
+	echo NL;
+	
+	echo '> Cleaning up!' . NL;
+	
+	rrmdir('./temp');
+	
+	die('Aborted by user!' . NL);
+}
+
+echo '> Extract files ...' . NL;
+
+// check if zip library is loaded ...
 if (!class_exists('ZipArchive'))
 {
 	die('class ZipArchive does not exist, you need to'.
-	'enable the zip extension for your php version!');
+		'enable the zip extension for your php version!' . NL);
 }
 
+// try to extract the archive
 $zip = new ZipArchive;
 $res = $zip->open('./temp/' . $package);
 
 if ($res !== true)
-die('ERROR: Could not extract zip archive!');
+{
+	die('ERROR: Could not extract zip archive!' . NL);
+}
 
 $zip->extractTo('./temp/');
 $zip->close();
 
 echo NL;
 
-echo 'Removing old directories ...' . NL;
+echo '> Removing old directories ...' . NL;
 rrmdir('../libraries/ManiaLive');
 rrmdir('../libraries/ManiaLiveApplication');
 rrmdir('../libraries/ManiaHome');
-unlink('../bootstrapper.php');
-unlink('../utils.inc.php');
-unlink('../LICENSE');
-unlink('../README');
-unlink('../CONVENTIONS');
+@unlink('../config/config-example.ini');
+@unlink('../bootstrapper.php');
+@unlink('../utils.inc.php');
+@unlink('../LICENSE');
+@unlink('../README');
+@unlink('../CONVENTIONS');
+@unlink('../update/update.php');
 
 echo NL;
 
-echo 'Copying new files ...' . NL;
+echo '> Copying new files ...' . NL;
 rcopy('./temp/ManiaLive/libraries/ManiaLive', '../libraries/ManiaLive');
 rcopy('./temp/ManiaLive/libraries/ManiaLiveApplication', '../libraries/ManiaLiveApplication');
 rcopy('./temp/ManiaLive/libraries/ManiaHome', '../libraries/ManiaHome');
+copy('./temp/ManiaLive/config/config-example.ini', '../config/config-example.ini');
 copy('./temp/ManiaLive/bootstrapper.php', '../bootstrapper.php');
 copy('./temp/ManiaLive/utils.inc.php', '../utils.inc.php');
 copy('./temp/ManiaLive/LICENSE', '../LICENSE');
 copy('./temp/ManiaLive/README', '../README');
 copy('./temp/ManiaLive/CONVENTIONS', '../CONVENTIONS');
+copy('./temp/ManiaLive/update/update.php', '../update/update.php'); // update the updater itself!
 
 echo NL;
 
 echo '> Cleaning up ...' . NL;
 
-deleteDir('./temp/ManiaLive');
+rrmdir('./temp');
 
 echo '>> Done!' . NL;
 
