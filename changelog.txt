@@ -64,3 +64,11 @@
 + changed the run scripts to use a centralized php path (run.ini)
 - fixed issue in the Thread.php: 'Index unknown'
 - fixed bug when spectator could not interact with windowing system (may be related to issue 13).
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r1830 (13 jan. 2011)	|
++-------------------------------------------+
+* manialib has been moved to its own library folder and is completely independent now.
+- fixed issues in the updater script.
++ updater script is now user interactive.
++ improved windowing performance.
