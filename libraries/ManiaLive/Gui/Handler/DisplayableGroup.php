@@ -12,12 +12,8 @@
 namespace ManiaLive\Gui\Handler;
 
 use ManiaLive\Utilities\Console;
-
-use ManiaLive\Gui\Toolkit\Manialink;
-
-use ManiaLive\Gui\Toolkit\Manialinks;
-
-use ManiaLive\Gui\Toolkit;
+use ManiaLib\Gui\Manialink;
+use ManiaLive\Gui\Handler\Manialinks;
 
 /**
  *
@@ -39,14 +35,14 @@ class DisplayableGroup
 	public $timeout;
 	public $hideOnClick;
 
-	protected $notice = null;
-	protected $challengeInfo = null;
-	protected $chat = null;
-	protected $checkpointList = null;
-	protected $roundScores = null;
-	protected $scoretable = null;
-	protected $global = null;
-	protected $showCustomUi = false;
+	public $notice = null;
+	public $challengeInfo = null;
+	public $chat = null;
+	public $checkpointList = null;
+	public $roundScores = null;
+	public $scoretable = null;
+	public $global = null;
+	public $showCustomUi = false;
 	
 	/**
 	 * Add a Displayable to the group

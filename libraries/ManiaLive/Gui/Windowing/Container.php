@@ -11,8 +11,8 @@
 
 namespace ManiaLive\Gui\Windowing;
 
-use ManiaLive\Gui\Toolkit\Drawable;
-use ManiaLive\Gui\Toolkit\Component;
+use ManiaLib\Gui\Drawable;
+use ManiaLib\Gui\Component;
 
 /**
  * Contains objects implementing the Containable interface.
@@ -44,6 +44,8 @@ abstract class Container extends Component
 		}
 		
 		$this->components[] = $component;
+		
+		$this->onComponentIsAdded($component);
 	}
 	
 	/**
@@ -55,6 +57,13 @@ abstract class Container extends Component
 	{
 		return $this->components;
 	}
+	
+	/**
+	 * This is called when a component is added
+	 * to the container.
+	 * @param Drawable $component
+	 */
+	protected function onComponentIsAdded(Drawable $component) {}
 }
 
 ?>

@@ -11,8 +11,8 @@
 
 namespace ManiaLive\Gui\Windowing\Windows;
 
-use ManiaLive\Gui\Toolkit\Elements\Icons64x64_1;
-use ManiaLive\Gui\Toolkit\Elements\Label;
+use ManiaLib\Gui\Elements\Icons64x64_1;
+use ManiaLib\Gui\Elements\Label;
 use ManiaLive\Gui\Windowing\Controls\Panel;
 
 /**

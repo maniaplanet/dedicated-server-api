@@ -11,10 +11,9 @@
 
 namespace ManiaLive\Gui\Windowing;
 
-use ManiaLive\Gui\Toolkit\Drawable;
-use ManiaLive\Gui\Toolkit\Component;
-use ManiaLive\Gui\Toolkit\Elements\Element;
-use ManiaLive\Gui\Toolkit\Tools;
+use ManiaLib\Gui\Drawable;
+use ManiaLib\Gui\Component;
+use ManiaLib\Gui\Element;
 use ManiaLive\Gui\Handler\IDGenerator;
 use ManiaLive\Utilities\Console;
 use ManiaLive\Data\Storage;
@@ -482,7 +481,7 @@ abstract class Window extends Container implements
 	 * Enter description here ...
 	 * @param unknown_type $name
 	 */
-	public function getPlayerValue($name)
+	public function getPlayerValue($name, $default = null)
 	{
 		if (isset($this->playerValues[$this->getRecipient()][$name]))
 		{
@@ -490,7 +489,7 @@ abstract class Window extends Container implements
 		}
 		else
 		{
-			return null;
+			return $default;
 		}
 	}
 	

@@ -11,7 +11,6 @@
 namespace ManiaLive\Gui\Handler;
 
 use ManiaLive\DedicatedApi\Connection;
-
 use ManiaLive\DedicatedApi\Callback\Listener;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Gui\Handler\DisplayableGroup;
@@ -27,6 +26,14 @@ class GuiHandler extends \ManiaLive\Utilities\Singleton implements Listener
 	// profiling
 	private static $times_sendall;
 	public static $avg_sendall;
+	
+	/**
+	 * @return \ManiaLive\Gui\Handler\GuiHandler
+	 */
+	static function getInstance()
+	{
+		return parent::getInstance();
+	}
 	
 	function __construct()
 	{

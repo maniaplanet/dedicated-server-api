@@ -11,9 +11,9 @@
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
-use ManiaLive\Gui\Toolkit\Elements\Bgs1InRace;
-use ManiaLive\Gui\Toolkit\Elements\Label;
-use ManiaLive\Gui\Toolkit\Elements\Button;
+use ManiaLib\Gui\Elements\Bgs1InRace;
+use ManiaLib\Gui\Elements\Label;
+use ManiaLib\Gui\Elements\Button;
 
 /**
  * Use this button if you need something

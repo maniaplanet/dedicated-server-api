@@ -11,13 +11,12 @@
 
 namespace ManiaLive\Gui\Windowing\Windows;
 
-use ManiaLive\Gui\Toolkit\Layouts\Line;
+use ManiaLib\Gui\Layouts\Line;
+use ManiaLib\Gui\Elements\Bgs1;
+use ManiaLib\Gui\Elements\Label;
 use ManiaLive\Gui\Windowing\Controls\Frame;
-use ManiaLive\Gui\Toolkit\Elements\Bgs1;
 use ManiaLive\Gui\Windowing\Controls\ButtonResizeable;
 use ManiaLive\Gui\Windowing\Controls\Panel;
-
-use ManiaLive\Gui\Toolkit\Elements\Label;
 
 /**
  * @author Florian Schnell

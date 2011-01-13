@@ -11,20 +11,17 @@
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
-use ManiaLive\Gui\Toolkit\Elements\Icons64x64_1;
-
-use ManiaLive\Gui\Toolkit\Tools;
-use ManiaLive\Gui\Toolkit\Elements\Label;
-use ManiaLive\Gui\Toolkit\Elements\Quad;
-use ManiaLive\Gui\Toolkit\DefaultStyles;
-use ManiaLive\Gui\Windowing\Control;
+use ManiaLib\Gui\Elements\Icons64x64_1;
+use ManiaLib\Gui\Elements\Label;
+use ManiaLib\Gui\Elements\Quad;
+use ManiaLib\Gui\DefaultStyles;
 
 /**
  * Use this to quickly build your own windows.
  * 
  * @author Florian Schnell
  */
-class Panel extends Control
+class Panel extends \ManiaLive\Gui\Windowing\Control
 {
 	public $title;
 	public $titleBg;

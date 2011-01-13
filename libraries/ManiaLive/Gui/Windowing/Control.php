@@ -11,9 +11,10 @@
 
 namespace ManiaLive\Gui\Windowing;
 
-use ManiaLive\Gui\Toolkit\Drawable;
-use ManiaLive\Gui\Toolkit\Layouts\AbstractLayout;
-use ManiaLive\Gui\Toolkit\Manialink;
+use ManiaLive\Utilities\Console;
+use ManiaLib\Gui\Drawable;
+use ManiaLib\Gui\Layouts\AbstractLayout;
+use ManiaLib\Gui\Manialink;
 
 /**
  * Control class, use this to compose existing Elements.
@@ -26,7 +27,8 @@ use ManiaLive\Gui\Toolkit\Manialink;
  * 
  * @author Florian Schnell
  */
-abstract class Control extends Container implements Drawable, Containable
+abstract class Control extends Container
+	implements Drawable, Containable
 {
 	protected $parent;
 	protected $zCur;
@@ -39,9 +41,7 @@ abstract class Control extends Container implements Drawable, Containable
 	protected $initializing;
 	protected $fid;
 	protected $params;
-	
-	static $controlcount = 0;
-	static $names;
+	protected $window;
 	
 	final function __construct()
 	{	
@@ -49,6 +49,7 @@ abstract class Control extends Container implements Drawable, Containable
 		$this->scale = null;
 		$this->layout = null;
 		$this->params = func_get_args();
+		$this->window = null;
 		
 		$this->initializing = true;
 		$this->initializeComponents();
@@ -64,9 +65,9 @@ abstract class Control extends Container implements Drawable, Containable
 	/**
 	 * Get a construct parameter.
 	 */
-	final protected function getParam($num)
+	final protected function getParam($num, $default = null)
 	{
-		return (isset($this->params[$num]) ? $this->params[$num] : null);
+		return (isset($this->params[$num]) ? $this->params[$num] : $default);
 	}
 	
 	/**
@@ -97,13 +98,42 @@ abstract class Control extends Container implements Drawable, Containable
 	}
 	
 	/**
-	 * If this Control is added to a Container, then assign the Container as the
-	 * Control's parent.
+	 * If this control is added to a container, then assign
+	 * the container as the control's parent.
+	 * We also determine the control's parent window.
 	 * @param Container $target The Container object to which the Control is added.
 	 */
 	function onIsAdded(Container $target)
 	{
 		$this->parent = $target;
+		
+		if ($target instanceof WindowDisplayable)
+		{
+			$this->announceWindow($target->window);
+		}
+		elseif ($target instanceof Control)
+		{
+			if ($target->getWindow() != null)
+				$this->announceWindow($target->getWindow());
+		}
+	}
+	
+	/**
+	 * If this component knows its parent window
+	 * it will announce it to all its children.
+	 * @param $window
+	 */
+	function announceWindow(Window $window)
+	{
+		$this->window = $window;
+		
+		foreach ($this->components as $child)
+		{
+			if ($child instanceof Control)
+			{
+				$child->announceWindow($window);
+			}
+		}
 	}
 	
 	/**
@@ -132,19 +162,9 @@ abstract class Control extends Container implements Drawable, Containable
 	 * and we can move through the tree to find the parent Window.
 	 * @return ManiaLive\Gui\Windowing\Window The Window this Control is assigned to.
 	 */
-	protected function getWindow()
+	public function getWindow()
 	{
-		if ($this->initializing)
-		{
-			throw new Exception('You can not call ' . __FUNCTION__ . ' during the initializeComponents method within a Control!');
-		}
-		
-		$me = $this;
-		while (isset($me->parent))
-		{
-			$me = $me->parent;
-		}
-		return $me->window;
+		return $this->window;
 	}
 	
 	/**
@@ -153,9 +173,9 @@ abstract class Control extends Container implements Drawable, Containable
 	 * The value needs to be saved with setPlayerValue before it can be read.
 	 * @param string $name Name of the stored value.
 	 */
-	protected function getPlayerValue($name)
+	protected function getPlayerValue($name, $default = null)
 	{
-		return $this->getWindow()->getPlayerValue($name);
+		return $this->getWindow()->getPlayerValue($name, $default);
 	}
 	
 	/**
@@ -186,53 +206,12 @@ abstract class Control extends Container implements Drawable, Containable
 	 */
 	final function save()
 	{
+		$posx = 0;
+		$posy = 0;
+		
 		if (!$this->isVisible())
 		{
 			return;
-		}
-			
-		// reset z depth ...
-		$this->zCur = ($this->zForced ? $this->zForced : 0);
-		
-		// apply prefilter ...
-		$this->beforeDraw();
-		
-		// prepare aligning ...
-		if ($this instanceof Control)
-		{
-			// horizontal alignment ...
-			if ($this->halign == 'right')
-			{
-				$posx = $this->posX - $this->getRealSizeX();
-			}
-			elseif ($this->halign == 'center')
-			{
-				$posx = $this->posX - $this->getRealSizeX() / 2;
-			}
-			else
-			{
-				$posx = $this->posX;
-			}
-				
-			// vertical alignment ...
-			if ($this->valign == 'bottom')
-			{
-				$posy = $this->posY - $this->getRealSizeY();
-			}
-			elseif ($this->valign == 'center')
-			{
-				$posy = $this->posY - $this->getRealSizeY() / 2;
-			}
-			else
-			{
-				$posy = $this->posY;
-			}
-		}
-		else
-		{
-			// for elements this behavior is implemented in the game ...
-			$posx = $this->posX;
-			$posy = $this->posY;
 		}
 		
 		// apply any layout to the underlying elements ...
@@ -241,8 +220,52 @@ abstract class Control extends Container implements Drawable, Containable
 		{
 			$layout->preFilter($this);
 			
-			$posx += $layout->xIndex;
-			$posy -= $layout->yIndex;
+			$posx = $layout->xIndex;
+			$posy = -$layout->yIndex;
+		}
+		
+		// apply prefilter ...
+		$this->beforeDraw();
+		
+		// reset z depth ...
+		$this->zCur = ($this->zForced ? $this->zForced : 0);
+		
+		// prepare aligning ...
+		if ($this instanceof Control)
+		{
+			// horizontal alignment ...
+			if ($this->halign == 'right')
+			{
+				$posx += $this->posX - $this->getRealSizeX();
+			}
+			elseif ($this->halign == 'center')
+			{
+				$posx += $this->posX - $this->getRealSizeX() / 2;
+			}
+			else
+			{
+				$posx += $this->posX;
+			}
+				
+			// vertical alignment ...
+			if ($this->valign == 'bottom')
+			{
+				$posy += $this->posY - $this->getRealSizeY();
+			}
+			elseif ($this->valign == 'center')
+			{
+				$posy += $this->posY - $this->getRealSizeY() / 2;
+			}
+			else
+			{
+				$posy += $this->posY;
+			}
+		}
+		else
+		{
+			// for elements this behavior is implemented in the game ...
+			$posx += $this->posX;
+			$posy += $this->posY;
 		}
 		
 		if ($this->layout)
@@ -274,14 +297,14 @@ abstract class Control extends Container implements Drawable, Containable
 		
 		Manialink::endFrame();
 		
+		// post filtering of the drawing process ...
+		$this->afterDraw();
+		
 		// Layout post filtering
 		if($layout instanceof AbstractLayout)
 		{
 			$layout->postFilter($this);
 		}
-		
-		// post filtering of the drawing process ...
-		$this->afterDraw();
 		
 		return $this->zCur;
 	}

@@ -11,7 +11,7 @@
 
 namespace ManiaLive\Gui\Windowing;
 
-use ManiaLive\Gui\Toolkit\Manialink;
+use ManiaLib\Gui\Manialink;
 
 /**
  * This class is instanciated each time a Window is being
@@ -19,7 +19,8 @@ use ManiaLive\Gui\Toolkit\Manialink;
  * 
  * @author Florian Schnell
  */
-class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control implements \ManiaLive\Gui\Handler\Displayable
+class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control
+	implements \ManiaLive\Gui\Handler\Displayable
 {
 	/**
 	 * Reference to the window that is being displayed.

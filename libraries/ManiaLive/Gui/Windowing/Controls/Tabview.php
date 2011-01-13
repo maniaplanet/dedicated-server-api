@@ -11,10 +11,10 @@
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
-use ManiaLive\Gui\Toolkit\Layouts\Line;
-use ManiaLive\Gui\Toolkit\Elements\BgsPlayerCard;
-use ManiaLive\Gui\Toolkit\Elements\Label;
-use ManiaLive\Gui\Toolkit\Elements\Bgs1;
+use ManiaLib\Gui\Layouts\Line;
+use ManiaLib\Gui\Elements\BgsPlayerCard;
+use ManiaLib\Gui\Elements\Label;
+use ManiaLib\Gui\Elements\Bgs1;
 
 /**
  * Tabview component like it is known from any
@@ -41,8 +41,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		$this->background->setSubStyle(BgsPlayerCard::BgCardSystem);
 		$this->addComponent($this->background);
 		
-		$this->tab_fan = new Frame();
-		$this->tab_fan->applyLayout(new Line());
+		$this->tab_fan = new Frame(0, 0, new Line());
 		$this->addComponent($this->tab_fan);
 		
 		$this->content = new Frame();
@@ -62,7 +61,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		foreach ($this->tabs as $i => $tab)
 		{
 			// start building fan element for tab
-			$frame = new Frame(0, 0, $this->tab_fan);
+			$frame = new Frame();
 			$frame->setSize(14, 3);
 			{
 				$ui = new Bgs1(14, 3);
@@ -84,6 +83,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 				$ui->setText($tab->getTitle());
 				$frame->addComponent($ui);
 			}
+			$this->tab_fan->addComponent($frame);
 		}
 		
 		// change tab content if it has been switched

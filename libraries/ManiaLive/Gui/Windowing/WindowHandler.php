@@ -11,6 +11,8 @@
 
 namespace ManiaLive\Gui\Windowing;
 
+use ManiaLive\Gui\Displayables\Blank;
+use ManiaLive\Gui\Handler\GuiHandler;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Data\Storage;
 use ManiaLive\Event\Dispatcher;
@@ -129,6 +131,29 @@ class WindowHandler
 	function onPlayerDisconnect($login)
 	{
 		Window::destroyPlayerWindows($login);
+	}
+	
+	/**
+	 * Change the UI that is displayed in the game.
+	 * You can either change it for a single player, for a group of
+	 * players, or for everyone.
+	 * @param \ManiaLive\Gui\Windowing\CustomUI $customUI
+	 * @param array[\ManiaLive\DedicatedApi\Structures\Player] $players
+	 */
+	static function setCustomUI(CustomUI $customUI, $players = null)
+	{
+		$guihandler = GuiHandler::getInstance();
+		
+		$group = $guihandler->getGroup($players);
+		
+		$group->displayableGroup->showCustomUi = true;
+		$group->displayableGroup->chat = $customUI->chat;
+		$group->displayableGroup->checkpointList = $customUI->checkpointList;
+		$group->displayableGroup->challengeInfo = $customUI->challengeInfo;
+		$group->displayableGroup->global = $customUI->global;
+		$group->displayableGroup->notice = $customUI->notice;
+		$group->displayableGroup->scoretable = $customUI->scoretable;
+		$group->displayableGroup->roundScores = $customUI->roundScores;
 	}
 	
 	function onInit() {}

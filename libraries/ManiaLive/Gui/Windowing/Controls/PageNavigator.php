@@ -8,9 +8,8 @@ namespace ManiaLive\Gui\Windowing\Controls;
 
 use ManiaLive\Utilities\Console;
 use ManiaLive\Gui\Windowing\Control;
-use ManiaLive\Gui\Toolkit\Elements as Elements;
-use ManiaLive\Gui\Toolkit as Toolkit;
-use ManiaLive\Gui\Toolkit\Component;
+use ManiaLib\Gui\Elements as Elements;
+use ManiaLib\Gui as Toolkit;
 
 /**
  * Page Navigator

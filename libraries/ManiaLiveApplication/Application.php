@@ -9,7 +9,6 @@
  * @date        $Date$:
  */
 
-
 namespace ManiaLiveApplication;
 
 use ManiaLive\Features\Updater;
