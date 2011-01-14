@@ -119,7 +119,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onRun() {}
 	function onPreLoop() {}
-	
+
 	function onPostLoop()
 	{
 		foreach ($this->disconnetedPlayers as $key => $login)
@@ -137,7 +137,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			unset($this->disconnetedPlayers[$key]);
 		}
 	}
-	
+
 	function onTerminate() {}
 	#endRegion
 
@@ -148,7 +148,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		{
 			$playerInfos = Connection::getInstance()->getPlayerInfo($login, 1);
 			$details = Connection::getInstance()->getDetailedPlayerInfo($login);
-				
+
 			foreach ($details as $key => $value)
 			{
 				if($value)
@@ -279,10 +279,10 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$old_score = $player->score;
 					$player->score = $timeOrScore;
-						
+
 					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
 					$this->updateRanking($rankings);
-						
+
 					if ($player->score == $timeOrScore)
 					{
 						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_SCORE, array($player, $old_score, $timeOrScore)));
@@ -295,10 +295,10 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$old_best = $player->bestTime;
 					$player->bestTime = $timeOrScore;
-						
+
 					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
 					$this->updateRanking($rankings);
-						
+
 					if ($player->bestTime == $timeOrScore)
 					{
 						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_TIME, array($player, $old_best, $timeOrScore)));
@@ -337,16 +337,16 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onPlayerInfoChanged($playerInfo)
 	{
-		
+		$keys = array_keys($playerInfo);
+		$keys = array_map('lcfirst', $keys);
 		$playerInfo = Player::fromArray($playerInfo);
 		if($playerInfo->spectator == 0)
 		{
 			if(array_key_exists($playerInfo->login, $this->players))
 			{
-				foreach ($playerInfo as $key => $info)
+				foreach ($keys as $key)
 				{
-					$key = lcfirst($key);
-					$this->players[$playerInfo->login]->$key = $info;
+					$this->players[$playerInfo->login]->$key = $playerInfo->$key;
 				}
 			}
 			elseif(array_key_exists($playerInfo->login, $this->spectators))
@@ -355,10 +355,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 				unset($this->spectators[$playerInfo->login]);
 
-				foreach ($playerInfo as $key => $info)
+				foreach ($keys as $key)
 				{
-					$key = lcfirst($key);
-					$this->players[$playerInfo->login]->$key = $info;
+					$this->players[$playerInfo->login]->$key = $playerInfo->$key;
 				}
 				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($playerInfo, 'spectator')));
 			}
@@ -367,10 +366,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		{
 			if(array_key_exists($playerInfo->login, $this->spectators))
 			{
-				foreach ($playerInfo as $key => $info)
+				foreach ($keys as $key)
 				{
-					$key = lcfirst($key);
-					$this->spectators[$playerInfo->login]->$key = $info;
+					$this->spectators[$playerInfo->login]->$key = $playerInfo->$key;
 				}
 			}
 			elseif(array_key_exists($playerInfo->login, $this->players))
@@ -379,17 +377,16 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 				unset($this->players[$playerInfo->login]);
 
-				foreach ($playerInfo as $key => $info)
+				foreach ($keys as $key)
 				{
-					$key = lcfirst($key);
-					$this->spectators[$playerInfo->login]->$key = $info;
+					$this->spectators[$playerInfo->login]->$key = $playerInfo->$key;
 				}
 				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($playerInfo, 'player')));
 			}
 		}
 		unset($playerInfo);
 	}
-	
+
 	function onManualFlowControlTransition($transition) {}
 	#endRegion
 
