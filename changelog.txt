@@ -72,3 +72,9 @@
 - fixed issues in the updater script.
 + updater script is now user interactive.
 + improved windowing performance.
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r???? (?? ???. 2011)	|
++-------------------------------------------+
+* secured require_once in the autoload method
++ now plugins class can be named Plugin (e.g: the full class name will be \ManiaLivePlugins\MyName\MySuperPluginName\Plugin)
