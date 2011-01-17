@@ -7,7 +7,10 @@ function __autoload($classname)
 	if (!$items[0]) array_shift($items);
 	$path = implode(DIRECTORY_SEPARATOR, $items);
 	$path = __DIR__.DIRECTORY_SEPARATOR.'libraries'.DIRECTORY_SEPARATOR.$path.'.php';
-	require_once $path;
+	if(file_exists($path))
+	{
+		require_once $path;
+	}
 }
 
 spl_autoload_register('__autoload');
