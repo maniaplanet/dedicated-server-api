@@ -76,5 +76,5 @@
 +-------------------------------------------+
 |	ManiaLive 1.0b - r???? (?? ???. 2011)	|
 +-------------------------------------------+
-* secured require_once in the autoload method
+- secured require_once in the autoload method
 + now plugins class can be named Plugin (e.g: the full class name will be \ManiaLivePlugins\MyName\MySuperPluginName\Plugin)
