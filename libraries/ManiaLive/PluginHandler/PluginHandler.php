@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -40,6 +40,15 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 	static function getInstance()
 	{
 		return parent::getInstance();
+	}
+
+	static function getPluginIdFromClass($class)
+	{
+		$class = explode('\\', $class);
+		array_shift($class);
+		array_shift($class);
+		array_pop($class);
+		return implode('\\', $class);
 	}
 
 	/**
@@ -87,69 +96,20 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 			// load plugin class ...
 			$items = explode('\\', $path);
 			$className = '\\ManiaLivePlugins\\' . $path . '\\' . end($items);
-			
+
 			if (!class_exists($className))
 			{
 				$className = '\\ManiaLivePlugins\\'.$path.'\\Plugin';
 			}
 
-			// check whether plugin could be loaded ...
-			if (class_exists($className))
-			{
-				$plugin = new $className($path);
+			$this->loadPlugin($className);
 
-				// init plugin ...
-				$plugin->onInit();
-
-				// register plugin ...
-				if (!$this->registerPlugin($plugin))
-				{
-					throw new Exception("The plugin '{$plugin->getId()}' could not be registered, maybe there is a naming conflict!");
-				}
-			}
-			else
-			{
-				throw new Exception("Could not load Plugin '$className' !");
-			}
 		}
 
 		// load config settings ...
 		foreach ($this->plugins as $plugin)
 		{
-			$className = get_class($plugin);
-			$class = new \ReflectionClass($className);
-			$properties = $class->getProperties();
-			$pluginId = $plugin->getId();
-			$available = array();
-
-			// foreach public static property ...
-			foreach ($properties as $property)
-			{
-				if (!$property->isStatic() || !$property->isPublic())
-				{
-					continue;
-				}
-
-				$propertyName = $property->getName();
-				$settings = Loader::$config->plugins->$pluginId;
-				$available[$propertyName] = true;
-
-				// if it is overwritten by the config
-				if (isset($settings[$propertyName]))
-				{
-					Console::printDebug("Overwriting config property '$pluginId.$propertyName' with value '".print_r($settings[$propertyName],true)."'");
-					$className::$$propertyName = $settings[$propertyName];
-				}
-			}
-
-			// report every config setting that could not be used!
-			foreach (Loader::$config->plugins->$pluginId as $key => $value)
-			{
-				if (!isset($available[$key]))
-				{
-					Console::println("[Attention] '$pluginId.$key' is not a valid setting!");
-				}
-			}
+			$this->loadPluginConfiguration($plugin);
 		}
 
 		foreach ($this->plugins as $plugin)
@@ -160,7 +120,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 				$plugin->onLoad();
 
 				// plugin loaded!
-				Dispatcher::dispatch(new Event($plugin->getId()));
+				Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
 			}
 		}
 
@@ -170,6 +130,87 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 			$plugin->onReady();
 		}
 
+	}
+
+	protected function loadPlugin($className)
+	{
+		// check whether plugin could be loaded ...
+		if (class_exists($className))
+		{
+			$plugin = new $className(self::getPluginIdFromClass($className));
+
+			// init plugin ...
+			$plugin->onInit();
+
+			// register plugin ...
+			if (!$this->registerPlugin($plugin))
+			{
+				throw new Exception("The plugin '{$plugin->getId()}' could not be registered, maybe there is a naming conflict!");
+			}
+			return $plugin;
+		}
+		else
+		{
+			throw new Exception("Could not load Plugin '$className' !");
+		}
+	}
+
+	protected function loadPluginConfiguration(Plugin $plugin)
+	{
+		$className = get_class($plugin);
+		$class = new \ReflectionClass($className);
+		$properties = $class->getProperties();
+		$pluginId = $plugin->getId();
+		$available = array();
+
+		// foreach public static property ...
+		foreach ($properties as $property)
+		{
+			if (!$property->isStatic() || !$property->isPublic())
+			{
+				continue;
+			}
+
+			$propertyName = $property->getName();
+			$settings = Loader::$config->plugins->$pluginId;
+			$available[$propertyName] = true;
+
+			// if it is overwritten by the config
+			if (isset($settings[$propertyName]))
+			{
+				Console::printDebug("Overwriting config property '$pluginId.$propertyName' with value '".print_r($settings[$propertyName],true)."'");
+				$className::$$propertyName = $settings[$propertyName];
+			}
+		}
+
+		// report every config setting that could not be used!
+		foreach (Loader::$config->plugins->$pluginId as $key => $value)
+		{
+			if (!isset($available[$key]))
+			{
+				Console::println("[Attention] '$pluginId.$key' is not a valid setting!");
+			}
+		}
+	}
+
+	protected function unLoadPlugin($className)
+	{
+		$pluginId = self::getPluginIdFromClass($className);
+		if(array_key_exists($pluginId, $this->plugins))
+		{
+			foreach($this->plugins as $plugin)
+			{
+				foreach ($plugin->getDependencies() as $dependency)
+				{
+					if ($dependency->getPluginId() == $pluginId)
+					throw new Exception('The plugin '.$className.' cannot be unload. It still have dependencies');
+				}
+			}
+			$this->plugins[$pluginId]->onUnload();
+			$this->plugins[$pluginId] = null;
+			unset($this->plugins[$pluginId]);
+			Dispatcher::dispatch(new Event($className, Event::ON_PLUGIN_UNLOADED));
+		}
 	}
 
 	/**
@@ -272,6 +313,30 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 
 		// invoke it ...
 		return $method->invokeArgs($plugin, $methodArgs);
+	}
+
+	final public function addPlugin($classname)
+	{
+		//Load Plugins
+		$plugin = $this->loadPlugin($classname);
+		$this->loadPluginConfiguration($plugin);
+
+		if ($this->checkPluginDependency($plugin))
+		{
+			// this plugin is accepted
+			$plugin->onLoad();
+			// plugin loaded!
+			Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
+		}
+
+		// everything's up and ready to go!
+		$plugin->onReady();
+	}
+
+	final public function deletePlugin($classname)
+	{
+		//Unload Plugins
+		$this->unLoadPlugin($classname);
 	}
 
 	/**
