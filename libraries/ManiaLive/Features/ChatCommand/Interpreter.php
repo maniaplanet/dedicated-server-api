@@ -102,6 +102,11 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		&& $this->registeredCommands[$command->name][$command->parametersCount] === $command)
 		{
 			unset($this->registeredCommands[$command->name][$command->parametersCount]);
+			if(!$this->registeredCommands[$command->name])
+			{
+				unset($this->registeredCommands[$command->name]);
+			}
+			unset($command);
 		}
 	}
 

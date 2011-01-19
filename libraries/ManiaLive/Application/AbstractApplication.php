@@ -11,7 +11,6 @@
 
 namespace ManiaLive\Application;
 
-use ManiaLive\Features\ChatCommand\Documentation;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Config\Config;
 use ManiaLive\Config\Loader;
@@ -95,14 +94,11 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		$this->connection->enableCallbacks(true);
 		
 		// document all commands until here to manialive
-		Documentation::getInstance()->registerCommandsFor('Core Modules');
 		
 		Dispatcher::dispatch(new Event($this, Event::ON_INIT));
 		
 		// create documentation after all plugins were loaded.
 		// commands assigned on runtime are not taken into account!
-		if (Loader::$config->chatcommands->createDocumentation)
-			Documentation::getInstance()->create('ChatCommandList.html');
 	}
 	
 	function run()

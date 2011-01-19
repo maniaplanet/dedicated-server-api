@@ -209,7 +209,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 			$this->plugins[$pluginId]->onUnload();
 			$this->plugins[$pluginId] = null;
 			unset($this->plugins[$pluginId]);
-			Dispatcher::dispatch(new Event($className, Event::ON_PLUGIN_UNLOADED));
+			Dispatcher::dispatch(new Event($pluginId, Event::ON_PLUGIN_UNLOADED));
 		}
 	}
 

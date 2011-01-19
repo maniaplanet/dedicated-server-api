@@ -78,3 +78,6 @@
 +-------------------------------------------+
 - secured require_once in the autoload method
 + now plugins class can be named Plugin (e.g: the full class name will be \ManiaLivePlugins\MyName\MySuperPluginName\Plugin)
++ add unregister method to ChatCommand\Interpreter
++ Plugins can now be load and unload while running
++ add onUnload method called when plugin is unset

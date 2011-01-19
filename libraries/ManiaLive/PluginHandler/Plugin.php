@@ -43,7 +43,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	\ManiaLive\Gui\Windowing\Listener,
 	\ManiaLive\Features\Tick\Listener,
 	\ManiaLive\Application\Listener,
-	\ManiaLive\Data\Listener
+	\ManiaLive\Data\Listener,
+	\ManiaLive\PluginHandler\Listener
 {
 	/**
 	 * @var string
@@ -70,6 +71,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	private $events_tick;
 	private $events_server;
 	private $events_storage;
+	private $events_plugins;
 	/**
 	 * @var \ManiaLive\DedicatedApi\Connection
 	 */
@@ -93,11 +95,15 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	/**
 	 * @var \ManiaLive\Threading\ThreadPool
 	 */
-	private $threadpool;
+	private $threadPool;
 	/**
 	 * @var integer
 	 */
 	private $threadId;
+	/**
+	 * @var array[\ManiaLive\Features\ChatCommand\Command]
+	 */
+	private $chatCommands;
 	
 	final function __construct($plugin_id)
 	{
@@ -106,6 +112,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->events_threading = false;
 		$this->events_tick = false;
 		$this->events_windowing = false;
+		$this->events_plugins = false;
 		
 		$this->dependencies = array();
 		$this->methods = array();
@@ -125,6 +132,23 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->storage = Storage::getInstance();
 		$this->threadPool = \ManiaLive\Threading\ThreadPool::getInstance();
 		$this->threadId = false;
+		$this->chatCommands = array();
+	}
+	
+	// TODO maybe tell the plugin handler here that the plugin did successfully unload?
+	function __destruct() {}
+	
+	/**
+	 * This will unregister all chat commands that have been
+	 * created using the plugins method registerChatCommand.
+	 * @see \ManiaLive\PluginHandler\Plugin::registerChatCommand
+	 */
+	final public function unregisterAllChatCommands()
+	{
+		while ($command = array_pop($this->chatCommands))
+		{
+			Interpreter::getInstance()->unregister($command);
+		}
 	}
 	
 	/**
@@ -480,6 +504,30 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	}
 	
 	/**
+	 * Start listen for plugin events like
+	 * onPluginLoaded and onPluginUnloaded
+	 */
+	final function enablePluginEvents()
+	{
+		$this->restrictIfUnloaded();
+		if (!$this->events_plugins)
+		{
+			Dispatcher::register(\ManiaLive\PluginHandler\Event::getClass(), $this);
+		}
+		$this->events_plugins = true;
+	}
+	
+	/**
+	 * stop to listen for plugin events.
+	 */
+	final function disablePluginEvents()
+	{
+		$this->restrictIfUnloaded();
+		Dispatcher::unregister(\ManiaLive\PluginHandler\Event::getClass(), $this);
+		$this->events_plugins = false;
+	}
+	
+	/**
 	 * Creates a new Thread.
 	 * @return integer
 	 */
@@ -545,6 +593,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$cmd->addLoginAsFirstParameter = $add_login;
 		$cmd->isPublic = true;
 		Interpreter::getInstance()->register($cmd);
+		$this->chatCommands[] = $cmd;
 		return $cmd;
 	}
 	
@@ -577,6 +626,46 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	function onLoad() {}
 	
 	function onReady() {}
+	
+	/**
+	 * If you override this method you might want to
+	 * call the parent's onUnload as well, as it does some
+	 * useful stuff!
+	 * Use this method to remove any windows that are
+	 * currently displayed by the plugin, you might also need to
+	 * destroy some objects that have been created without using the
+	 * plugin intern methods.
+	 */
+	function onUnload()
+	{
+		echo "unload!";
+		
+		// disable all events
+		$this->disableApplicationEvents();
+		$this->disableDedicatedEvents();
+		$this->disableStorageEvents();
+		$this->disableThreadingEvents();
+		$this->disableTickerEvent();
+		$this->disableWindowingEvents();
+		
+		// unregister chat commands
+		$this->unregisterAllChatCommands();
+		
+		// kill plugin's thread
+		if ($this->threadId !== false)
+		{
+			$this->threadPool->removeThread($this->threadId);
+		}
+		
+		$this->threadpool = null;
+		$this->storage = null;
+		$this->plugin_handler = null;
+		$this->connection = null;
+		$this->dependencies = null;
+		$this->settings = null;
+		$this->methods = null;
+		unset($this->chatCommands);
+	}
 	
 	// application events ...
 	
@@ -638,6 +727,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	
 	function onWindowClose($login, $window) {}
 	
+	function onWindowRecover($login, $window) {}
+	
 	// threading events
 	
 	function onThreadDies($thread) {}
@@ -661,5 +752,11 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	function onPlayerNewRank($player, $rank_old, $rank_new) {}
 	
 	function onPlayerChangeSide($player, $oldSide) {}
+	
+	// plugin events
+	
+	function onPluginLoaded($pluginId) {}
+	
+	function onPluginUnloaded($pluginId) {}
 }
 ?>

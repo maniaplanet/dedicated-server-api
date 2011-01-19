@@ -16,14 +16,29 @@ namespace ManiaLive\PluginHandler;
  */
 class Event extends \ManiaLive\Event\Event
 {
-	function __construct($source)
+	const ON_PLUGIN_LOADED = 1;
+	const ON_PLUGIN_UNLOADED = 2;
+	
+	protected $onWhat;
+	
+	function __construct($source, $onWhat)
 	{
 		parent::__construct($source);
+		$this->onWhat = $onWhat;
 	}
 	
 	function fireDo($listener)
 	{
-		$listener->onPluginLoaded($this->source);
+		$method = null;
+		
+		switch($this->onWhat)
+		{
+			case self::ON_PLUGIN_LOADED: $method = 'onPluginLoaded'; break;
+			case self::ON_PLUGIN_UNLOADED: $method = 'onPluginUnloaded'; break;
+		}
+		
+		if ($method != null)
+			call_user_func_array(array($listener, $method), array($this->source));
 	}
 }
 ?>
