@@ -20,17 +20,31 @@ namespace ManiaLive\Gui\Windowing;
 class Event extends \ManiaLive\Event\Event
 {
 	protected $login;
+	protected $onWhat;
 	
-	function __construct($source, $login)
+	const ON_WINDOW_CLOSE = 0;
+	const ON_WINDOW_RECOVER = 1;
+	
+	function __construct($source, $onWhat, $login)
 	{
 		parent::__construct($source);
 		
 		$this->login = $login;
+		$this->onWhat = $onWhat;
 	}
 	
 	function fireDo($listener)
 	{
-		$listener->onWindowClose($this->login, $this->source);
+		switch ($this->onWhat)
+		{
+			case self::ON_WINDOW_CLOSE:
+				$listener->onWindowClose($this->login, $this->source);
+				break;
+			case self::ON_WINDOW_RECOVER:
+				$listener->onWindowRecover($this->login, $this->source);
+				break;
+		}
+		
 	}
 }
 

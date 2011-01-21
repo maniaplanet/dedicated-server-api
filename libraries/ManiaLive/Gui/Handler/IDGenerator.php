@@ -18,11 +18,12 @@ define('ID_MAX', pow(2,32) - 1);
 /**
  * Generates IDs for Windows and Actions.
  */
-class IDGenerator
+abstract class IDGenerator
 {
 	static private $manialink_counter = 0;
 	static private $action_counter = array();
 	static private $action_max = 0;
+	static private $actionToManialink = array();
 	
 	/**
 	 * Generates unique IDs for Manialinks.
@@ -50,6 +51,11 @@ class IDGenerator
 		return $id;
 	}
 	
+	static function getManialinkIDByActionID($actionId)
+	{
+		return self::$actionToManialink[$actionId];
+	}
+	
 	/**
 	 * Free the memory allocated by a certain Manialink.
 	 * @param integer $manialink_id
@@ -57,6 +63,14 @@ class IDGenerator
 	static function freeManialinkIDs($manialink_id)
 	{
 		unset(self::$action_counter[$manialink_id]);
+		
+		foreach (self::$actionToManialink as $actionId => $manialinkId)
+		{
+			if ($manialinkId == $manialink_id)
+			{
+				unset(self::$actionToManialink[$manialinkId]);
+			}
+		}
 	}
 	
 	/**
@@ -90,7 +104,11 @@ class IDGenerator
 		
 		// Console::printDebug('Action #' . self::$action_counter[$manialink_id] . ' assigned.');
 		
-		return ($manialink_id | self::$action_counter[$manialink_id]);
+		$actionId = ($manialink_id | self::$action_counter[$manialink_id]);
+		
+		self::$actionToManialink[$actionId] = $manialink_id;
+		
+		return $actionId;
 	}
 	
 	/**

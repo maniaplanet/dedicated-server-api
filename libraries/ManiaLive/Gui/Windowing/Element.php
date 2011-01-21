@@ -18,8 +18,8 @@ namespace ManiaLive\Gui\Windowing;
  * @author Florian Schnell
  */
 abstract class Element
-	extends \ManiaLive\Gui\Toolkit\Component
-	implements \ManiaLive\Gui\Toolkit\Drawable
+	extends \ManiaLib\Gui\Component
+	implements \ManiaLib\Gui\Drawable
 {}
 
 ?>

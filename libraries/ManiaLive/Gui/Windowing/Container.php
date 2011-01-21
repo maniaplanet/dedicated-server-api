@@ -23,13 +23,26 @@ use ManiaLib\Gui\Component;
 abstract class Container extends Component
 {
 	protected $components = array();
+	protected $componentList = array();
+	protected $componentsCount = 0;
 	
 	/**
 	 * Removes all objects from the container.
 	 */
 	function clearComponents()
 	{
+		$temp = array();
+		foreach ($this->components as &$component)
+		{
+			if ($component instanceof Containable)
+			{
+				$component->onIsRemoved($this);
+				$temp[] = $component;
+			}
+		}
+		$this->componentList = array();
 		$this->components = array();
+		return $temp;
 	}
 	
 	/**
@@ -44,6 +57,7 @@ abstract class Container extends Component
 		}
 		
 		$this->components[] = $component;
+		$this->componentList[spl_object_hash($component)] = $this->componentsCount++;
 		
 		$this->onComponentIsAdded($component);
 	}
@@ -56,6 +70,24 @@ abstract class Container extends Component
 	function getComponents()
 	{
 		return $this->components;
+	}
+	
+	/**
+	 * Removes a single component from the container.
+	 * @param $component
+	 */
+	function removeComponent(Component $component)
+	{
+		$hash = spl_object_hash($component);
+		
+		// check if component exists
+		if (!isset($this->componentList[$hash])) return;
+		
+		// remove control and index
+		$index = $this->componentList[$hash];
+		$this->components[$index]->onIsRemoved($this);
+		unset($this->components[$index]);
+		unset($this->componentList[$hash]);
 	}
 	
 	/**

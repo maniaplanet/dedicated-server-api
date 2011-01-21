@@ -12,7 +12,6 @@
 namespace ManiaLive\Gui\Handler;
 
 use ManiaLive\Utilities\Console;
-
 use ManiaLive\DedicatedApi\Connection;
 
 /**

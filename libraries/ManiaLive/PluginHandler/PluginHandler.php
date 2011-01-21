@@ -337,6 +337,9 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 	{
 		//Unload Plugins
 		$this->unLoadPlugin($classname);
+		
+		// clean last parts from memory
+		gc_collect_cycles();
 	}
 
 	/**

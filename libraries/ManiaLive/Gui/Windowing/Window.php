@@ -11,6 +11,8 @@
 
 namespace ManiaLive\Gui\Windowing;
 
+use ManiaLive\Gui\Windowing\Controls\Frame;
+use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Drawable;
 use ManiaLib\Gui\Component;
 use ManiaLib\Gui\Element;
@@ -53,28 +55,31 @@ const Z_MAX = 32;
  */
 abstract class Window extends Container implements
 	\ManiaLive\Gui\Handler\Listener,
-	\ManiaLive\Features\Tick\Listener,
-	Listener
+	\ManiaLive\Features\Tick\Listener
 {
+	private $uid;
 	private $id;
 	private $callbacks;
-	private $login;
-	private $isHidden;
-	private $dialog;
-	private $windowHandler;
 	private $header;
 	
+	protected $windowHandler;
+	protected $login;
+	protected $isHidden;
 	protected $linksDeactivated;
 	protected $view;
 	protected $playerValues;
 	protected $autohide;
 	protected $useClassicPositioning;
 	
+	protected $onClose;
+	
+	public $above;
 	public $below;
-	public $prev;
+	
 	public $uptodate;
 	
 	static $instances = array();
+	static $instancesNonSingleton = array();
 	
 	/**
 	 * Can't be called from outside of the class
@@ -83,19 +88,22 @@ abstract class Window extends Container implements
 	 */
 	protected function __construct($login)
 	{
-		$this->translationElement = null;
+		$this->uid = uniqid();
 		$this->useClassicPositioning = false;
 		$this->windowHandler = WindowHandler::getInstance();
 		$this->autohide = false;
 		$this->playerValues = array();
+		
+		// manage z indexing
 		$this->below = array();
+		$this->above = array();
+		
 		$this->linksDeactivated = false;
 		$this->callbacks = array();
 		$this->login = $login;
 		$this->isHidden = true;
 		$this->id = \ManiaLive\Gui\Handler\IDGenerator::generateManialinkID();
 		Dispatcher::register(\ManiaLive\Gui\Handler\Event::getClass(), $this);
-		Dispatcher::register(Event::getClass(), $this);
 		$this->initializeComponents();
 		$this->posZ = Z_MIN;
 	}
@@ -112,15 +120,17 @@ abstract class Window extends Container implements
 	 * you can deactivate it by setting singleton to false.
 	 * 
 	 * @param string $login
-	 * @return Window
+	 * @return \ManiaLive\Gui\Windowing\Window
 	 */
 	public static function Create($login = null, $singleton = true)
 	{
 		if (!$singleton)
 		{
-			return new static($login);
+			$instance  = new static($login);
+			self::$instancesNonSingleton[$login][$instance->getUid()] = $instance;
+			return $instance;
 		}
-		
+
 		$class_name = get_called_class();
 		
 		if (isset(self::$instances[$login]))
@@ -150,6 +160,106 @@ abstract class Window extends Container implements
 	}
 	
 	/**
+	 * Gets all currently opened instances of this
+	 * window type.
+	 */
+	static function GetAll()
+	{
+		$instances = array();
+		$class_name = get_called_class();
+		foreach (self::$instances as $login => $classes)
+		{
+			if (isset($classes[$class_name]))
+			{
+				$instances[] = $classes[$class_name];
+			}
+		}
+		foreach (self::$instancesNonSingleton as $login => $windows)
+		{
+			foreach ($windows as $window)
+			{
+				if (get_class($window) == $class_name)
+					$instances[] = $window;
+			}
+		}
+		return $instances;
+	}
+	
+	/**
+	 * Frees the memory that has been allocated
+	 * for the player's window.
+	 * If it is currently displayed it will also be
+	 * closed.
+	 * @param string $login
+	 */
+	static function Erase($login)
+	{
+		$class_name = get_called_class();
+		
+		if (isset(self::$instances[$login][$class_name]))
+		{
+			$window = self::$instances[$login][$class_name];
+			$window->hide();
+			$window->setCloseCallback(array($window, 'destroy'));
+		}
+		
+		if (isset(self::$instancesNonSingleton[$login]))
+		{
+			foreach (self::$instancesNonSingleton[$login] as $window)
+			{
+				if (is_subclass_of($window, $class_name))
+				{
+					$window->hide();
+					$window->setCloseCallback(array($window, 'destroy'));
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Frees memory for all windows of that type.
+	 * Closes windows for the players where they
+	 * currently are displayed to.
+	 */
+	static function EraseAll()
+	{
+		$class_name = get_called_class();
+		
+		foreach (self::$instances as $login => $windows)
+		{
+			foreach ($windows as $class => $window)
+			{
+				if ($class == $class_name)
+				{
+					if ($window->isShown())
+					{
+						$window->hide();
+						$window->setCloseCallback(array($window, 'destroy'));
+					}
+					else
+					{
+						$window->destroy();
+					}
+				}
+			}
+		}
+		
+		foreach (self::$instancesNonSingleton as $login => $windows)
+		{
+			foreach ($windows as $uid => $window)
+			{
+				if (get_class($window) == $class_name)
+				{
+					$window->hide();
+					$window->setCloseCallback(array($window, 'destroy'));
+				}
+			}
+		}
+		
+		WindowHandler::getInstance()->closeWindowThumbs(get_called_class());
+	}
+	
+	/**
 	 * Actions that need to be processed before the Window is being
 	 * showed. This includes eg. resizing and positioning of Elements and Controls.
 	 */
@@ -170,8 +280,18 @@ abstract class Window extends Container implements
 	/**
 	 * 
 	 * @param $seconds
+	 * @deprecated
 	 */
 	public function setAutohide($seconds)
+	{
+		$this->setTimeout($seconds);
+	}
+	
+	/**
+	 * Set the time before the interface will be hidden
+	 * @param $seconds
+	 */
+	public function setTimeout($seconds)
 	{
 		$this->autohide = time() + $seconds;
 		Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
@@ -242,7 +362,7 @@ abstract class Window extends Container implements
 		
 		// add parameters to callback ...
 		$callback = array($callback, $args);
-			
+		
 		// search if this callback has an id yet ...
 		$action = array_search($callback, $this->callbacks);
 		if ($action === false)
@@ -262,9 +382,14 @@ abstract class Window extends Container implements
 	{
 		if (isset($this->callbacks[$action]))
 		{
-			$params = array($login);
-			array_splice($params, count($params), 0, $this->callbacks[$action][1]);
-			call_user_func_array($this->callbacks[$action][0], $params);
+			if (!isset(WindowHandler::$dialog[$login])
+				|| WindowHandler::$dialog[$login] == null
+				|| $this == WindowHandler::$dialog[$login])
+			{
+				$params = array($login);
+				array_splice($params, count($params), 0, $this->callbacks[$action][1]);
+				call_user_func_array($this->callbacks[$action][0], $params);
+			}
 		}
 	}
 	
@@ -282,12 +407,17 @@ abstract class Window extends Container implements
 	 * @param Window $window Reference window to move in front of.
 	 */
 	public function moveAbove(Window $window)
-	{
-		// if that window's not above this one ...
-		foreach ($window->below as $below)
-			if ($below == $window) return;
-			
-		$this->below[] = $window;
+	{	
+		// if that window is above this one
+		if (isset($window->below[$this->uid]))
+		{
+			// then we do a swap!
+			unset($window->below[$this->uid]);
+			unset($this->above[$window->getUid()]);
+		}
+		
+		$this->below[$window->getUid()] = $window;
+		$window->above[$this->uid] = $this;
 	}
 	
 	/**
@@ -330,6 +460,18 @@ abstract class Window extends Container implements
 	}
 	
 	/**
+	 * Do something when you are closed!
+	 * @param callback $callback
+	 */
+	public function setCloseCallback($callback)
+	{
+		if (is_callable($callback))
+		{
+			$this->onClose = $callback;
+		}
+	}
+	
+	/**
 	 * Don't call this from outside!
 	 */
 	public function render($login)
@@ -352,10 +494,19 @@ abstract class Window extends Container implements
 		// show the window ...
 		if ($this->isHidden)
 		{
+			// invoke close callback
+			if ($this->onClose)
+			{
+				call_user_func_array($this->onClose, array($login, $this));
+			}
+			
 			$group->displayableGroup->addDisplayable(new Blank($this->id));
 		}
 		else
 		{
+			// generate view object ...
+			$this->initDisplayable();
+			
 			$group->displayableGroup->addDisplayable($this->view);
 		}
 	}
@@ -368,24 +519,30 @@ abstract class Window extends Container implements
 	{
 		$this->uptodate = false;
 		
-		// call recover function when Window state changes
-		// from hidden to visible
-		if ($this->isHidden)
-		{
-			$this->onRecover();
-		}
-		
-		$this->isHidden = false;
-		
-		// generate view object ...
-		$this->initDisplayable();
-		
 		if ($this->login != null)
 		{
 			$login = $this->login;
 		}
+		
+		$state = $this->isHidden;
+		$this->isHidden = false;
+		
+		if ($this->windowHandler->add($this, $login))
+		{	
+			// call recover function when Window state changes
+			// from hidden to visible
+			if ($state)
+			{
+				$this->onRecover();
+				Dispatcher::dispatch(new Event($this, Event::ON_WINDOW_RECOVER, $login));
+			}
 			
-		$this->windowHandler->add($this, $login);
+			$this->isHidden = false;
+		}
+		else
+		{
+			$this->isHidden = $state;
+		}
 	}
 	
 	/**
@@ -394,23 +551,29 @@ abstract class Window extends Container implements
 	 */
 	public function hide($login = null)
 	{
-		$this->isHidden = true;
 		$this->uptodate = false;
-		$this->below = array();
-		
-		// window is closed ...
-		Dispatcher::dispatch(new Event($this, $login));
-		
-		// invoke cleanup function ..
-		$this->onHide();
 		
 		if ($this->login != null)
 		{
 			$login = $this->login;
 		}
 		
+		$state = $this->isHidden;
+		$this->isHidden = true;
+		
 		// add to drawstack button ...
-		$this->windowHandler->add($this, $login);
+		if ($this->windowHandler->add($this, $login))
+		{
+			// invoke cleanup function ..
+			$this->onHide();
+			
+			// window is closed ...
+			Dispatcher::dispatch(new Event($this, Event::ON_WINDOW_CLOSE, $login));
+		}
+		else
+		{
+			$this->isHidden = $state;
+		}
 	}
 	
 	/**
@@ -420,12 +583,13 @@ abstract class Window extends Container implements
 	 */
 	public function showDialog(Window $window)
 	{
-		$this->deactivateLinks();
 		$window->moveAbove($this);
 		$window->centerOnBelow();
-		$this->dialog = $window;
+		
+		WindowHandler::$dialog[$this->getRecipient()] = $window;
+		$window->setCloseCallback(array($this, 'onDialogClose'));
+		
 		$window->show();
-		$this->show();
 	}
 	
 	/**
@@ -440,7 +604,6 @@ abstract class Window extends Container implements
 		if ($this->view)
 		{
 			$this->view->window = null;
-			$this->view->prev = null;
 		}
 		
 		// generate displayable ...
@@ -547,6 +710,14 @@ abstract class Window extends Container implements
 	}
 	
 	/**
+	 * @return array[Window] Returns all windows that lie above this one.
+	 */
+	public function getWindowsAbove()
+	{
+		return $this->above;
+	}
+	
+	/**
 	 * Is invoked when a dialog window is closing.
 	 */
 	public function dialogClosed(Window $dialog) {}
@@ -555,15 +726,10 @@ abstract class Window extends Container implements
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Listener::onWindowClose()
 	 */
-	public function onWindowClose($login, $window)
+	public final function onDialogClose($login, $window)
 	{
-		if ($this->dialog && $window->getId() == $this->dialog->getId())
-		{
-			$this->activateLinks();
-			$this->show();
-			$this->dialogClosed($this->dialog);
-			$this->dialog = null;
-		}
+		$this->dialogClosed($window);
+		WindowHandler::$dialog[$login] = null;
 	}
 	
 	/**
@@ -587,6 +753,7 @@ abstract class Window extends Container implements
 	 */
 	public function getMaxZ()
 	{
+		if (!$this->view) return Z_MIN;
 		return $this->view->getMaxZ();
 	}
 	
@@ -598,12 +765,38 @@ abstract class Window extends Container implements
 		return $this->id;
 	}
 	
+	function getUid()
+	{
+		return $this->uid;
+	}
+	
+	/**
+	 * Removes callbacks that have been created by
+	 * a specific control.
+	 * @param mixed $component
+	 */
+	public function removeCallbacks($component)
+	{
+		foreach ($this->callbacks as $action => $callback)
+		{
+			if ($callback[0][0] === $component)
+			{
+				unset($this->callbacks[$action]);
+			}
+		}
+	}
+	
 	/**
 	 * Remove all references from this Window.
 	 * Unregister events and remove references to this Window from components.
 	 */
 	public function destroy()
 	{
+//		echo "< unloading " . get_class($this) . "\n";
+		
+		Dispatcher::dispatch(new \ManiaLive\Gui\Windowing\Event($this,
+			\ManiaLive\Gui\Windowing\Event::ON_WINDOW_CLOSE, $this->login));
+		
 		// we're closing ..
 		if (!$this->isHidden)
 		{
@@ -614,21 +807,38 @@ abstract class Window extends Container implements
 		Dispatcher::unregister(\ManiaLive\Gui\Handler\Event::getClass(), $this);
 		Dispatcher::unregister(Event::getClass(), $this);
 		
-		// remove references to previously rendered window
-		$this->prev = null;
+		foreach ($this->below as $below)
+		{
+			unset($below->above[$this->uid]);
+		}
+		
+		foreach ($this->above as $above)
+		{
+			unset($above->below[$this->uid]);
+		}
 		
 		// remove references to windows below
-		$this->below = null;
-		
-		// remove reference to any dialog window
-		$this->dialog = null;
-			
-		// remove reference to view
-		$this->view->destroy();
-		$this->view = null;
+		$this->below = array();
+		$this->above = array();
+		$this->windowHandler = null;
+		unset($this->playerValues[$this->getRecipient()]);
+		$this->header = null;
+		$this->onClose = null;
 		
 		// remove callbacks
-		unset($this->callbacks);
+		$this->callbacks = array();
+		
+		// remove reference to view
+		if ($this->view)
+		{
+			$this->view->destroy();
+		}
+		$this->view = null;
+		
+		// finally remove actions from window
+		IDGenerator::freeManialinkIDs($this->id);
+		
+		$this->clearComponents();
 		
 		// remove components
 		foreach ($this->components as $component)
@@ -639,28 +849,14 @@ abstract class Window extends Container implements
 			}
 		}
 		
-		// finally remove actions from window
-		IDGenerator::freeManialinkIDs($this->id);
-		
-		$this->clearComponents();
+		// remove from intern window list ...
+		unset(self::$instances[$this->login][get_called_class()]);
+		unset(self::$instancesNonSingleton[$this->login][$this->uid]);
 	}
 	
-	/**
-	 * Removes all window resources that have been allocated
-	 * for the player.
-	 * @param string $login Players Login
-	 */
-	static function destroyPlayerWindows($login)
+	function __destruct()
 	{
-		if (isset(self::$instances[$login]))
-		{
-			foreach (self::$instances[$login] as $window)
-			{
-				Dispatcher::dispatch(new \ManiaLive\Gui\Windowing\Event($window, $login));
-				$window->destroy();
-			}
-			unset(self::$instances[$login]);
-		}
+//		echo "<< desctructing " . get_class($this) . "\n";
 	}
 }
 

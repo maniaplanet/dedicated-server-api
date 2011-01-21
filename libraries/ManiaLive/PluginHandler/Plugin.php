@@ -136,7 +136,10 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	}
 	
 	// TODO maybe tell the plugin handler here that the plugin did successfully unload?
-	function __destruct() {}
+	function __destruct()
+	{
+//		echo "plugn " . get_called_class() . " successfully unloaded!\n";
+	}
 	
 	/**
 	 * This will unregister all chat commands that have been
@@ -637,9 +640,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 * plugin intern methods.
 	 */
 	function onUnload()
-	{
-		echo "unload!";
-		
+	{	
 		// disable all events
 		$this->disableApplicationEvents();
 		$this->disableDedicatedEvents();
@@ -647,6 +648,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->disableThreadingEvents();
 		$this->disableTickerEvent();
 		$this->disableWindowingEvents();
+		$this->disablePluginEvents();
 		
 		// unregister chat commands
 		$this->unregisterAllChatCommands();

@@ -63,14 +63,33 @@ class Config extends Configurable
 	
 	function validate()
 	{
+		$conf = array();
+		if (file_exists(APP_ROOT . 'run.ini'))
+		{
+			$conf = parse_ini_file(APP_ROOT . 'run.ini');
+			if ($conf === false)
+			{
+				$conf = array();
+			}
+		}
+		
+		if (!isset($conf['phpPath']))
+		{
+			$conf['phpPath'] = '';
+		}
+		
 		// set this depending on os.
 		if (APP_OS == 'WIN')
 		{
-			$this->setDefault('phpPath', 'php.exe');
+			if (!$conf['phpPath'])
+				$conf['phpPath'] = 'php.exe';
+			$this->setDefault('phpPath', $conf['phpPath']);
 		}
 		else
 		{
-			$this->setDefault('phpPath', 'php');
+			if (!$conf['phpPath'])
+				$conf['phpPath'] = '`which php`';
+			$this->setDefault('phpPath', $conf['phpPath']);
 		}
 		
 		$this->setDefault('logsPath', APP_ROOT . 'logs');

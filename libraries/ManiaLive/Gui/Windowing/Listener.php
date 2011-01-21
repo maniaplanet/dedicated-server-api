@@ -22,6 +22,13 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param \ManiaLive\Gui\Windowing\Window $window Reference to the specific window.
 	 */
 	public function onWindowClose($login, $window);
+	
+	/**
+	 * Window was hidden and is now displayed again.
+	 * @param string $login
+	 * @param \ManiaLive\Gui\Windowing\Window $window
+	 */
+	public function onWindowRecover($login, $window);
 }
 
 ?>

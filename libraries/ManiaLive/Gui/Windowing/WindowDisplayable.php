@@ -75,10 +75,7 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control
 			Manialink::setSwappedPositioning();
 		}
 		
-		if ($this->window && $this->window->prev)
-		{
-			$this->posZ = $this->window->prev->getMaxZ();
-		}
+		$this->posZ = \ManiaLive\Gui\Windowing\Z_MIN;
 		
 		// search the windows below for the one with the highest z-index ...
 		$below = $this->window->getWindowsBelow();
@@ -166,8 +163,11 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control
 	function destroy()
 	{
 		$this->window = null;
-		
-		parent::destroy();
+		$this->parent = null;
+		$this->components = null;
+		$this->layout = null;
+		$this->params = null;
+		$this->componentList = null;
 	}
 }
 

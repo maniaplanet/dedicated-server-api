@@ -25,6 +25,13 @@ interface Containable
 	 * @param Container $target Reference to the target Container.
 	 */
 	function onIsAdded(Container $target);
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param $target
+	 */
+	function onIsRemoved(Container $target);
 }
 
 ?>

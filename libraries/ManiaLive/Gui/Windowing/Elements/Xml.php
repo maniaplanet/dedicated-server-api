@@ -11,7 +11,7 @@
 
 namespace ManiaLive\Gui\Windowing\Elements;
 
-use ManiaLive\Gui\Toolkit\Manialink;
+use ManiaLib\Gui\Manialink;
 
 /**
  * Can be used to add already parsed xml to
@@ -35,12 +35,22 @@ class Xml extends \ManiaLive\Gui\Windowing\Element
 	
 	function save()
 	{
-		$doc = new \DOMDocument();
-		$doc->loadXML('<content>' . $this->xml . '</content>');
-		foreach ($doc->firstChild->childNodes as $child)
+		try
 		{
-			$node = Manialink::$domDocument->importNode($child, true);
+			$doc = new \DOMDocument();
+			$doc->loadXML($this->xml);
+			$node = Manialink::$domDocument->importNode($doc->firstChild, true);
 			end(Manialink::$parentNodes)->appendChild($node);
+		}
+		catch (\Exception $e)
+		{
+			$doc = new \DOMDocument();
+			$doc->loadXML('<content>' . $this->xml . '</content>');
+			foreach ($doc->firstChild->childNodes as $child)
+			{
+				$node = Manialink::$domDocument->importNode($child, true);
+				end(Manialink::$parentNodes)->appendChild($node);
+			}
 		}
 	}
 }

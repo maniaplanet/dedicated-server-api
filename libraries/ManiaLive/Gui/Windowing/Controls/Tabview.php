@@ -119,7 +119,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 	function clickOnTab($login, $id)
 	{
 		$this->active_id = $id;
-		$this->getWindow()->show($login);
+		$this->redraw();
 	}
 	
 	/**

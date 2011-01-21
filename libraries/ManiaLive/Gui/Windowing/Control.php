@@ -39,9 +39,14 @@ abstract class Control extends Container
 	protected $layout;
 	protected $scale;
 	protected $initializing;
-	protected $fid;
 	protected $params;
+	/**
+	 * @var \ManiaLive\Gui\Windowing\Window
+	 */
 	protected $window;
+	protected $linksDisabled;
+	
+//	static $controls;
 	
 	final function __construct()
 	{	
@@ -54,6 +59,8 @@ abstract class Control extends Container
 		$this->initializing = true;
 		$this->initializeComponents();
 		$this->initializing = false;
+		
+//		self::$controls[spl_object_hash($this)] = get_class($this);
 	}
 	
 	/**
@@ -80,6 +87,16 @@ abstract class Control extends Container
 		$this->zForced = $z;
 	}
 	
+	function disableLinks()
+	{
+		$this->linksDisabled = true;
+	}
+	
+	function enableLinks()
+	{
+		$this->linksDisabled = false;
+	}
+	
 	/**
 	 * Apply a Layout onto all subcontrols.
 	 * @param AbstractLayout $layout
@@ -98,24 +115,36 @@ abstract class Control extends Container
 	}
 	
 	/**
-	 * If this control is added to a container, then assign
-	 * the container as the control's parent.
-	 * We also determine the control's parent window.
-	 * @param Container $target The Container object to which the Control is added.
+	 * (non-PHPdoc)
+	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Containable::onIsAdded()
 	 */
 	function onIsAdded(Container $target)
 	{
+//		echo "added " . get_class($this) . " \n";
+		
 		$this->parent = $target;
 		
 		if ($target instanceof WindowDisplayable)
 		{
-			$this->announceWindow($target->window);
+			if ($this->window != $target->window)
+				$this->announceWindow($target->window);
 		}
 		elseif ($target instanceof Control)
 		{
-			if ($target->getWindow() != null)
+			if ($target->getWindow() != null
+				&& $target->getWindow() != $this->window)
 				$this->announceWindow($target->getWindow());
 		}
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Containable::onIsRemoved()
+	 */
+	function onIsRemoved(Container $target)
+	{
+		$this->announceWindow(null);
+		$this->parent = null;
 	}
 	
 	/**
@@ -123,8 +152,13 @@ abstract class Control extends Container
 	 * it will announce it to all its children.
 	 * @param $window
 	 */
-	function announceWindow(Window $window)
+	function announceWindow($window)
 	{
+		if ($this->window != null && $this->window !== $window)
+		{
+			$this->window->removeCallbacks($this);
+		}
+		
 		$this->window = $window;
 		
 		foreach ($this->components as $child)
@@ -144,17 +178,20 @@ abstract class Control extends Container
 	 */
 	protected function callback($callback)
 	{
-		$args = func_get_args();
-		array_shift($args);
-		
-		if (!is_array($callback))
+		if ($this->window)
 		{
-			$callback = array($this, $callback);
-		}
-		
-		array_splice($args, 0, 0, array($callback));
+			$args = func_get_args();
+			array_shift($args);
 			
-		return call_user_func_array(array($this->getWindow(), 'callback'), $args);
+			if (!is_array($callback))
+			{
+				$callback = array($this, $callback);
+			}
+			
+			array_unshift($args, $callback);
+			
+			return call_user_func_array(array($this->window, 'callback'), $args);
+		}
 	}
 	
 	/**
@@ -168,6 +205,18 @@ abstract class Control extends Container
 	}
 	
 	/**
+	 * Force a redraw of this component on the
+	 * screens it is currently showed.
+	 */
+	public function redraw()
+	{
+		if ($this->window)
+		{
+			$this->window->show();
+		}
+	}
+	
+	/**
 	 * Gets a value for this Control which is specific to the player
 	 * which is currently viewing it.
 	 * The value needs to be saved with setPlayerValue before it can be read.
@@ -175,7 +224,7 @@ abstract class Control extends Container
 	 */
 	protected function getPlayerValue($name, $default = null)
 	{
-		return $this->getWindow()->getPlayerValue($name, $default);
+		return $this->window->getPlayerValue($name, $default);
 	}
 	
 	/**
@@ -185,7 +234,7 @@ abstract class Control extends Container
 	 */
 	protected function setPlayerValue($name, $value)
 	{
-		$this->getWindow()->setPlayerValue($name, $value);
+		$this->window->setPlayerValue($name, $value);
 	}
 	
 	/**
@@ -230,41 +279,31 @@ abstract class Control extends Container
 		// reset z depth ...
 		$this->zCur = ($this->zForced ? $this->zForced : 0);
 		
-		// prepare aligning ...
-		if ($this instanceof Control)
+		// horizontal alignment ...
+		if ($this->halign == 'right')
 		{
-			// horizontal alignment ...
-			if ($this->halign == 'right')
-			{
-				$posx += $this->posX - $this->getRealSizeX();
-			}
-			elseif ($this->halign == 'center')
-			{
-				$posx += $this->posX - $this->getRealSizeX() / 2;
-			}
-			else
-			{
-				$posx += $this->posX;
-			}
-				
-			// vertical alignment ...
-			if ($this->valign == 'bottom')
-			{
-				$posy += $this->posY - $this->getRealSizeY();
-			}
-			elseif ($this->valign == 'center')
-			{
-				$posy += $this->posY - $this->getRealSizeY() / 2;
-			}
-			else
-			{
-				$posy += $this->posY;
-			}
+			$posx += $this->posX - $this->getRealSizeX();
+		}
+		elseif ($this->halign == 'center')
+		{
+			$posx += $this->posX - $this->getRealSizeX() / 2;
 		}
 		else
 		{
-			// for elements this behavior is implemented in the game ...
 			$posx += $this->posX;
+		}
+			
+		// vertical alignment ...
+		if ($this->valign == 'bottom')
+		{
+			$posy += $this->posY - $this->getRealSizeY();
+		}
+		elseif ($this->valign == 'center')
+		{
+			$posy += $this->posY - $this->getRealSizeY() / 2;
+		}
+		else
+		{
 			$posy += $this->posY;
 		}
 		
@@ -274,10 +313,13 @@ abstract class Control extends Container
 			$this->layout->setSizeY($this->sizeY);
 			Manialink::beginFrame($posx, $posy, $this->posZ, $this->scale, clone $this->layout);
 		}
-		else 
+		else
 		{
 			Manialink::beginFrame($posx, $posy, $this->posZ, $this->scale);
 		}
+		
+		if ($this->linksDisabled)
+			Manialink::disableLinks();
 		
 		// render each element contained by the control and set z values ...
 		foreach ($this->components as $component)
@@ -294,6 +336,9 @@ abstract class Control extends Container
 				$component->save();
 			}
 		}
+		
+		if ($this->linksDisabled)
+			Manialink::enableLinks();
 		
 		Manialink::endFrame();
 		
@@ -315,8 +360,7 @@ abstract class Control extends Container
 	 */
 	function destroy()
 	{
-		$this->layout = null;
-		$this->parent = null;
+//		echo "< unloading " . get_class($this) . "\n";
 		
 		foreach ($this->components as $component)
 		{
@@ -324,9 +368,27 @@ abstract class Control extends Container
 			{
 				$component->destroy();
 			}
-			$component = null;
 		}
+		
+		if ($this->window)
+		{
+//			echo "removing callbacks!\n";
+			$this->window->removeCallbacks($this);
+		}
+		
+		$this->parent = null;
 		$this->components = array();
+		$this->componentList = array();
+		$this->layout = null;
+		$this->params = array();
+		$this->window = null;
+	}
+	
+	function __destruct()
+	{
+//		unset(self::$controls[spl_object_hash($this)]);
+//		echo "new control count:" . count(self::$controls) . "\n";
+//		echo "<< desctructing " . get_class($this) . "\n";
 	}
 }
 
