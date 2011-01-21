@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -72,15 +72,15 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	#region Implementation de l'applicationListener
 	function onInit()
 	{
-		$connexion = Connection::getInstance();
-		$this->serverStatus = $connexion->getStatus();
+		$connection = Connection::getInstance();
+		$this->serverStatus = $connection->getStatus();
 
-		$players = $connexion->getPlayerList(-1, 0);
+		$players = $connection->getPlayerList(-1, 0);
 		foreach ($players as $player)
 		{
 			try
 			{
-				$details = $connexion->getDetailedPlayerInfo($player->login);
+				$details = $connection->getDetailedPlayerInfo($player->login);
 
 				foreach ($details as $key => $value)
 				{
@@ -103,18 +103,18 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			catch (\Exception $e) {}
 		}
 
-		$this->challenges = $connexion->getChallengeList(-1,0);
-		$currentIndex = $connexion->getCurrentChallengeIndex();
-		$nextIndex = $connexion->getNextChallengeIndex();
+		$this->challenges = $connection->getChallengeList(-1,0);
+		$currentIndex = $connection->getCurrentChallengeIndex();
+		$nextIndex = $connection->getNextChallengeIndex();
 		$this->nextChallenge = $this->challenges[$nextIndex];
 		if($currentIndex != -1)
 		{
-			$this->currentChallenge = $connexion->getCurrentChallengeInfo();
+			$this->currentChallenge = $connection->getCurrentChallengeInfo();
 		}
 
-		$this->server = $connexion->getServerOptions();
-		$this->gameInfos = $connexion->getCurrentGameInfo();
-		$this->serverLogin = $connexion->getMainServerPlayerInfo()->login;
+		$this->server = $connection->getServerOptions();
+		$this->gameInfos = $connection->getCurrentGameInfo();
+		$this->serverLogin = $connection->getMainServerPlayerInfo()->login;
 	}
 
 	function onRun() {}

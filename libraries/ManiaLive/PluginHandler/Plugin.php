@@ -548,6 +548,29 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	}
 	
 	/**
+	 * Gets the thread that belongs to this
+	 * plugin and returns its id.
+	 * @return integer
+	 */
+	function getThreadId()
+	{
+		return $this->threadId;
+	}
+	
+	/**
+	 * Kills the plugin's thread.
+	 * @return bool
+	 */
+	function killThread()
+	{
+		if ($this->threadId !== false)
+		{
+			return $this->threadPool->removeThread($this->threadId);
+		}
+		return false;
+	}
+	
+	/**
 	 * Assigns work only to the thread that has been created by this plugin.
 	 * @param \ManiaLive\Threading\Runnable $work
 	 */
@@ -653,11 +676,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		// unregister chat commands
 		$this->unregisterAllChatCommands();
 		
-		// kill plugin's thread
-		if ($this->threadId !== false)
-		{
-			$this->threadPool->removeThread($this->threadId);
-		}
+		// kill the plugin's thread!
+		$this->killThread();
 		
 		$this->threadpool = null;
 		$this->storage = null;

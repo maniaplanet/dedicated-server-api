@@ -37,6 +37,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	private $threadsCount;
 	private $database;
 	private $logger;
+	
 	static $threadingEnabled = false;
 	static $threadsDiedCount = 0;
 	static $avgResponseTime = null;
@@ -80,8 +81,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 			$this->logger->write("Application started with threading disabled!");
 			
 			// create emulated thread number 0 ...
-			$main = new Thread(0);
-			$this->threads[0] = $main;
+			$this->threads[0] = new Thread(0);
 		}
 		
 		// register me ...
@@ -137,6 +137,9 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 				$quit = new QuitCommand();
 				$this->threads[$id]->sendCommand($quit);
 				unset($this->threads[$id]);
+				
+				$this->threadsCount--;
+				
 				return true;
 			}
 		}
@@ -208,7 +211,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 			$thread_prev = $thread_cur;
 		}
 		
-		if ($thread_id == null) 
+		if ($thread_id === null) 
 		{
 			$thread_id = $thread_first->getId();
 		}
@@ -362,6 +365,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 			if ($thread->getState() == 4)
 			{
 				self::$threadsDiedCount++;
+				$this->threadsCount--;
 				
 				Console::printDebug('Detected dead Thread with ID ' . $thread->getId() . ' - running Process #' . $thread->getPid() . '!');
 				
@@ -381,6 +385,10 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		return $this->threadsCount;
 	}
 	
+	/**
+	 * Closes all threads when program terminates
+	 * or the instance of thread pool gets destroyed.
+	 */
 	function __destruct()
 	{
 		$this->logger->write('ThreadPool is being deleted, stopping all threads!');
