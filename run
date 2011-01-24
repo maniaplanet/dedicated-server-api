@@ -23,6 +23,12 @@ do
 done
 
 # set default if no override
+if [ "$PHP" = "" ]
+then
+	PHP=`which php`
+fi
+
+# set default if no override - edited on windows.
 if [ "$PHP" = `echo -e "\r"` ]
 then
 	PHP=`which php`
