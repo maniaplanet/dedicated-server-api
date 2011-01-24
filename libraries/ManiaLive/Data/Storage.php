@@ -389,7 +389,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$this->spectators[$playerInfo->login]->$key = $playerInfo->$key;
 				}
-				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($this->players[$playerInfo->login], 'player')));
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($this->spectators[$playerInfo->login], 'player')));
 			}
 		}
 		unset($playerInfo);
