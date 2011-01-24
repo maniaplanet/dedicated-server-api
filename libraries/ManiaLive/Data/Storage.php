@@ -124,12 +124,12 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	{
 		foreach ($this->disconnetedPlayers as $key => $login)
 		{
-			if(array_key_exists($login, $this->spectators))
+			if(array_key_exists($login, $this->spectators) && !$this->spectators[$login]->isConnected)
 			{
 				$this->spectators[$login] = null;
 				unset($this->spectators[$login]);
 			}
-			elseif (array_key_exists($login, $this->players))
+			elseif (array_key_exists($login, $this->players) && !$this->players[$login]->isConnected)
 			{
 				$this->players[$login] = null;
 				unset($this->players[$login]);
@@ -185,7 +185,15 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function onPlayerDisconnect($login)
 	{
 		$this->disconnetedPlayers[] = $login;
-		$this->getPlayerObject($login)->isConnected = false;
+
+		if(array_key_exists($login, $this->players))
+		{
+			$this->players[$login]->isConnected = false;
+		}
+		elseif(array_key_exists($login, $this->spectators))
+		{
+			$this->spectators[$login]->isConnected = false;
+		}
 
 		foreach($this->ranking as $key => $player)
 		{
@@ -359,7 +367,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$this->players[$playerInfo->login]->$key = $playerInfo->$key;
 				}
-				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($playerInfo, 'spectator')));
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($this->players[$playerInfo->login], 'spectator')));
 			}
 		}
 		else
@@ -381,7 +389,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$this->spectators[$playerInfo->login]->$key = $playerInfo->$key;
 				}
-				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($playerInfo, 'player')));
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_CHANGE_SIDE, array($this->players[$playerInfo->login], 'player')));
 			}
 		}
 		unset($playerInfo);
