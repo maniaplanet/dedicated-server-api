@@ -1,45 +1,70 @@
 #!/bin/bash
 
+PHP=""
+
 # read run configuration
 exec<run.ini
 while read line
 do
 	# do not read comments
-	if [ `echo | awk '{ print substr("'"$line"'",1,1) }'` != ";" ] ; then
+	if [ `echo | awk '{ print substr("'"$line"'",1,1) }'` != ";" ]
+	then
 	
 		# seperate key and value
 		key=`echo "$line" | awk -F"=" '{print $1}'`
 		value=`echo "$line" | awk -F"=" '{print $2}'`
 		
 		# store php path
-		if [ $key = "phpPath" ] ; then
+		if [ $key = "phpPath" ]
+		then
 			PHP=`echo $value`
 		fi
 	fi
 done
 
-if [ $PHP = "" ] ; then
+# set default if no override
+if [ "$PHP" = `echo -e "\r"` ]
+then
 	PHP=`which php`
 fi
 
-DIR="$PWD"
+STOP="false"
 ARGS=""
 DAEMON="true"
+
+# read command line arguments
 for i in "$@"
 do
-if [ i -eq "--nodaemon" ]
-then
-	DAEMON="false"
-else
-	ARGS="$ARGS $i"
-fi
+	if [ "$i" == "--nodaemon" ]
+	then
+		DAEMON="false"
+	else
+		if [ "$i" == "--stop" ]
+		then
+	        STOP="true"
+		else
+			if [ "$i" == "--start" ]
+			then
+				STOP="false"
+			else
+	        	ARGS="$ARGS $i"
+			fi
+		fi
+	fi
 done
 
+# start either daemon or run within console
 if [ $DAEMON == "false" ]
 then
-	echo "launching manialive with the following arguments: $ARGS"
-	$PHP $DIR/bootstrapper.php $ARGS
+	echo "Launching ManiaLive with the following arguments: $ARGS"
+	$PHP ./bootstrapper.php $ARGS
 else
-	echo "launching manialive daemon with the following arguments: $ARGS"
-	start-stop-daemon -S -b -m --exec $PHP $DIR/bootstrapper.php -- $ARGS
+	if [ $STOP == "false" ]
+	then
+		echo "Launching ManiaLive Daemon with the following arguments: $ARGS"
+        start-stop-daemon --start -b -m --pidfile=manialive.pid --exec $PHP $PWD/bootstrapper.php -- $ARGS
+	else
+		echo "Stopping Manialive Daemon ..."
+        start-stop-daemon --stop --pidfile=manialive.pid
+	fi
 fi

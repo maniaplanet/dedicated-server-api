@@ -13,7 +13,7 @@ namespace ManiaLiveApplication;
 
 use ManiaLive\Features\Updater;
 
-const Version = 1830;
+const Version = 2028;
 
 if (extension_loaded('pcntl'))
 	declare(ticks = 1); 
@@ -24,7 +24,7 @@ class Application extends \ManiaLive\Application\AbstractApplication
 	{
 		if (extension_loaded('pcntl'))
 		{
-			pcntl_signal(SIGTERM, array($this, 'kill'));  
+			pcntl_signal(SIGTERM, array($this, 'kill'));
 			pcntl_signal(SIGINT, array($this, 'kill'));
 		}
 		
