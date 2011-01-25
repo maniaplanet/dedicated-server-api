@@ -74,10 +74,20 @@
 + improved windowing performance.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r???? (?? ???. 2011)	|
+|	ManiaLive 1.0b - r2028 (25 jan. 2011)	|
 +-------------------------------------------+
 - secured require_once in the autoload method
 + now plugins class can be named Plugin (e.g: the full class name will be \ManiaLivePlugins\MyName\MySuperPluginName\Plugin)
 + add unregister method to ChatCommand\Interpreter
-+ Plugins can now be load and unload while running
+* Plugins can now be loaded and unloaded while running
 + add onUnload method called when plugin is unset
++ Implemented new threading methods for plugins
++ automatic plugin destruction and freeing of resources that have been required through the plugin interface.
+* ManagedWindow, will be displayed on screen center. Only one ManagedWindow can be shown at a time. Every further window will be moved into the "Taskbar" for fast access.
++ Windowing system speed and stability improvements.
+* Fixed memory leaks.
++ Plugin events for loading and unloading.
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r???? (?? ???. 2011)	|
++-------------------------------------------+
