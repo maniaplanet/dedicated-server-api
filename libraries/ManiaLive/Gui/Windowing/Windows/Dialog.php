@@ -55,6 +55,7 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 		$this->addComponent($this->panel);
 		
 		$this->text = new Label();
+		$this->text->enableAutonewline();
 		$this->addComponent($this->text);
 		
 		$this->container = new Frame();
