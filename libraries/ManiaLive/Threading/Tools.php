@@ -79,5 +79,56 @@ class Tools
 					PRIMARY KEY (cmd_id)
 				)');
 		}
+		
+		// can be used to transfer data to a thread
+		if (!$db->tableExists('data'))
+		{
+			$db->execute('CREATE TABLE data
+				(
+					id INTEGER NOT NULL,
+					name TEXT NOT NULL,
+					value TEXT NULL,
+					PRIMARY KEY (id)
+				)');
+		}
+	}
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param $name
+	 * @param $value
+	 */
+	static function setData(\ManiaLive\Database\Connection $db, $name, $value)
+	{
+		$value = serialize($value);
+		
+		$db->execute('INSERT INTO data (name, value) VALUES (%s, %s)',
+			$db->quote($name),
+			$db->quote($value));
+			
+		return ($db->affectedRows() > 0);
+	}
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $name
+	 * @param unknown_type $default
+	 */
+	static function getData($db, $name, $default = null)
+	{
+		$result = $db->query('SELECT value FROM data WHERE name=%s',
+			$db->quote($name));
+			
+		if ($result->recordAvailable())
+		{
+			$data = $result->fetchRow();
+			return unserialize($data[0]);
+		}
+		else
+		{
+			return $default;
+		}
 	}
 }

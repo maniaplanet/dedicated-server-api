@@ -89,6 +89,23 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	}
 	
 	/**
+	 * @return \ManiaLive\Database\Connection
+	 */
+	function getDatabase()
+	{
+		return $this->database;
+	}
+	
+	/**
+	 * @return \ManiaLive\Threading\ThreadPool
+	 * @throws \BadMethodCallException
+	 */
+	static function getInstance()
+	{
+		return parent::getInstance();
+	}
+	
+	/**
 	 * Creates a new Thread that will
 	 * be able to process Jobs.
 	 * Pay attention that depending on what
@@ -163,12 +180,15 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function clean()
 	{
-		// on startup remove every thread and job from the database!
+		// on startup remove every thread, job and data from the database!
 		$this->database->execute("DELETE FROM threads");
 		$this->logger->write("DB threads are cleaned, rows affected: " . $this->database->affectedRows());
 		
 		$this->database->execute("DELETE FROM cmd");
-		$this->logger->write("DB cmd are cleaned, rows affected: " . $this->database->affectedRows());
+		$this->logger->write("DB cmds are cleaned, rows affected: " . $this->database->affectedRows());
+		
+		$this->database->execute("DELETE FROM data");
+		$this->logger->write("DB data is cleaned, rows affected: " . $this->database->affectedRows());
 	}
 	
 	/**

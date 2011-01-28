@@ -85,7 +85,7 @@ class Connection extends \ManiaLive\Database\Connection
 		{
 			throw new NotConnectedException;
 		}
-
+		
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -93,7 +93,7 @@ class Connection extends \ManiaLive\Database\Connection
 		}
 		$result = sqlite_query($this->connection, $query);
 		Connection::endMeasuring($this);
-
+		
 		if (!$result)
 		{
 			$errno = sqlite_last_error($this->connection);
@@ -113,7 +113,7 @@ class Connection extends \ManiaLive\Database\Connection
 		}
 		$result = sqlite_exec($this->connection, $query);
 		Connection::endMeasuring($this);
-
+		
 		if ($result === false)
 		{
 			$errno = sqlite_last_error($this->connection);
@@ -132,7 +132,7 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function quote($string)
 	{
-		return sqlite_escape_string($string);
+		return '\''.sqlite_escape_string($string).'\'';
 	}
 
 	function select($database)

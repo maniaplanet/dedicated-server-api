@@ -11,6 +11,8 @@
 
 namespace ManiaLive\Application;
 
+use ManiaLive\Threading\Tools;
+use ManiaLive\Threading\ThreadPool;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Config\Config;
 use ManiaLive\Config\Loader;
@@ -43,6 +45,7 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		{
 			
 			$configFile = CommandLineInterpreter::preConfigLoad();
+			
 			// load configuration file
 			$loader = Loader::getInstance();
 			$loader->setConfigFilename(APP_ROOT . 'config/'.$configFile);
@@ -89,16 +92,25 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		Storage::getInstance();
 		PluginHandler::getInstance();
 		
-		GuiHandler::hideAll();
+		// initialize threadpool
+		$pool = ThreadPool::getInstance();
+		
+		// send config to threads
+		if ($pool->getDatabase() != null)
+		{
+			Tools::setData($pool->getDatabase(), 'config', Loader::$config);
+		}
+		
+		// establish connection
 		$this->connection = Connection::getInstance();
+		
+		// enable callbacks
 		$this->connection->enableCallbacks(true);
 		
-		// document all commands until here to manialive
+		// hide all windows
+		GuiHandler::hideAll();
 		
 		Dispatcher::dispatch(new Event($this, Event::ON_INIT));
-		
-		// create documentation after all plugins were loaded.
-		// commands assigned on runtime are not taken into account!
 	}
 	
 	function run()

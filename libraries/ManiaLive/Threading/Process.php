@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Threading;
 
+use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Database\SQLite\Connection;
 
@@ -84,8 +85,11 @@ class Process
 		{
 			echo "DB is connected, waiting for jobs ..." . APP_NL;
 		}
-			
+		
 		$this->incoming_job = null;
+		
+		// get configuration ...
+		Loader::$config = Tools::getData($this->db, 'config');
 		
 		// thread state is ready ...
 		$this->setReady();
