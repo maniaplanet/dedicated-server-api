@@ -347,6 +347,16 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	{
 		$keys = array_keys($playerInfo);
 		$keys = array_map('lcfirst', $keys);
+		$keys[] = 'forceSpectator';
+		$keys[] = 'isReferee';
+		$keys[] = 'isPodiumReady';
+		$keys[] = 'isUsingStereoscopy';
+		$keys[] = 'spectator';
+		$keys[] = 'temporarySpectator';
+		$keys[] = 'pureSpectator';
+		$keys[] = 'autoTarget';
+		$keys[] = 'currentTargetId';
+		
 		$playerInfo = Player::fromArray($playerInfo);
 		if($playerInfo->spectator == 0)
 		{
