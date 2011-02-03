@@ -26,31 +26,53 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 {
 	protected $disconnetedPlayers = array();
 
+	/**
+	 * Contains Player object. It represents the player connected to the server
+	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
+	 */
 	public $players = array();
+	/**
+	 * Contains Player object. It represents the spectators connected to the server
+	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
+	 */
 	public $spectators = array();
+	/**
+	 * Contains Player object. It represents the current ranking on the server
+	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
+	 */
 	public $ranking = array();
+	/**
+	 * Contains Player object. It represents the player connected to the server
+	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
+	 */
 	public $challenges;
 	/**
+	 * Represents the current Challenge object
 	 * @var \ManiaLive\DedicatedApi\Structures\Challenge
 	 */
 	public $currentChallenge;
 	/**
+	 * Represents the next Challenge object
 	 * @var \ManiaLive\DedicatedApi\Structures\Challenge
 	 */
 	public $nextChallenge;
 	/**
+	 * Represents the Current Server Options 
 	 * @var \ManiaLive\DedicatedApi\Structures\ServerOptions
 	 */
 	public $server;
 	/**
+	 * Represents the Current Game Infos
 	 * @var \ManiaLive\DedicatedApi\Structures\GameInfos
 	 */
 	public $gameInfos;
 	/**
+	 * Represents the current Server Status
 	 * @var \ManiaLive\DedicatedApi\Structures\Status
 	 */
 	public $serverStatus;
 	/**
+	 * Contains the server login
 	 * @var string
 	 */
 	public $serverLogin;
@@ -185,7 +207,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	function onPlayerDisconnect($login)
 	{
 		$this->disconnetedPlayers[] = $login;
-
+		
 		if(array_key_exists($login, $this->players))
 		{
 			$this->players[$login]->isConnected = false;
@@ -194,7 +216,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		{
 			$this->spectators[$login]->isConnected = false;
 		}
-
+		
 		foreach($this->ranking as $key => $player)
 		{
 			if($player->login == $login)
@@ -277,7 +299,10 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onPlayerFinish($playerUid, $login, $timeOrScore)
 	{
-		if (!isset($this->players[$login])) return;
+		if (!isset($this->players[$login]))
+		{
+			return;
+		}
 		$player = $this->players[$login];
 
 		switch ($this->gameInfos->gameMode)
@@ -358,6 +383,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$keys[] = 'currentTargetId';
 		
 		$playerInfo = Player::fromArray($playerInfo);
+		
 		if($playerInfo->spectator == 0)
 		{
 			if(array_key_exists($playerInfo->login, $this->players))
