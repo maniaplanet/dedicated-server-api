@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Gui\Windowing\Windows;
 
+use ManiaLib\Gui\Elements\Bgs1;
 use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLib\Gui\Elements\Label;
 use ManiaLive\Gui\Windowing\Controls\Panel;
@@ -28,24 +29,18 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 	protected function initializeComponents()
 	{
 		$this->panel = new Panel();
+		$this->panel->setBackgroundStyle(Bgs1::BgWindow1);
 		$this->addComponent($this->panel);
 
 		$this->text = new Label();
 		$this->text->enableAutonewline();
 		$this->addComponent($this->text);
-		
-		$this->button = new Icons64x64_1(3);
-		$this->button->setSubStyle(Icons64x64_1::Close);
-		$this->button->setAction($this->callback('hide'));
-		$this->addComponent($this->button);
 	}
 	
 	protected function onHide() {}
 	
 	protected function onShow()
 	{
-		$this->button->setPosition($this->sizeX - 5, 1.6);
-		
 		// stretch panel to fill window size ...
 		$this->panel->setSize($this->sizeX, $this->sizeY);
 		

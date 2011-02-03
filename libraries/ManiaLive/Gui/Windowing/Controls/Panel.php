@@ -11,6 +11,9 @@
 
 namespace ManiaLive\Gui\Windowing\Controls;
 
+use ManiaLib\Gui\Elements\Bgs1InRace;
+use ManiaLib\Gui\Elements\BgsPlayerCard;
+use ManiaLive\Gui\Windowing\WindowHandler;
 use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLib\Gui\Elements\Label;
 use ManiaLib\Gui\Elements\Quad;
@@ -27,6 +30,7 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 	public $titleBg;
 	public $main;
 	public $header;
+	public $btn_bg;
 	public $btn_close;
 	
 	function initializeComponents()
@@ -45,17 +49,24 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->titleBg->setStyle(DefaultStyles::Panel_TitleBg_Style);
 		$this->titleBg->setSubStyle(DefaultStyles::Panel_TitleBg_Substyle);
 		$this->titleBg->setSizeY(4);
+		$this->titleBg->setHalign('center');
+		
+		// ...
+		$this->btn_bg = new BgsPlayerCard();
+		$this->btn_bg->setSubStyle(BgsPlayerCard::BgRacePlayerLine);
 		
 		// title label ...
 		$this->title = new Label();
-		$this->title->setStyle(Label::TextTitle1);
+		$this->title->setStyle(Label::TextCardScores2);
 		$this->title->setTextColor('fff');
-		$this->title->setTextSize(3);
-		$this->title->setPositionY(0.75);
+		$this->title->setTextSize(2.5);
+		$this->title->setPositionY(1);
+		$this->title->setHalign('center');
 		
 		// move title label and background together ...
 		$this->header = new Frame();
 		$this->header->addComponent($this->titleBg);
+		$this->header->addComponent($this->btn_bg);
 		$this->header->addComponent($this->title);
 		$this->addComponent($this->header);
 		
@@ -65,11 +76,13 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->addComponent($this->btn_close);
 	}
 	
-	function beforeDraw()
+	function onResize()
 	{
+		$this->btn_bg->setPosition(-$this->getSizeX() / 2 + 0.5, 0.3);
+		$this->btn_bg->setSize($this->getSizeX() - 1, 3.5);
+		
 		// set action for close button ...
-		$this->btn_close->setPosition($this->getSizeX() - 5, 1.6);
-		$this->btn_close->setAction($this->callback(array($this->getWindow(), 'hide')));
+		$this->btn_close->setPosition(2, 1.6);
 		
 		// set size of form ...
 		$this->main->setSize($this->sizeX, $this->sizeY);
@@ -77,18 +90,18 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		// set width of title according to control size ...
 		$this->titleBg->setSizeX($this->getSizeX() - 2);
 		$this->title->setSizeX($this->getSizeX() - 4);
-
-		// align center ...
-		$this->titleBg->setHalign('center');
-		$this->title->setHalign('center');
 		
-		// move header to right position ..
 		$this->header->setPosition($this->sizeX / 2, 1);
+	}
+	
+	function beforeDraw()
+	{
+		$this->btn_close->setAction($this->callback(array($this->getWindow(), 'hide')));
 	}
 	
 	function setTitle($title)
 	{
-		$this->title->setText($title);
+		$this->title->setText('$o'.$title);
 	}
 	
 	function showCloseButton($bool)

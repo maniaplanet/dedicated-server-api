@@ -16,7 +16,6 @@ use ManiaLib\Gui as Toolkit;
  * Page navigation arrows at the bottom of the lists
  * 
  * @author Maxime Raoust
- * @author Florian Schnell
  */
 class PageNavigator extends Control
 {

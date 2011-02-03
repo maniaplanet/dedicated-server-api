@@ -49,6 +49,12 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		$this->addComponent($this->content);
 	}
 	
+	function onResize()
+	{
+		$tab = $this->tabs[$this->active_id];
+		$tab->setSize($this->sizeX - 1, $this->sizeY - 4);
+	}
+	
 	function beforeDraw()
 	{
 		// draw content background
@@ -89,7 +95,6 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		// change tab content if it has been switched
 		if ($this->active_id_prev !== $this->active_id)
 		{
-			
 			// remove old tab
 			if (isset($this->tabs[$this->active_id_prev]))
 			{

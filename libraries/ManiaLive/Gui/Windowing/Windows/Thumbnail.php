@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Gui\Windowing\Windows;
 
+use ManiaLib\Gui\Elements\Icons128x128_Blink;
 use ManiaLib\Gui\Elements\Icons128x128_1;
 use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLib\Gui\Elements\Bgs1InRace;
@@ -31,9 +32,11 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 	 */
 	public $window;
 	public $windowContent;
+	protected $highlight;
 	protected $border;
 	protected $btnClose;
 	protected $btnCloseBg;
+	protected $bgHighlight;
 	
 	/**
 	 * (non-PHPdoc)
@@ -41,6 +44,12 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 	 */
 	function initializeComponents()
 	{
+		$this->highlight = false;
+		
+		$this->bgHighlight = new Icons128x128_Blink();
+		$this->bgHighlight->setSubStyle(Icons128x128_Blink::ShareBlink);
+		$this->addComponent($this->bgHighlight);
+		
 		$this->border = new Bgs1InRace();
 		$this->border->setSubStyle(Bgs1InRace::NavButton);
 		$this->addComponent($this->border);
@@ -68,6 +77,7 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 	 */
 	function onShow()
 	{
+		$this->bgHighlight->setVisibility($this->highlight);
 		$this->border->setAction($this->callback(array($this->window, 'show')));
 	}
 	
@@ -113,6 +123,8 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 		$this->btnCloseBg->setSize(2.5 * $factor, 2.5 * $factor);
 		$this->btnCloseBg->setPosition(18.7 * $factor, 12.7 * $factor);
 		
+		$this->bgHighlight->setSize($sizeX * $factor, $sizeY * $factor);
+		
 		// resize border element
 		$this->border->setSize($sizeX * $factor, $sizeY * $factor);
 		
@@ -137,6 +149,18 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 		parent::destroy();
 	}
 	
+	function enableHighlight()
+	{
+		$this->highlight = true;
+		$this->show();
+	}
+	
+	function disableHighlight()
+	{
+		$this->highlight = false;
+		$this->show();
+	}
+	
 	/**
 	 * This creates a thumbnail from an existing window.
 	 * Taking all its elements, rebuild them, add new
@@ -148,6 +172,8 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 	static function fromWindow(\ManiaLive\Gui\Windowing\Window $window)
 	{
 		$thumb = Thumbnail::Create($window->getRecipient(), false);
+		
+		$window->onDraw();
 		
 		$components = $window->getComponents();
 		foreach ($components as $component)

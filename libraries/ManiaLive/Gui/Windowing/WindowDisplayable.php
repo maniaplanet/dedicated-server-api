@@ -54,7 +54,10 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Control::initializeComponents()
 	 */
-	function initializeComponents() {}
+	function initializeComponents()
+	{
+		
+	}
 	
 	/**
 	 * (non-PHPdoc)
@@ -75,24 +78,17 @@ class WindowDisplayable extends \ManiaLive\Gui\Windowing\Control
 			Manialink::setSwappedPositioning();
 		}
 		
-		$this->posZ = \ManiaLive\Gui\Windowing\Z_MIN;
-		
 		// search the windows below for the one with the highest z-index ...
 		$below = $this->window->getWindowsBelow();
-		$z_max = 0;
-		$z = 0;
+		$zValues = array($this->posZ);
 		if (!empty($below))
 		{
 			foreach ($below as $window)
 			{
-				$z = $window->getMaxZ();
-				if ($z > $z_max) $z_max = $z;
-			}
-			if ($z_max > $this->posZ)
-			{
-				$this->posZ = $z_max;
+				$zValues[] = $window->getMaxZ();
 			}
 		}
+		$this->posZ = max($zValues);
 		
 		// an element to translate the page always needs to be on uppes level ...
 		if ($this->window && $this->window->getHeaderElement() != null)

@@ -62,7 +62,6 @@ abstract class Window extends Container implements
 	private $callbacks;
 	private $header;
 	
-	protected $windowHandler;
 	protected $login;
 	protected $isHidden;
 	protected $linksDeactivated;
@@ -71,11 +70,10 @@ abstract class Window extends Container implements
 	protected $autohide;
 	protected $useClassicPositioning;
 	
-	protected $onClose;
+	protected $closeCallbacks;
 	
 	public $above;
 	public $below;
-	
 	public $uptodate;
 	
 	static $instances = array();
@@ -90,7 +88,6 @@ abstract class Window extends Container implements
 	{
 		$this->uid = uniqid();
 		$this->useClassicPositioning = false;
-		$this->windowHandler = WindowHandler::getInstance();
 		$this->autohide = false;
 		$this->playerValues = array();
 		
@@ -98,6 +95,7 @@ abstract class Window extends Container implements
 		$this->below = array();
 		$this->above = array();
 		
+		$this->closeCallbacks = array();
 		$this->linksDeactivated = false;
 		$this->callbacks = array();
 		$this->login = $login;
@@ -109,20 +107,13 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * Use this method to initialize all subcomponents
-	 * and add them to the Window's intern container.
-	 */
-	abstract protected function initializeComponents();
-	
-	/**
 	 * This will create one instance of the window for
 	 * each player. If you dont want to use this feature
 	 * you can deactivate it by setting singleton to false.
-	 * 
 	 * @param string $login
 	 * @return \ManiaLive\Gui\Windowing\Window
 	 */
-	public static function Create($login = null, $singleton = true)
+	static function Create($login = null, $singleton = true)
 	{
 		if (!$singleton)
 		{
@@ -160,6 +151,21 @@ abstract class Window extends Container implements
 	}
 	
 	/**
+	 * Buzz all windows of the given type.
+	 * Will inform players that this window has got some
+	 * new information for them.
+	 */
+	static function Buzz()
+	{
+		$class_name = get_called_class();
+		$windows = self::GetAll();
+		foreach ($windows as $window)
+		{
+			WindowHandler::buzzWindow($window);
+		}
+	}
+	
+	/**
 	 * Gets all currently opened instances of this
 	 * window type.
 	 */
@@ -187,7 +193,7 @@ abstract class Window extends Container implements
 	
 	/**
 	 * Frees the memory that has been allocated
-	 * for the player's window.
+	 * for the player's window(s).
 	 * If it is currently displayed it will also be
 	 * closed.
 	 * @param string $login
@@ -256,14 +262,62 @@ abstract class Window extends Container implements
 			}
 		}
 		
-		WindowHandler::getInstance()->closeWindowThumbs(get_called_class());
+		WindowHandler::closeWindowThumbs(get_called_class());
 	}
+	
+	/**
+	 * search for highest z value in all windows.
+	 * @param unknown_type $login
+	 */
+	static function GetTopZ($login)
+	{
+		$exceptions = func_get_args();
+		array_shift($exceptions);
+		$zValues = array(\ManiaLive\Gui\Windowing\Z_MIN);
+		$classes = array('');
+		
+		if (isset(self::$instances[$login]))
+		{
+			foreach (self::$instances[$login] as $window)
+			{
+				if ($window->isShown())
+				{
+					if (!in_array($window, $exceptions))
+					{
+						$zValues[] = $window->getMaxZ();
+					}
+				}
+			}
+		}
+		
+		if (isset(self::$instancesNonSingleton[$login]))
+		{
+			foreach (self::$instancesNonSingleton[$login] as $window)
+			{
+				if ($window->isShown())
+				{
+					if (!in_array($window, $exceptions))
+					{
+						$zValues[] = $window->getMaxZ();
+					}
+				}
+			}
+		}
+		
+		return max($zValues);
+	}
+	
+	/**
+	 * Use this method to initialize all subcomponents
+	 * and add them to the Window's intern container.
+	 */
+	abstract protected function initializeComponents();
 	
 	/**
 	 * Actions that need to be processed before the Window is being
 	 * showed. This includes eg. resizing and positioning of Elements and Controls.
 	 */
-	protected function onShow() {}
+	protected function onDraw() {}
 	
 	/**
 	 * Cleaning up data and resetting of fields when the Window is being removed
@@ -275,10 +329,9 @@ abstract class Window extends Container implements
 	 * Register to dispatcher for events that should only be executed when the
 	 * Window is being showed.
 	 */
-	protected function onRecover() {}
+	protected function onShow() {}
 	
 	/**
-	 * 
 	 * @param $seconds
 	 * @deprecated
 	 */
@@ -298,7 +351,7 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * 
+	 * If the window will hide after a specific amount of time.
 	 */
 	public function getAutohide()
 	{
@@ -382,9 +435,11 @@ abstract class Window extends Container implements
 	{
 		if (isset($this->callbacks[$action]))
 		{
-			if (!isset(WindowHandler::$dialog[$login])
-				|| WindowHandler::$dialog[$login] == null
-				|| $this == WindowHandler::$dialog[$login])
+			$maximized = WindowHandler::getMaximized($login);
+			$dialog = WindowHandler::getDialog($login);
+
+			if (($dialog === false && ($maximized === false
+				|| $maximized === $this)) || $dialog === $this)
 			{
 				$params = array($login);
 				array_splice($params, count($params), 0, $this->callbacks[$action][1]);
@@ -400,6 +455,62 @@ abstract class Window extends Container implements
 	{
 		$this->posX = -$this->sizeX / 2;
 		$this->posY = -$this->sizeY / 2 - 6;
+	}
+	
+	/**
+	 * Positions the window on the center of the windows
+	 * that you can give as parameters.
+	 * @param Window $window1
+	 * @param Window , ...
+	 */
+	public function centerOn()
+	{
+		$args = func_get_args();
+		
+		$minX = 0;
+		$minY = 0;
+		$maxX= 0;
+		$maxY = 0;
+		
+		foreach ($args as $window)
+		{
+			if (!($window instanceof Window))
+			{
+				continue;
+			}
+			
+			if ($window->getPosX() < $minX)
+			{
+				$minX = $window->getBorderLeft();
+			}
+				
+			if ($window->getBorderTop() < $minY)
+			{
+				$minY = $window->getBorderTop();
+			}
+		
+			if ($window->getBorderRight() > $maxX)
+			{
+				$maxX = $window->getBorderRight();
+			}
+				
+			if ($window->getBorderBottom() > $maxY)
+			{
+				$maxY = $window->getBorderBottom();
+			}
+		};
+		
+		// set position to the rectangle's center
+		$this->setPositionX(($minX + $maxX) / 2 - $this->getSizeX() / 2);
+		$this->setPositionY(($minY + $maxY) / 2 - $this->getSizeY() / 2);
+	}
+	
+	/**
+	 * Positions the window on the underlying window's center.
+	 */
+	public function centerOnBelow()
+	{
+		call_user_func_array(array($this, 'centerOn'), $this->below);
 	}
 	
 	/**
@@ -421,58 +532,30 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * Positions the window on the underlying window's center.
+	 * Do something when you are closed!
+	 * @param callback $callback
+	 * @deprecated
 	 */
-	public function centerOnBelow()
+	public function setCloseCallback($callback)
 	{
-		$minX = 0;
-		$minY = 0;
-		$maxX= 0;
-		$maxY = 0;
-		
-		// build rectangle from subwindows ...
-		foreach ($this->below as $window)
-		{
-			if ($window->getPosX() < $minX)
-			{
-				$minX = $window->getBorderLeft();
-			}
-				
-			if ($window->getBorderTop() < $minY)
-			{
-				$minY = $window->getBorderTop();
-			}
-		
-			if ($window->getBorderRight() > $maxX)
-			{
-				$maxX = $window->getBorderRight();
-			}
-				
-			if ($window->getBorderBottom() > $maxY)
-			{
-				$maxY = $window->getBorderBottom();
-			}
-		}
-		
-		// set position to the rectangle's center
-		$this->setPositionX(($minX + $maxX) / 2 - $this->getSizeX() / 2);
-		$this->setPositionY(($minY + $maxY) / 2 - $this->getSizeY() / 2);
+		$this->addCloseCallback($callback);
 	}
 	
 	/**
 	 * Do something when you are closed!
 	 * @param callback $callback
 	 */
-	public function setCloseCallback($callback)
+	public function addCloseCallback($callback)
 	{
 		if (is_callable($callback))
 		{
-			$this->onClose = $callback;
+			$this->closeCallbacks[] = $callback;
 		}
 	}
 	
 	/**
 	 * Don't call this from outside!
+	 * @internal
 	 */
 	public function render($login)
 	{
@@ -495,9 +578,9 @@ abstract class Window extends Container implements
 		if ($this->isHidden)
 		{
 			// invoke close callback
-			if ($this->onClose)
+			foreach ($this->closeCallbacks as $callback)
 			{
-				call_user_func_array($this->onClose, array($login, $this));
+				call_user_func_array($callback, array($login, $this));
 			}
 			
 			$group->displayableGroup->addDisplayable(new Blank($this->id));
@@ -509,6 +592,8 @@ abstract class Window extends Container implements
 			
 			$group->displayableGroup->addDisplayable($this->view);
 		}
+		
+		$this->posZ = Z_MIN;
 	}
 	
 	/**
@@ -527,13 +612,13 @@ abstract class Window extends Container implements
 		$state = $this->isHidden;
 		$this->isHidden = false;
 		
-		if ($this->windowHandler->add($this, $login))
+		if (WindowHandler::add($this, $login))
 		{	
 			// call recover function when Window state changes
 			// from hidden to visible
 			if ($state)
 			{
-				$this->onRecover();
+				$this->onShow();
 				Dispatcher::dispatch(new Event($this, Event::ON_WINDOW_RECOVER, $login));
 			}
 			
@@ -546,7 +631,7 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * Hides the window and informs other windows about it.
+	 * Closes the window and informs other windows about it.
 	 * @param string $login
 	 */
 	public function hide($login = null)
@@ -562,7 +647,7 @@ abstract class Window extends Container implements
 		$this->isHidden = true;
 		
 		// add to drawstack button ...
-		if ($this->windowHandler->add($this, $login))
+		if (WindowHandler::add($this, $login))
 		{
 			// invoke cleanup function ..
 			$this->onHide();
@@ -581,15 +666,21 @@ abstract class Window extends Container implements
 	 * for the time this window is being displayed.
 	 * @param Window $window
 	 */
-	public function showDialog(Window $window)
+	public function showDialog(Window $window, $callback = null)
 	{
+		// set close callback if specified
+		if ($callback)
+		{
+			$window->addCloseCallback(array($this, $callback));
+		}
+		
+		// move the dialog above the current window
 		$window->moveAbove($this);
 		$window->centerOnBelow();
 		
-		WindowHandler::$dialog[$this->getRecipient()] = $window;
-		$window->setCloseCallback(array($this, 'onDialogClose'));
-		
-		$window->show();
+		// give the dialog to the windowing system
+		// this will care of the dialog treatment
+		WindowHandler::showDialog($window);
 	}
 	
 	/**
@@ -612,7 +703,7 @@ abstract class Window extends Container implements
 		$this->view->window = $this;
 		
 		// the windowcontroller prepares the view ...
-		$this->onShow();
+		$this->onDraw();
 		
 		$this->view->setSize($this->sizeX, $this->sizeY);
 		$this->view->setPosition($this->posX, $this->posY, $this->posZ);
@@ -718,21 +809,6 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * Is invoked when a dialog window is closing.
-	 */
-	public function dialogClosed(Window $dialog) {}
-	
-	/**
-	 * (non-PHPdoc)
-	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Listener::onWindowClose()
-	 */
-	public final function onDialogClose($login, $window)
-	{
-		$this->dialogClosed($window);
-		WindowHandler::$dialog[$login] = null;
-	}
-	
-	/**
 	 * @return string Whom this window is sent to.
 	 */
 	public function getRecipient()
@@ -758,13 +834,16 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * @return integer Unique Id for this window.
+	 * @return integer Windowing system identifier of that window.
 	 */
 	public function getId()
 	{
 		return $this->id;
 	}
 	
+	/**
+	 * @return integer Unique identifier for that window.
+	 */
 	function getUid()
 	{
 		return $this->uid;
@@ -785,6 +864,38 @@ abstract class Window extends Container implements
 			}
 		}
 	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see libraries/ManiaLib/Gui/ManiaLib\Gui.Component::resize()
+	 */
+	function resize()
+	{
+		$this->onResize();
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see libraries/ManiaLib/Gui/ManiaLib\Gui.Component::move()
+	 */
+	function move()
+	{
+		$this->onMove();
+	}
+	
+	/**
+	 * Window is being moved on the screen.
+	 * Override this method to execute your
+	 * own code on this event.
+	 */
+	function onMove() {}
+	
+	/**
+	 * Window is resized.
+	 * Override this method to execute your
+	 * own code on this event.
+	 */
+	function onResize() {}
 	
 	/**
 	 * Remove all references from this Window.
@@ -820,10 +931,9 @@ abstract class Window extends Container implements
 		// remove references to windows below
 		$this->below = array();
 		$this->above = array();
-		$this->windowHandler = null;
 		unset($this->playerValues[$this->getRecipient()]);
 		$this->header = null;
-		$this->onClose = null;
+		$this->closeCallbacks = array();
 		
 		// remove callbacks
 		$this->callbacks = array();

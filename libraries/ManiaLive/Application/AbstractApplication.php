@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Application;
 
+use ManiaLive\Gui\Windowing\WindowHandler;
 use ManiaLive\Threading\Tools;
 use ManiaLive\Threading\ThreadPool;
 use ManiaLive\Utilities\Logger;
@@ -107,8 +108,9 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		// enable callbacks
 		$this->connection->enableCallbacks(true);
 		
-		// hide all windows
+		// initialize windowing system
 		GuiHandler::hideAll();
+		WindowHandler::getInstance();
 		
 		Dispatcher::dispatch(new Event($this, Event::ON_INIT));
 	}

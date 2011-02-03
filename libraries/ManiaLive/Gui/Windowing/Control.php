@@ -354,6 +354,19 @@ abstract class Control extends Container
 		return $this->zCur;
 	}
 	
+	final function resize()
+	{
+		$this->onResize();
+	}
+	
+	final function move()
+	{
+		$this->onMove();
+	}
+	
+	function onResize() {}
+	function onMove() {}
+	
 	/**
 	 * Removes all references to other objects.
 	 * Recursively removes all connected resources.

@@ -12,12 +12,18 @@
 namespace ManiaLive\Gui\Windowing\Controls;
 
 use ManiaLib\Gui\Elements\Label;
-
 use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLib\Gui\Layouts\Column;
 use ManiaLib\Gui\Component;
 use ManiaLib\Gui\Elements\Quad;
 
+/**
+ * Add controls to the pager, give it a size and
+ * it will try to arrange them on your screen and
+ * devide them onto several pages.
+ *
+ * @author Florian Schnell
+ */
 class Pager extends \ManiaLive\Gui\Windowing\Control
 {
 	protected $buttonNext;
@@ -57,6 +63,7 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 	{
 		$this->pages = array(array());
 		$currentSizeY = 0;
+		$pageCount = 0;
 		
 		foreach ($this->items as $item)
 		{
@@ -68,10 +75,15 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 			}
 			else
 			{
-				$this->pages[count($this->pages) - 1][] = $item;
+				$pageCount = count($this->pages) - 1;
+				$this->pages[$pageCount][] = $item;
 			}
 		}
 		
+		if ($this->currentPage >= $pageCount)
+		{
+			$this->currentPage = $pageCount;
+		}
 		$this->label->setPosition($this->sizeX / 2, $this->sizeY - 3.5);
 	}
 	
