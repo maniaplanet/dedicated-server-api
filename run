@@ -94,16 +94,21 @@ then
 else
         if [ $STOP == "false" ]
         then
-                if [ -f $PWD/.pid ]
-                then
-                        echo "ManiaLive is currently running, use --stop to kill it."
-                        exit
-                fi
+				if [ -f $PWD/.pid ]
+				then
+					PID=`cat $PWD/.pid`
+					PS_PID=`ps -p $PID --noheader | awk '{print $1}'`
+					if [ ${PS_PID:-0} -eq ${PID:-0} ]
+					then
+							echo "ManiaLive is currently running, use --stop to kill it."
+							exit
+					fi
+				fi
 
                 echo "Launching ManiaLive Daemon with the following arguments: $ARGS"
-                $PHP $PWD/bootstrapper.php -- $ARGS </dev/null >/dev/null 2>&1 &
+                $PHP $PWD/bootstrapper.php $ARGS </dev/null > $PWD/logs/runtime.log 2>&1 &
 
-                echo "Writing process id to file."
+                echo "Writing process id : $! to file."
                 echo $! > .pid
         else
                 echo "Stopping Manialive Daemon ..."
