@@ -63,6 +63,11 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		$this->register($command);
 	}
 
+	/**
+	 * Use this method to register a new Command
+	 * Once register the command can be used
+	 * @param \ManiaLive\Features\ChatCommand\Command $command
+	 */
 	function register(Command $command)
 	{
 		if($this->isRegistered($command->name, $command->parametersCount) == 2)
@@ -73,6 +78,12 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		$this->registeredCommands[strtolower($command->name)][$command->parametersCount] = $command;
 	}
 
+	/**
+	 * Check if the given command with the number of argument given exists
+	 * @param string $commandName the name of the command
+	 * @param int $parametersCount the number of argument
+	 * @return bool
+	 */
 	function isRegistered($commandName, $parametersCount)
 	{
 		if(isset($this->registeredCommands[strtolower($commandName)]))
@@ -82,6 +93,10 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		return 0;
 	}
 
+	/**
+	 * Get the registerd Commands
+	 * @return \ManiaLive\Features\ChatCommand\Command[] The list of registerd Command
+	 */
 	function getRegisteredCommands()
 	{
 		$commands = array();
@@ -96,6 +111,11 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		return $commands;
 	}
 
+	/**
+	 * Unregister the giver Command
+	 * Once unregistered a command is no more available
+	 * @param Command $command
+	 */
 	function unregister(Command $command)
 	{
 		if($this->isRegistered($command->name, $command->parametersCount) == 2
@@ -113,8 +133,6 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
 	{
 		// TODO Handle params such as "a string with spaces"
-		// TODO Implement param check
-		// TODO Implement is not public handling
 		if($isRegistredCmd)
 		{
 			$tmpResult = explode('"',$text);
@@ -258,5 +276,4 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 }
 
 class CommandAlreadyRegisteredException extends \Exception {}
-
 ?>

@@ -15,12 +15,21 @@ use ManiaLive\Config\Loader;
 
 abstract class AdminGroup
 {
+	/**
+	 * Check if the given login is an admin or not
+	 * @param string $login
+	 * @return bool
+	 */
 	public static function contains($login)
 	{
 		$login = explode('/', $login, 1);
 		return (array_search($login[0], Loader::$config->admins->logins) !== false);
 	}
 
+	/**
+	 * Return the list of Admins' login
+	 * @return array
+	 */
 	public static function get()
 	{
 		return  Loader::$config->admins->logins;
