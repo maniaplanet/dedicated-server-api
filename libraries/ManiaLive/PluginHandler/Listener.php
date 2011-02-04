@@ -26,6 +26,6 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param string $classname
 	 */
 	function onPluginUnloaded($classname);
-	}
+}
 
 ?>

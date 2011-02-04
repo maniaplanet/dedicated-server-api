@@ -24,7 +24,7 @@ class Application extends \ManiaLive\Application\AbstractApplication
 	{
 		if (extension_loaded('pcntl'))
 		{
-			pcntl_signal(SIGTERM, array($this, 'kill'));
+			pcntl_signal(SIGTERM, array($this, 'kill'));  
 			pcntl_signal(SIGINT, array($this, 'kill'));
 		}
 		

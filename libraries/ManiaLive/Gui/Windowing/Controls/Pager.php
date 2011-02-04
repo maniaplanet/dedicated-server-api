@@ -61,6 +61,13 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 	
 	function onResize()
 	{
+		$current = false;
+		if (isset($this->pages[$this->currentPage])
+			&& isset($this->pages[$this->currentPage][0]))
+		{
+			$current = $this->pages[$this->currentPage][0];
+		}
+		
 		$this->pages = array(array());
 		$currentSizeY = 0;
 		$pageCount = 0;
@@ -72,17 +79,16 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 			{
 				$currentSizeY = $item->getSizeY();
 				$this->pages[] = array($item);
+				$pageCount = count($this->pages) - 1;
 			}
 			else
 			{
-				$pageCount = count($this->pages) - 1;
 				$this->pages[$pageCount][] = $item;
 			}
-		}
-		
-		if ($this->currentPage >= $pageCount)
-		{
-			$this->currentPage = $pageCount;
+			if ($current === $item)
+			{
+				$this->currentPage = $pageCount;
+			}
 		}
 		$this->label->setPosition($this->sizeX / 2, $this->sizeY - 3.5);
 	}

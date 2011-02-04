@@ -161,28 +161,21 @@ class WindowHandler
 	}
 	
 	/**
-	 * Make window glow if it is currently in minimized state.
-	 * This will (hopefully) get the player's attention.
-	 * @param $window
+	 * Will return the thumbnail for a specific window
+	 * if it is currently minimized.
+	 * @param \ManiaLive\Gui\Windowing\ManagedWindow $window
+	 * @return \ManiaLive\Gui\Windowing\Windows\Thumbnail
 	 */
-	static function buzzWindow(Window $window)
+	static function getThumbnail(ManagedWindow $window)
 	{
 		$login = $window->getRecipient();
 		if (isset(self::$minimizedManagedWindowHashes[$login][spl_object_hash($window)]))
 		{
-			if (isset(self::$minimizedManagedWindows[$login]))
-			{
-				foreach (self::$minimizedManagedWindows[$login] as $task)
-				{
-					if ($task)
-					{
-						if ($task['window'] === $window)
-						{
-							$task['thumb']->enableHighlight();
-						}
-					}
-				}
-			}
+			return self::$minimizedManagedWindowHashes[$login][spl_object_hash($window)]['thumb'];
+		}
+		else
+		{
+			return null;
 		}
 	}
 	
@@ -425,7 +418,7 @@ class WindowHandler
 		);
 		
 		// this window is now minimized
-		self::$minimizedManagedWindowHashes[$login][spl_object_hash($oldWindow)] = true;
+		self::$minimizedManagedWindowHashes[$login][spl_object_hash($oldWindow)] = $task;
 		
 		// if this is the first minimized window, then we just
 		// put it to the first position.
@@ -458,16 +451,6 @@ class WindowHandler
 		$thumb->setSize(20, 14);
 		$thumb->setPosition(22 - 21 * $i, -47);
 		$thumb->show();
-	}
-	
-	/**
-	 * Checks whether this window is currently
-	 * minimized into the taskbar.
-	 * @param $window
-	 */
-	static function isWindowMinimized(ManagedWindow $window)
-	{
-		//return isset(self::$minimizedManagedWindowHashes[$window->getU]);
 	}
 	
 	/**

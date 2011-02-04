@@ -27,14 +27,13 @@ use ManiaLive\Event\Dispatcher;
  */
 abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 {
-	protected $panel;
-	protected $btn_min;
-	protected $btn_max;
-	protected $maximizable;
-	protected $maximized;
-	
-	protected $old_x;
-	protected $old_y;
+	private $panel;
+	private $btn_min;
+	private $btn_max;
+	private $maximizable;
+	private $maximized;
+	private $old_x;
+	private $old_y;
 	
 	protected function __construct($login)
 	{
@@ -61,6 +60,42 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 		
 		$this->btn_max->setAction($this->callback('maximizeWindow'));
 		$this->addComponent($this->btn_max);
+	}
+	
+	/**
+	 * Buzz all windows of the given type.
+	 * Will inform players that this window has got some
+	 * new information for them.
+	 */
+	static function Buzz()
+	{
+		$class_name = get_called_class();
+		$windows = self::GetAll();
+		foreach ($windows as $window)
+		{
+			$thumbnail = WindowHandler::getThumbnail($window);
+			if ($thumbnail)
+			{
+				$thumbnail->enableHighlight();
+			}
+		}
+	}
+	
+	/**
+	 * Sets the window's title.
+	 * @param string $title
+	 */
+	function setTitle($title)
+	{
+		$this->panel->setTitle($title);
+	}
+	
+	/**
+	 * @return string The window its title.
+	 */
+	function getTitle()
+	{
+		return $this->panel->getTitle();
 	}
 	
 	/**

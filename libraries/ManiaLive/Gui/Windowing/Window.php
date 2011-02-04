@@ -151,21 +151,6 @@ abstract class Window extends Container implements
 	}
 	
 	/**
-	 * Buzz all windows of the given type.
-	 * Will inform players that this window has got some
-	 * new information for them.
-	 */
-	static function Buzz()
-	{
-		$class_name = get_called_class();
-		$windows = self::GetAll();
-		foreach ($windows as $window)
-		{
-			WindowHandler::buzzWindow($window);
-		}
-	}
-	
-	/**
 	 * Gets all currently opened instances of this
 	 * window type.
 	 */

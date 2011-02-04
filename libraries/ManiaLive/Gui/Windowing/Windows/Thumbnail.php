@@ -75,7 +75,7 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Window::onShow()
 	 */
-	function onShow()
+	function onDraw()
 	{
 		$this->bgHighlight->setVisibility($this->highlight);
 		$this->border->setAction($this->callback(array($this->window, 'show')));

@@ -79,6 +79,10 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 		\ManiaLive\Event\Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
 	}
 
+	/**
+	 * @see ManiaLive\Database.Connection::getHandle()
+	 * @return resource
+	 */
 	function getHandle()
 	{
 		return $this->connection;

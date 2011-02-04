@@ -124,7 +124,7 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 			while($this->running)
 			{
 				Dispatcher::dispatch(new Event($this, Event::ON_PRE_LOOP));
-				// TODO Mettre ça dans des events listener?
+				// TODO Put this into the event listener?
 				$this->connection->executeCallbacks();
 				GuiHandler::getInstance()->sendAll();
 				$this->connection->executeMultiCall();
