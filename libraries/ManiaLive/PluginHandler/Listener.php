@@ -16,8 +16,16 @@ namespace ManiaLive\PluginHandler;
  */
 interface Listener extends \ManiaLive\Event\Listener
 {
+	/**
+	 * Event launch when a Plugin is loaded
+	 * @param string $pluginId
+	 */
 	function onPluginLoaded($pluginId);
+	/**
+	 * Event launch when a plugin is unloaded
+	 * @param string $classname
+	 */
 	function onPluginUnloaded($classname);
-}
+	}
 
 ?>
