@@ -27,23 +27,23 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	protected $disconnetedPlayers = array();
 
 	/**
-	 * Contains Player object. It represents the player connected to the server
+	 * Contains Player objects. It represents the player connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $players = array();
 	/**
-	 * Contains Player object. It represents the spectators connected to the server
+	 * Contains Player objects. It represents the spectators connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $spectators = array();
 	/**
-	 * Contains Player object. It represents the current ranking on the server
+	 * Contains Player objects. It represents the current ranking on the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $ranking = array();
 	/**
-	 * Contains Player object. It represents the player connected to the server
-	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
+	 * Contains Challenge objects. It represents the current challenges available on the server
+	 * @var \ManiaLive\DedicatedApi\Structures\Challenge[]
 	 */
 	public $challenges;
 	/**

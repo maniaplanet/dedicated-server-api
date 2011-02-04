@@ -75,31 +75,77 @@ abstract class Connection
 	
 	abstract function __construct($host, $username, $password, $database, $port);
 	
+	/**
+	 * Set the charset used to communicate with the database
+	 * @param string $charset
+	 */
 	abstract function setCharset($charset);
 	
+	/**
+	 * select the given database
+	 * @param string $database
+	 */
 	abstract function select($database);
 		
+	/**
+	 * Escape and add quotes around the given string
+	 * @param string $string
+	 * @return string
+	 */
 	abstract function quote($string);
 	
 	/**
+	 * Execute a query and return the result
 	 * @return \ManiaLive\Database\RecordSet
 	 */
 	abstract function query($query);
 	
+	/**
+	 * Execute a query but it does not return any result
+	 * @param string $query
+	 */
 	abstract function execute($query);
 	
+	/**
+	 * Return the number of rows affected by the previous query
+	 * @return int
+	 */
 	abstract function affectedRows();
 	
+	/**
+	 * Return the id of the last insert query
+	 * @return int
+	 */
 	abstract function insertID();
 	
+	/**
+	 * Return true if the connection to the database is open, false in the other cases
+	 * @return bool
+	 */
 	abstract function isConnected();
 	
+	/**
+	 * Close the current connection to the database
+	 */
 	abstract function disconnect();
 	
+	/**
+	 * Get the selected database
+	 * @return string 
+	 */
 	abstract function getDatabase();
 	
+	/**
+	 * Check if the given table exists
+	 * @param string $table
+	 * @return bool
+	 */
 	abstract function tableExists($table);
 	
+	/**
+	 * Return the current Connection Link
+	 * @return resource
+	 */
 	abstract function getHandle();
 	
 	static function startMeasuring(Connection $con)
