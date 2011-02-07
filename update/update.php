@@ -63,7 +63,8 @@ catch (\Exception $ex)
 echo '> Remote ManiaLive is at version ' . $versionRemote . NL;
 
 // no need to update when there's already the latest version installed
-if ($versionLocal >= $versionRemote)
+// TODO remove this on next release!
+if ($versionLocal >= $versionRemote || $versionRemote == 2207)
 {
 	echo 'Local version is the same or even newer than the remote one.' . NL;
 	echo 'Do you want to proceed? (y/n):';

@@ -63,7 +63,8 @@ implements \ManiaLive\Features\Tick\Listener
 			}
 		}
 		
-		if ($version > \ManiaLiveApplication\Version)
+		// TODO remove this on next release!
+		if ($version > \ManiaLiveApplication\Version && $version != 2207)
 		{
 			Console::println('###############################################################################');
 			Console::println('#                                                                             #');
