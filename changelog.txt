@@ -13,7 +13,8 @@
 +-------------------------------------------+
 - represents a bug fix
 * represents an important change
-+ represents a new Feature
++ represents a new feature
+! represents a compability breaking change
 
 +-------------------------------------------+
 |	ManiaLive 1.0b - r1453 (29 dec. 2010)	|
@@ -89,6 +90,19 @@
 + Plugin events for loading and unloading.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r???? (?? ???. 2011)	|
+|	ManiaLive 1.0b - r2207 (7 feb. 2011)	|
 +-------------------------------------------+
 + dialog window now uses autonewline.
++ windowhandler has been updated.
++ general architectural improvements of the windowing system.
+! managedwindow will now always have background and window border with buttons.
+* managedwindows can be maximized.
++ windows can be buzzed now, which will generate blue flashing.
++ dialog windows can be displayed without reference/parent windows.
+! renamed onShow to onDraw and onRecover to onShow.
++ threads have access to the Loader::config values now - introduced data sending to threads.
++ using new run script for linux using hand-detaching instead of ssdaemon
++ features new manialib version.
+- fixed issue 14 uses login now instead id.
+! when calling public methods of plugins the pluginid is added as last parameter now.
+*/! from the next release on version numbering will happen based on the google code revision.
