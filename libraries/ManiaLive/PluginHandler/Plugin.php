@@ -620,6 +620,10 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$cmd->isPublic = true;
 		Interpreter::getInstance()->register($cmd);
 		$this->chatCommands[] = $cmd;
+		
+		// this method will be accessible by other plugins
+		$this->setPublicMethod($callback_method);
+		
 		return $cmd;
 	}
 	

@@ -306,7 +306,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 		}
 
 		// add calling plugin as first parameter ...
-		array_unshift($methodArgs, $pluginCalling->getId());
+		array_push($methodArgs, $pluginCalling->getId());
 
 		// try to get the method we want to call from the owner-plugin
 		$method = $plugin->getPublicMethod($pluginMethod);
@@ -325,6 +325,7 @@ class PluginHandler extends Singleton implements \ManiaLive\Application\Listener
 		{
 			// this plugin is accepted
 			$plugin->onLoad();
+			
 			// plugin loaded!
 			Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
 		}

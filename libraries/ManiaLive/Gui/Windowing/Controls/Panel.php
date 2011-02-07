@@ -104,6 +104,11 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->title->setText('$o'.$title);
 	}
 	
+	function getTitle()
+	{
+		$this->title->getText();
+	}
+	
 	function showCloseButton($bool)
 	{
 		$this->btn_close->setVisibility($bool);

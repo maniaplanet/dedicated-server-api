@@ -411,12 +411,19 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function __destruct()
 	{
-		$this->logger->write('ThreadPool is being deleted, stopping all threads!');
-		
-		// tell every thread to shut down ...
-		foreach ($this->threads as $id => $thread)
+		try
 		{
-			$this->removeThread($id);
+			$this->logger->write('ThreadPool is being deleted, stopping all threads!');
+			
+			// tell every thread to shut down ...
+			foreach ($this->threads as $id => $thread)
+			{
+				$this->removeThread($id);
+			}
+		}
+		catch (Exception $ex)
+		{
+			// uncaught errors in destructors are bad ...
 		}
 	}
 }

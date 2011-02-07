@@ -43,6 +43,12 @@ class WindowHandler
 	protected static $minimizedManagedWindowHashes = array();
 	
 	/**
+	 * How many windows can the taskbar take?
+	 * @var integer
+	 */
+	const MAX_MINIMIZEABLE = 5;
+	
+	/**
 	 * Initialize on first use.
 	 */
 	function __construct()
@@ -359,7 +365,10 @@ class WindowHandler
 		// we need to attach it to the taskbar
 		else
 		{
-			self::sendCurrentWindowToTaskbar($login);
+			if (!self::sendCurrentWindowToTaskbar($login))
+			{
+				return false;
+			}
 			
 			// set the new managed window
 			self::$currentManagedWindow[$login] = $window;
@@ -390,7 +399,7 @@ class WindowHandler
 	{
 		$oldWindow = self::$currentManagedWindow[$login];
 		if (isset(self::$minimizedManagedWindowHashes[$login])
-			&& count(self::$minimizedManagedWindowHashes[$login]) > 5)
+			&& count(self::$minimizedManagedWindowHashes[$login]) >= self::MAX_MINIMIZEABLE)
 		{
 			$info = Info::Create($login);
 			$info->setSize(40, 25);
@@ -451,6 +460,8 @@ class WindowHandler
 		$thumb->setSize(20, 14);
 		$thumb->setPosition(22 - 21 * $i, -47);
 		$thumb->show();
+		
+		return true;
 	}
 	
 	/**

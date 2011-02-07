@@ -27,17 +27,17 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	protected $disconnetedPlayers = array();
 
 	/**
-	 * Contains Player objects. It represents the player connected to the server
+	 * Contains Player object. It represents the player connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $players = array();
 	/**
-	 * Contains Player objects. It represents the spectators connected to the server
+	 * Contains Player object. It represents the spectators connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $spectators = array();
 	/**
-	 * Contains Player objects. It represents the current ranking on the server
+	 * Contains Player object. It represents the current ranking on the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $ranking = array();
@@ -222,7 +222,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			if($player->login == $login)
 			{
 				unset($this->ranking[$key]);
-				$found = true;
 			}
 		}
 	}
@@ -450,7 +449,9 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 			return $this->spectators[$login];
 		}
 		else
-		return null;
+		{
+			return null;
+		}
 	}
 
 	protected function updateRanking($rankings)
