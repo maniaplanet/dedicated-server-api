@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Features;
 
+use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLive\Utilities\Console;
 use ManiaLive\Event\Dispatcher;
 
@@ -23,10 +24,15 @@ class Updater extends \ManiaLive\Utilities\Singleton
 implements \ManiaLive\Features\Tick\Listener
 {
 	protected $lastDisplayed;
+	/**
+	 * @var \ManiaLive\PluginHandler\PluginHandler
+	 */
+	protected $pluginHandler;
 	
 	protected function __construct()
 	{
 		$this->lastDisplayed = 0;
+		$this->pluginHandler = PluginHandler::getInstance();
 		Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
 	}
 	
@@ -51,28 +57,77 @@ implements \ManiaLive\Features\Tick\Listener
 	{
 		$version = 0;
 		
-		try
+		// check for manialive update
+		$client = new \ManiaLib\Rest\Client();
+		$client->setAPIURL(APP_API);
+		$response = $client->execute('GET', '/manialive/version/check/' . \ManiaLiveApplication\Version . '/index.json');
+		$newManiaLive = $response->update;
+		
+		// check for plugin updates 
+		$this->pluginHandler->refreshRepositoryInfo();
+		$entries = $this->pluginHandler->getRepositoryEntries();
+		$updates = array();
+		foreach ($entries as $entry)
 		{
-			$version = intval(file_get_contents('http://manialink.manialive.com/version'));
-		}
-		catch(\Exception $e)
-		{
-			if (strstr($e->getMessage(), 'failed to open stream') === false)
+			foreach ($entry->plugins as $id => $version)
 			{
-				throw $e;
+				if ($version < $entry->version)
+				{
+					$updates[$entry->id] = $entry;
+				}
 			}
 		}
+		$newPlugins = count($updates);
 		
-		// TODO remove this on next release!
-		if ($version > \ManiaLiveApplication\Version && $version != 2207)
+		// display message in console
+		if ($newPlugins || $newManiaLive)
 		{
-			Console::println('###############################################################################');
-			Console::println('#                                                                             #');
-			Console::println('#                  A new version of ManiaLive is available!                   #');
-			Console::println('#                    An update is strongly recommended!                       #');
-			Console::println('#                     Download it at www.manialive.com                        #');
-			Console::println('#                                                                             #');
-			Console::println('###############################################################################');
+			Console::println(str_repeat('#', 79));
+			
+			if ($newManiaLive)
+			{
+				$days = ceil((time() - strtotime($response->version->date)) / 86400);
+				
+				Console::println('#' . str_repeat(' ', 77) . '#');
+				Console::println(str_pad("#           A new version of ManiaLive is available since $days day(s)!", 78) . "#");
+				Console::println(str_pad("#                      An update is strongly recommended!", 78) . "#");
+			}
+			
+			if ($newPlugins)
+			{
+				Console::println('#' . str_repeat(' ', 77) . '#');
+				Console::println(str_pad("#                The plugin repository contains $newPlugins new update(s)!", 78) . "#");
+			}
+			
+			foreach ($updates as $entry)
+			{
+				Console::println('#' . str_repeat(' ', 77) . '#');
+				Console::println(str_pad("# {$entry->name} published by {$entry->author}", 78) . "#");
+				Console::println('# ' . str_repeat('-', 75) . " #");
+				Console::println(str_pad("#   download: {$entry->urlDownload}", 78) . "#");
+				Console::println(str_pad("#   info:     {$entry->urlInfo}", 78) . "#");
+				$i = 0;
+				foreach ($entry->plugins as $id => $version)
+				{
+					$mark = '-';
+					if ($version < $entry->version)
+					{
+						$mark = '+';
+					}
+					if ($i++ == 0)
+					{
+						Console::println(str_pad("#   plugins:  $mark $id", 78) . "#");
+					}
+					else
+					{
+						Console::println(str_pad("#             $mark $id", 78) . "#");
+					}
+					
+				}
+			}
+			
+			Console::println('#' . str_repeat(' ', 77) . '#');
+			Console::println(str_repeat('#', 79));
 		}
 	}
 }

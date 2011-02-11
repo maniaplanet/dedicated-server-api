@@ -35,7 +35,7 @@ class WindowHandler
 	protected static $drawStack = array();
 	protected static $finalStack = array();
 	protected static $dialogStack = array();
-	protected static $dialogRefreshed = true;
+	public static $dialogRefreshed = array();
 	protected static $maximized = array();
 	
 	protected static $currentManagedWindow = array();
@@ -87,6 +87,14 @@ class WindowHandler
 				continue; // then we don't need to draw anything!
 			}
 			
+			// if there's a dialog shown currently
+			if (isset(self::$dialogStack[$login])
+				&& end(self::$dialogStack[$login])
+				&& self::$dialogRefreshed[$login])
+			{
+				continue;
+			}
+			
 			// prepare window order ...
 			$drawMaximized = false;
 			self::$finalStack[$login] = array();
@@ -97,6 +105,7 @@ class WindowHandler
 					if ($window === self::$maximized[$login])
 					{
 						$drawMaximized = true;
+						self::$drawStackCount--;
 						continue;
 					}
 					else
@@ -104,6 +113,18 @@ class WindowHandler
 						self::$maximized[$login]->moveAbove($window);
 					}
 				}
+				
+				if (isset(self::$dialogStack[$login])
+					&& ($dialog = end(self::$dialogStack[$login]))
+					&& $dialog != $window)
+				{
+					$dialog->moveAbove($window);
+				}
+				else
+				{
+					self::$dialogRefreshed[$login] = true;
+				}
+				
 				self::$drawStackCount--;
 				$this->addToStack(self::$finalStack[$login], $window);
 			}
@@ -131,15 +152,21 @@ class WindowHandler
 	{	
 		foreach (self::$dialogStack as $login => $stack)
 		{
-			if (!self::$dialogRefreshed)
+			if (!self::$dialogRefreshed[$login])
 			{
-				$dialog = $this->getDialog($login);
-				if ($dialog !== false)
+				$dialog = end($stack);
+				if ($dialog->isShown())
 				{
-					$dialog->setPosZ(Window::GetTopZ($login));
-					$dialog->show();
+					if ($dialog !== false)
+					{
+						$dialog->setPosZ(Window::GetTopZ($login));
+						$dialog->show();
+					}
 				}
-				self::$dialogRefreshed = true;
+				else
+				{
+					$dialog->render($login);
+				}
 			}
 		}
 	}
@@ -163,7 +190,9 @@ class WindowHandler
 
 		array_unshift(self::$dialogStack[$login], $dialog);
 		
-		self::$dialogRefreshed = false;
+		$dialog->show();
+		
+		self::$dialogRefreshed[$login] = false;
 	}
 	
 	/**
@@ -225,8 +254,11 @@ class WindowHandler
 	 */
 	static function onCloseDialog($login, $window)
 	{
-		array_pop(self::$dialogStack[$login]);
-		self::$dialogRefreshed = false;
+		if (isset(self::$dialogStack[$login]))
+		{
+			array_pop(self::$dialogStack[$login]);
+		}
+		self::$dialogRefreshed[$login] = true;
 		$window->destroy();
 	}
 	

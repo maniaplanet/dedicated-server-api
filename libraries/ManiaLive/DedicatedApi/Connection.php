@@ -11,14 +11,11 @@
 
 namespace ManiaLive\DedicatedApi;
 
+use ManiaLive\DedicatedApi\Xmlrpc\Request;
 use ManiaLive\DedicatedApi\Structures\Music;
-
 use ManiaLive\DedicatedApi\Structures\Player;
-
 use ManiaLive\DedicatedApi\Structures\Status;
-
 use ManiaLive\DedicatedApi\Structures\Vote;
-
 use ManiaLive\DedicatedApi\Structures\ServerOptions;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Utilities\Console;
@@ -54,7 +51,12 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @var
 	 */
 	protected $xmlrpcClient;
-
+	/**
+	 * Id to recognize the echo we are waiting for
+	 * @var integer
+	 */
+	static protected $voteId = 0;
+	
 	/**
 	 * @return Connection
 	 */
@@ -210,6 +212,15 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		return $this->execute(ucfirst(__FUNCTION__), array($username, $password), false);
 	}
 
+	function callVoteEcho($voteString)
+	{
+		$internal = 'manialive_vote_' . self::$voteId++;
+		$request = new Request('Echo', array($public, $internal));
+		$xml = $request->getXml();
+   		$aseco->client->query('CallVote', $xml);
+   		return $internal;
+	}
+	
 	/**
 	 * Call a vote for a cmd. The command is a XML string corresponding to an XmlRpc request.
 	 * You can additionally specifiy specific parameters for this vote: a ratio, a time out

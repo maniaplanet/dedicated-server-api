@@ -1,7 +1,7 @@
 +-------------------------------------------+
 |			ManiaLive Changelog				|
 |	Authors by:								|
-|	 - Philippe "farfa" Melot				|
+|	- Philippe "farfa" Melot				|
 | 	- Maxime "Gouxim" Raoust				|
 | 	- Florian "aseco" Schnell				|
 |	Copyright NADEO (C) 2010-2011			|

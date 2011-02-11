@@ -27,7 +27,7 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 	protected $button;
 	
 	protected function initializeComponents()
-	{
+	{	
 		$this->panel = new Panel();
 		$this->panel->setBackgroundStyle(Bgs1::BgWindow1);
 		$this->addComponent($this->panel);
@@ -52,6 +52,16 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 	function setText($text)
 	{		
 		$this->text->setText($text);
+	}
+	
+	function makeTransparent()
+	{
+		$this->panel->setBackgroundStyle(Bgs1::BgWindow1);
+	}
+	
+	function makeOpaque()
+	{
+		$this->panel->setBackgroundStyle(Bgs1::BgTitle2);
 	}
 	
 	function setTitle($title)

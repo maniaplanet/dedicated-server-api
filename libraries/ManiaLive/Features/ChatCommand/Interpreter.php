@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -160,7 +160,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 				if($isRegistered == 2)
 				{
 					$commandObject = $this->registeredCommands[strtolower($command)][count($parameters)];
-					if(count($parameters) == $commandObject->parametersCount && (!count($commandObject->authorizedLogin) || in_array($login, $commandObject->authorizedLogin)))
+					if((!count($commandObject->authorizedLogin) || in_array($login, $commandObject->authorizedLogin)))
 					{
 						if($commandObject->log)
 						{
@@ -172,6 +172,10 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 							array_unshift($parameters, $login);
 						}
 						call_user_func_array($commandObject->callback, $parameters);
+					}
+					else
+					{
+						Connection::getInstance()->chatSendServerMessage('$f00You are not authorized to use this command!', Storage::getInstance()->getPlayerObject($login), true);
 					}
 				}
 				elseif ($isRegistered == 1)

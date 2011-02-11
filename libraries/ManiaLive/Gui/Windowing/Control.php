@@ -307,6 +307,7 @@ abstract class Control extends Container
 			$posy += $this->posY;
 		}
 		
+		// layout cloning, because manialib is used to erase objects after usage.
 		if ($this->layout)
 		{
 			$this->layout->setSizeX($this->sizeX);
@@ -319,7 +320,9 @@ abstract class Control extends Container
 		}
 		
 		if ($this->linksDisabled)
+		{
 			Manialink::disableLinks();
+		}
 		
 		// render each element contained by the control and set z values ...
 		foreach ($this->components as $component)
@@ -331,6 +334,12 @@ abstract class Control extends Container
 			}
 			else
 			{
+				// this prevents the layout from modifying the elements
+				// that are stored in manialive's memory.
+				if ($this->layout)
+				{
+					$component = clone $component;
+				}
 				$component->setPositionZ($this->zCur);
 				$this->zCur += Z_OFFSET;
 				$component->save();
@@ -338,7 +347,9 @@ abstract class Control extends Container
 		}
 		
 		if ($this->linksDisabled)
+		{
 			Manialink::enableLinks();
+		}
 		
 		Manialink::endFrame();
 		
@@ -354,13 +365,15 @@ abstract class Control extends Container
 		return $this->zCur;
 	}
 	
-	final function resize()
+	final function resize($oldX, $oldY)
 	{
+		// FIXME implement the old values
 		$this->onResize();
 	}
 	
-	final function move()
+	final function move($oldX, $oldY, $oldZ)
 	{
+		// FIXME implement the old values
 		$this->onMove();
 	}
 	

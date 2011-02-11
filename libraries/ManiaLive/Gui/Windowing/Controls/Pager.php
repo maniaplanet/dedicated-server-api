@@ -34,12 +34,14 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 	protected $container;
 	protected $label;
 	protected $stretchContentX;
+	protected $direction;
 	
 	function initializeComponents()
 	{
 		$this->items = array();
 		$this->currentPage = 0;
 		$this->stretchContentX = false;
+		$this->direction = Column::DIRECTION_DOWN;
 		
 		$this->buttonNext = new Quad(5, 5);
 		$this->buttonNext->setStyle(Icons64x64_1::Icons64x64_1);
@@ -51,12 +53,26 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 		$this->buttonPrev->setSubStyle(Icons64x64_1::ArrowPrev);
 		$this->addComponent($this->buttonPrev);
 		
-		$this->container = new Frame(2, 0, new Column());
+		$this->container = new Frame(2, 0, new Column(0, 0, Column::DIRECTION_DOWN));
 		$this->addComponent($this->container);
 		
 		$this->label = new Label();
 		$this->label->setHalign('center');
 		$this->addComponent($this->label);
+	}
+	
+	function orderfromTopToBottom()
+	{
+		$this->direction = Column::DIRECTION_DOWN;
+		$this->container->applyLayout(new Column(0, 0, $this->direction));
+		$this->onResize();
+	}
+	
+	function orderFromBottomToTop()
+	{
+		$this->direction = Column::DIRECTION_UP;
+		$this->container->applyLayout(new Column(0, 0, $this->direction));
+		$this->onResize();
 	}
 	
 	function onResize()
@@ -75,7 +91,7 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 		foreach ($this->items as $item)
 		{
 			$currentSizeY += $item->getSizeY();
-			if ($currentSizeY > $this->sizeY - 5)
+			if ($currentSizeY > $this->sizeY - 5.1)
 			{
 				$currentSizeY = $item->getSizeY();
 				$this->pages[] = array($item);
@@ -91,6 +107,10 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 			}
 		}
 		$this->label->setPosition($this->sizeX / 2, $this->sizeY - 3.5);
+		if ($this->direction == Column::DIRECTION_UP)
+		{
+			$this->container->setPosY($this->sizeY - 5.3);
+		}
 	}
 	
 	function getPages()
@@ -172,6 +192,11 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 	function addItem(Component $item)
 	{
 		$this->items[] = $item;
+	}
+	
+	function refreshPages()
+	{
+		$this->onResize();
 	}
 	
 	function destroy()

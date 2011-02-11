@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Data;
 
+use ManiaLive\Utilities\String;
 use ManiaLive\Application\SilentCriticalEventException;
 use ManiaLive\Application\CriticalEventException;
 use ManiaLive\DedicatedApi\Structures\Challenge;
@@ -137,6 +138,8 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$this->server = $connection->getServerOptions();
 		$this->gameInfos = $connection->getCurrentGameInfo();
 		$this->serverLogin = $connection->getMainServerPlayerInfo()->login;
+		
+		Console::printlnFormatted('Current map: ' . String::stripAllTmStyle($this->currentChallenge->name));
 	}
 
 	function onRun() {}
@@ -260,7 +263,21 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onBeginChallenge($challenge, $warmUp, $matchContinuation)
 	{
+		$oldChallenge = $this->currentChallenge;
 		$this->currentChallenge = Challenge::fromArray($challenge);
+		Console::printlnFormatted('Map change: ' . String::stripAllTmStyle($oldChallenge->name) . ' -> ' . String::stripAllTmStyle($this->currentChallenge->name));
+		
+		foreach ($this->players as $player)
+		{
+			$player->bestTime = 0;
+			$player->score = 0;
+		}
+		
+		foreach ($this->spectators as $spectator)
+		{
+			$spectator->bestTime = 0;
+			$spectator->score = 0;
+		}
 	}
 
 	function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge)
@@ -317,6 +334,36 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 					if ($player->score == $timeOrScore)
 					{
+						// sanity checks
+						$nbChecks = count($player->bestCheckpoints);
+						switch ($this->gameInfos->gameMode)
+						{
+							case 0:
+							case 2:
+							case 5:
+								$totalChecks = $this->currentChallenge->nbCheckpoints * $this->currentChallenge->nbLaps;
+								if ($nbChecks != $totalChecks)
+								{
+									Console::println('Best score\'s checkpoint count does not match and was ignored!');
+									Console::printPlayerScore($player);
+									$player->score = $old_score;
+									return;
+								}
+								break;
+								
+							case 1:
+							case 3:
+							case 4:
+								if ($nbChecks != $this->currentChallenge->nbCheckpoints)
+								{
+									Console::println('Best score\'s checkpoint count does not match and was ignored!');
+									Console::printPlayerScore($player);
+									$player->score = $old_score;
+									return;
+								}
+								break;
+						}
+						
 						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_SCORE, array($player, $old_score, $timeOrScore)));
 					}
 				}
@@ -327,12 +374,42 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 				{
 					$old_best = $player->bestTime;
 					$player->bestTime = $timeOrScore;
-
+					
 					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
 					$this->updateRanking($rankings);
-
+					
 					if ($player->bestTime == $timeOrScore)
 					{
+						// sanity checks
+						$nbChecks = count($player->bestCheckpoints);
+						switch ($this->gameInfos->gameMode)
+						{
+							case 0:
+							case 2:
+							case 5:
+								$totalChecks = $this->currentChallenge->nbCheckpoints * $this->currentChallenge->nbLaps;
+								if ($nbChecks != $totalChecks)
+								{
+									Console::println('Best time\'s checkpoint count does not match and was ignored!');
+									Console::printPlayerBest($player);
+									$player->bestTime = $old_best;
+									return;
+								}
+								break;
+								
+							case 1:
+							case 3:
+							case 4:
+								if ($nbChecks == $this->currentChallenge->nbCheckpoints)
+								{
+									Console::println('Best time\'s checkpoint count does not match and was ignored!');
+									Console::printPlayerBest($player);
+									$player->bestTime = $old_best;
+									return;
+								}
+								break;
+						}
+						
 						Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_BEST_TIME, array($player, $old_best, $timeOrScore)));
 					}
 				}

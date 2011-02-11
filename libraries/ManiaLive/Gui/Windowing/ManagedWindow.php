@@ -82,6 +82,31 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 	}
 	
 	/**
+	 * Redraws all window instances that are
+	 * currently shown on player screens and
+	 * send buzz signal if a window is minimized.
+	 */
+	static function Redraw()
+	{
+		$windows = self::GetAll();
+		foreach ($windows as $window)
+		{
+			if ($window->isShown())
+			{
+				$window->show();
+			}
+			else
+			{
+				$thumb = WindowHandler::getThumbnail($window);
+				if ($thumb)
+				{
+					$thumb->enableHighlight();
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Sets the window's title.
 	 * @param string $title
 	 */
@@ -131,7 +156,7 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Window::resize()
 	 */
-	final function resize()
+	final function resize($oldX, $oldY)
 	{
 		$this->btn_max->setPosition(5, 1.7);
 		
@@ -153,7 +178,7 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/Gui/Windowing/ManiaLive\Gui\Windowing.Window::move()
 	 */
-	final function move()
+	final function move($oldX, $oldY, $oldZ)
 	{
 		$this->onMove();
 	}

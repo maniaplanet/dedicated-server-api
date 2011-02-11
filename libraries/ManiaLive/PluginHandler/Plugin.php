@@ -59,6 +59,14 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 */
 	private $version;
 	/**
+	 * @var integer
+	 */
+	private $repositoryId;
+	/**
+	 * @var integer
+	 */
+	private $repositoryVersion;
+	/**
 	 * @var array[Dependency]
 	 */
 	private $dependencies;
@@ -73,10 +81,6 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	private $events_storage;
 	private $events_plugins;
 	/**
-	 * @var \ManiaLive\DedicatedApi\Connection
-	 */
-	protected $connection;
-	/**
 	 * @var ManiaLive\PluginHandler\PluginHandler
 	 */
 	private $plugin_handler;
@@ -84,10 +88,6 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 * @var array[\ReflectionMethod]
 	 */
 	private $methods;
-	/**
-	 * @var ManiaLive\Data\Storage
-	 */
-	protected $storage;
 	/**
 	 * @var array
 	 */
@@ -104,6 +104,20 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 * @var array[\ManiaLive\Features\ChatCommand\Command]
 	 */
 	private $chatCommands;
+	
+	/**
+	 * @var ManiaLive\Data\Storage
+	 */
+	protected $storage;
+	/**
+	 * @var \ManiaLive\DedicatedApi\Connection
+	 */
+	protected $connection;
+	
+	/**
+	 * @var \ManiaLive\PluginHandler\RepositoryPlugin
+	 */
+	public $repositoryEntry;
 	
 	final function __construct($plugin_id)
 	{
@@ -133,6 +147,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->threadPool = \ManiaLive\Threading\ThreadPool::getInstance();
 		$this->threadId = false;
 		$this->chatCommands = array();
+		$this->repositoryId = null;
+		$this->repositoryVersion = null;
 	}
 	
 	// TODO maybe tell the plugin handler here that the plugin did successfully unload?
@@ -165,6 +181,31 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		if (!is_numeric($version))
 			throw new \InvalidArgumentException('Version number is expected to be numeric!');
 		$this->version = $version;
+		
+		if ($this->repositoryVersion === null)
+		{
+			$this->repositoryVersion = $version;
+		}
+	}
+	
+	/**
+	 * Sets the id that is needed to find this
+	 * plugin in the global repository.
+	 * @param integer $id
+	 */
+	final protected function setRepositoryId($id)
+	{
+		$this->repositoryId = $id;
+	}
+	
+	/**
+	 * Sets the version that will be used to compare this
+	 * plugin on the repository.
+	 * @param integer $version
+	 */
+	final protected function setRepositoryVersion($version)
+	{
+		$this->repositoryVersion = $version;
 	}
 	
 	/**
@@ -174,6 +215,26 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	final public function getVersion()
 	{
 		return $this->version;
+	}
+	
+	/**
+	 * Returns the repository entry's id
+	 * that is linked to this plugin.
+	 * @return integer
+	 */
+	final public function getRepositoryId()
+	{
+		return $this->repositoryId;
+	}
+	
+	/**
+	 * Returns the version that is being compared
+	 * to the repository entry's version.
+	 * @return integer
+	 */
+	final public function getRepositoryVersion()
+	{
+		return $this->repositoryVersion;
 	}
 	
 	/**

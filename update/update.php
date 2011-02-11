@@ -16,6 +16,7 @@ if (file_exists('../noupdate'))
 }
 
 $includes = array(
+	'../libraries/ManiaLib/Rest/Client.php',
 	'../libraries/ManiaLive/Utilities/Singleton.php',
 	'../libraries/ManiaLive/Application/AbstractApplication.php',
 	'../libraries/ManiaLiveApplication/Application.php'
@@ -49,22 +50,28 @@ echo '> ManiaLive is at version ' . $versionLocal . NL;
 
 echo '> Checking remote ManiaLive version ...' . NL;
 
+// check for manialive update
+$versionRemote = 0;
+$versionDownloadUrl = '';
+$versionUpdate = false;
 try
 {
-	// connect to manialive server to get the latest release's version.
-	$versionRemote = file_get_contents('http://manialink.manialive.com/version');
-	$versionRemote = intval($versionRemote);
+	$client = new \ManiaLib\Rest\Client();
+	$client->setAPIURL('http://api.maniastudio.com');
+	$response = $client->execute('GET', '/manialive/version/check/' . \ManiaLiveApplication\Version . '/index.json');
+	$versionUpdate = $response->update;
+	$versionRemote = $response->version->revision;
+	$versionDownloadUrl = $response->version->downloadUrl;
 }
 catch (\Exception $ex)
 {
-	die('ERROR: Could not get the remote version!'. NL);
+	die('ERROR: It is currently not possible to access manialive webservice!' . NL);
 }
 
 echo '> Remote ManiaLive is at version ' . $versionRemote . NL;
 
 // no need to update when there's already the latest version installed
-// TODO remove this on next release!
-if ($versionLocal >= $versionRemote || $versionRemote == 2207)
+if (!$versionUpdate)
 {
 	echo 'Local version is the same or even newer than the remote one.' . NL;
 	echo 'Do you want to proceed? (y/n):';
@@ -78,11 +85,6 @@ if ($versionLocal >= $versionRemote || $versionRemote == 2207)
 	echo NL;
 }
 
-echo '> Searching ManiaLive release package ...' . NL;
-
-$package = 'ManiaLive_1.0_r' . $versionRemote . '.zip';
-$url = 'http://manialive.googlecode.com/files/' . $package;
-
 // create temporary folder
 if (!is_dir('./temp'))
 {
@@ -90,10 +92,14 @@ if (!is_dir('./temp'))
 	mkdir('./temp');
 }
 
+// get file name
+$info = pathinfo($versionDownloadUrl);
+$package = $info['basename'];
+
 echo "> Downloading '" . $package . "' ..." .NL;
 
 // download and save the package
-$data = @file_get_contents($url);
+$data = @file_get_contents($versionDownloadUrl);
 
 // check for errors
 if ($data === false)
