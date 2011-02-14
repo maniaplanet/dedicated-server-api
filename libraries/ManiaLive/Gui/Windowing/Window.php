@@ -78,6 +78,7 @@ abstract class Window extends Container implements
 	
 	static $instances = array();
 	static $instancesNonSingleton = array();
+	static $instancesByClass = array();
 	
 	/**
 	 * Can't be called from outside of the class
@@ -115,14 +116,23 @@ abstract class Window extends Container implements
 	 */
 	static function Create($login = null, $singleton = true)
 	{
+		$class_name = get_called_class();
+		if (!isset(self::$instancesByClass[$class_name]))
+		{
+			self::$instancesByClass[$class_name] = array();
+			if (!isset(self::$instancesByClass[$class_name][$login]))
+			{
+				self::$instancesByClass[$class_name][$login] = array();
+			}
+		}
+		
 		if (!$singleton)
 		{
 			$instance  = new static($login);
 			self::$instancesNonSingleton[$login][$instance->getUid()] = $instance;
+			self::$instancesByClass[$class_name][$login][$instance->getUid()] = $instance;
 			return $instance;
 		}
-
-		$class_name = get_called_class();
 		
 		if (isset(self::$instances[$login]))
 		{
@@ -132,21 +142,23 @@ abstract class Window extends Container implements
 			}
 			else
 			{
-				$win = new static($login);
-				self::$instances[$login][$class_name] = $win;
-				return $win;
+				$instance = new static($login);
+				self::$instances[$login][$class_name] = $instance;
+				self::$instancesByClass[$class_name][$login][$instance->getUid()] = $instance;
+				return $instance;
 			}
 		}
 		else
 		{
-			$win = new static($login);
+			$instance = new static($login);
 			
 			self::$instances[$login] = array
 			(
-				$class_name => $win
+				$class_name => $instance
 			);
+			self::$instancesByClass[$class_name][$login][$instance->getUid()] = $instance;
 			
-			return $win;
+			return $instance;
 		}
 	}
 	
@@ -158,22 +170,52 @@ abstract class Window extends Container implements
 	{
 		$instances = array();
 		$class_name = get_called_class();
-		foreach (self::$instances as $login => $classes)
+		
+		if (isset(self::$instancesByClass[$class_name]))
 		{
-			if (isset($classes[$class_name]))
+			foreach (self::$instancesByClass[$class_name] as $login => $windows)
 			{
-				$instances[] = $classes[$class_name];
+				$instances = array_merge($instances, $windows);
 			}
 		}
-		foreach (self::$instancesNonSingleton as $login => $windows)
-		{
-			foreach ($windows as $window)
-			{
-				if (get_class($window) == $class_name)
-					$instances[] = $window;
-			}
-		}
+		
 		return $instances;
+	}
+	
+	/**
+	 * Gets all instances of this window type for
+	 * a specific player that is currently on
+	 * the server.
+	 */
+	static function Get($login)
+	{
+		$class_name = get_called_class();
+		
+		if (isset(self::$instancesByClass[$class_name]))
+		{
+			if (isset(self::$instancesByClass[$class_name][$login]))
+			{
+				return self::$instancesByClass[$class_name][$login];
+			}
+		}
+		
+		return array();
+	}
+	
+	/**
+	 * Redraws all window instances that
+	 * are currently shown on player screens.
+	 */
+	static function Redraw()
+	{
+		$windows = self::GetAll();
+		foreach ($windows as $window)
+		{
+			if ($window->isShown())
+			{
+				$window->show();
+			}
+		}
 	}
 	
 	/**
@@ -634,6 +676,11 @@ abstract class Window extends Container implements
 		// add to drawstack button ...
 		if (WindowHandler::add($this, $login))
 		{
+			if (WindowHandler::getDialog($login) === $this)
+			{
+				WindowHandler::$dialogRefreshed = false;
+			}
+			
 			// invoke cleanup function ..
 			$this->onHide();
 			
@@ -854,7 +901,7 @@ abstract class Window extends Container implements
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLib/Gui/ManiaLib\Gui.Component::resize()
 	 */
-	function resize()
+	function resize($oldX, $oldY)
 	{
 		$this->onResize();
 	}
@@ -863,7 +910,7 @@ abstract class Window extends Container implements
 	 * (non-PHPdoc)
 	 * @see libraries/ManiaLib/Gui/ManiaLib\Gui.Component::move()
 	 */
-	function move()
+	function move($oldX, $oldY, $oldZ)
 	{
 		$this->onMove();
 	}
@@ -945,8 +992,10 @@ abstract class Window extends Container implements
 		}
 		
 		// remove from intern window list ...
-		unset(self::$instances[$this->login][get_called_class()]);
+		$class_name = get_called_class();
+		unset(self::$instances[$this->login][$class_name]);
 		unset(self::$instancesNonSingleton[$this->login][$this->uid]);
+		unset(self::$instancesByClass[$class_name][$this->login][$this->uid]);
 	}
 	
 	function __destruct()
