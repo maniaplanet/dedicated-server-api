@@ -152,11 +152,15 @@ class WindowHandler
 	{	
 		foreach (self::$dialogStack as $login => $stack)
 		{
-			if (!self::$dialogRefreshed[$login])
+			// if the dialog needs refreshing
+			if (isset(self::$dialogRefreshed[$login])
+				&& !self::$dialogRefreshed[$login])
 			{
+				// and there is a dialog
 				$dialog = end($stack);
 				if ($dialog !== false)
 				{
+					// either hide or show it
 					if ($dialog->isShown())
 					{
 						$dialog->setPosZ(Window::GetTopZ($login));
