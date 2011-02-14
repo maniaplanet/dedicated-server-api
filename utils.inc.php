@@ -22,6 +22,12 @@ spl_autoload_register('__autoload');
 define('APP_ROOT', __DIR__ . '/');
 
 /**
+ * Path to the webservices api.
+ * @var string
+ */
+define('APP_API', 'http://api.maniastudio.com');
+
+/**
  * Debugging mode switch.
  * @var bool
  */
