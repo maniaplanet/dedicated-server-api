@@ -211,15 +211,6 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($username, $password), false);
 	}
-
-	function callVoteEcho($voteString)
-	{
-		$internal = 'manialive_vote_' . self::$voteId++;
-		$request = new Request('Echo', array($public, $internal));
-		$xml = $request->getXml();
-   		$aseco->client->query('CallVote', $xml);
-   		return $internal;
-	}
 	
 	/**
 	 * Call a vote for a cmd. The command is a XML string corresponding to an XmlRpc request.
@@ -252,9 +243,13 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('voters = '.print_r($voters,true));
 		}
+		if (!is_array($vote->cmdParam))
+		{
+			throw new InvalidArgumentException('vote->cmdParam = '.print_r($vote->cmdParam,true));
+		}
 
-		$tmpCmd = new Xmlrpc\Request($vote->CmdName, array($vote->CmdParam));
-
+		$tmpCmd = new Xmlrpc\Request($vote->cmdName, $vote->cmdParam);
+		
 		return  $this->execute(ucfirst(__FUNCTION__).'Ex', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 

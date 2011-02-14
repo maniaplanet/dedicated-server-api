@@ -35,9 +35,6 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 	
 	function initializeComponents()
 	{
-		$this->sizeX = $this->getParam(0);
-		$this->sizeY = $this->getParam(1);
-		
 		// form background ...
 		$this->main = new Quad();
 		$this->main->setStyle(DefaultStyles::Panel_Style);
@@ -74,6 +71,8 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->btn_close = new Icons64x64_1(3);
 		$this->btn_close->setSubStyle(Icons64x64_1::Close);
 		$this->addComponent($this->btn_close);
+		
+		$this->setSize($this->getParam(0), $this->getParam(1));
 	}
 	
 	function onResize()
