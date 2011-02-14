@@ -155,17 +155,17 @@ class WindowHandler
 			if (!self::$dialogRefreshed[$login])
 			{
 				$dialog = end($stack);
-				if ($dialog->isShown())
+				if ($dialog !== false)
 				{
-					if ($dialog !== false)
+					if ($dialog->isShown())
 					{
 						$dialog->setPosZ(Window::GetTopZ($login));
 						$dialog->show();
 					}
-				}
-				else
-				{
-					$dialog->render($login);
+					else
+					{
+						$dialog->render($login);
+					}	
 				}
 			}
 		}

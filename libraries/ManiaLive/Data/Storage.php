@@ -400,7 +400,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 							case 1:
 							case 3:
 							case 4:
-								if ($nbChecks == $this->currentChallenge->nbCheckpoints)
+								if ($nbChecks != $this->currentChallenge->nbCheckpoints)
 								{
 									Console::println('Best time\'s checkpoint count does not match and was ignored!');
 									Console::printPlayerBest($player);
