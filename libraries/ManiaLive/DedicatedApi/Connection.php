@@ -225,7 +225,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVote(Vote $vote, $ratio = -1.0, $timeout = 0, $voters = 1, $multicall = false)
+	function callVote(Vote $vote, $ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (is_null($vote))
 		{
@@ -266,7 +266,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteKick(Player $player, $ratio = -1.0, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteKick(Player $player, $ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (is_null($player))
 		{
@@ -303,7 +303,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteBan(Player $player, $ratio = -1.0, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteBan(Player $player, $ratio = 0.6, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (is_null($player))
 		{
@@ -339,7 +339,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteRestartChallenge($ratio = -1, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteRestartChallenge($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (!is_double($ratio))
 		{
@@ -371,7 +371,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteNextChallenge($ratio = -1, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteNextChallenge($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (!is_double($ratio))
 		{

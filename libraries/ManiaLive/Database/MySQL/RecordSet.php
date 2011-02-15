@@ -13,7 +13,10 @@ namespace ManiaLive\Database\MySQL;
 
 class RecordSet implements \ManiaLive\Database\RecordSet
 {
-
+	const FETCH_ASSOC = MYSQL_ASSOC;
+	const FETCH_NUM = MYSQL_NUM;
+	const FETCH_BOTH = MYSQL_BOTH;
+	
 	protected $result;
 	
 	function __construct($result)

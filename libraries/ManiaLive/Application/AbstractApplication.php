@@ -93,6 +93,12 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		Storage::getInstance();
 		PluginHandler::getInstance();
 		
+		// establish connection
+		$this->connection = Connection::getInstance();
+		
+		// enable callbacks
+		$this->connection->enableCallbacks(true);
+		
 		// initialize threadpool
 		$pool = ThreadPool::getInstance();
 		
@@ -101,12 +107,6 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		{
 			Tools::setData($pool->getDatabase(), 'config', Loader::$config);
 		}
-		
-		// establish connection
-		$this->connection = Connection::getInstance();
-		
-		// enable callbacks
-		$this->connection->enableCallbacks(true);
 		
 		// initialize windowing system
 		GuiHandler::hideAll();
@@ -120,7 +120,10 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		try
 		{
 			$this->init();
+			
 			Dispatcher::dispatch(new Event($this, Event::ON_RUN));
+			ThreadPool::getInstance()->run();
+			
 			while($this->running)
 			{
 				Dispatcher::dispatch(new Event($this, Event::ON_PRE_LOOP));

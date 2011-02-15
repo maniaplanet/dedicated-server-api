@@ -189,17 +189,19 @@ abstract class Window extends Container implements
 	 */
 	static function Get($login)
 	{
-		$class_name = get_called_class();
+		$pclass = get_called_class();
 		
-		if (isset(self::$instancesByClass[$class_name]))
+		$windows = array();
+		
+		foreach (self::$instancesByClass as $class_name => $stack)
 		{
-			if (isset(self::$instancesByClass[$class_name][$login]))
+			if (is_subclass_of($class_name, $pclass))
 			{
-				return self::$instancesByClass[$class_name][$login];
+				$windows = array_merge($windows, self::$instancesByClass[$class_name][$login]);
 			}
 		}
 		
-		return array();
+		return $windows;
 	}
 	
 	/**

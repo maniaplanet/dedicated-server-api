@@ -13,10 +13,6 @@ namespace ManiaLive\Database;
 
 interface RecordSet
 {
-	const FETCH_ASSOC = MYSQL_ASSOC;
-	const FETCH_NUM = MYSQL_NUM;
-	const FETCH_BOTH = MYSQL_BOTH;
-	
 	function __construct($result);
 	
 	/**

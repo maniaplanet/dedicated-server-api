@@ -100,6 +100,8 @@ class PluginHandler extends Singleton
 	 */
 	final protected function loadPlugins()
 	{
+		Console::println('[PluginHandler] Start plugin load process:');
+		
 		foreach (Loader::$config->plugins->load as $path)
 		{
 			$plugin = null;
@@ -133,7 +135,7 @@ class PluginHandler extends Singleton
 				
 				// this plugin is accepted
 				$plugin->onLoad();
-
+				
 				// plugin loaded!
 				Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
 			}
@@ -153,6 +155,8 @@ class PluginHandler extends Singleton
 		{
 			$plugin = new $className(self::getPluginIdFromClass($className));
 
+			Console::println('[PluginHandler] is loading ' . $plugin->getId() . ' ...');
+			
 			// init plugin ...
 			$plugin->onInit();
 
@@ -161,6 +165,7 @@ class PluginHandler extends Singleton
 			{
 				throw new Exception("The plugin '{$plugin->getId()}' could not be registered, maybe there is a naming conflict!");
 			}
+			
 			return $plugin;
 		}
 		else
@@ -372,7 +377,7 @@ class PluginHandler extends Singleton
 		// everything's up and ready to go!
 		$plugin->onReady();
 	}
-
+	
 	final public function deletePlugin($classname)
 	{
 		//Unload Plugins

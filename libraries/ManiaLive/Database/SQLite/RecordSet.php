@@ -13,6 +13,10 @@ namespace ManiaLive\Database\SQLite;
 
 class RecordSet implements \ManiaLive\Database\RecordSet
 {
+	const FETCH_ASSOC = SQLITE_ASSOC;
+	const FETCH_NUM = SQLITE_NUM;
+	const FETCH_BOTH = SQLITE_BOTH;
+	
 	protected $result;
 	
 	function __construct($result)
@@ -27,7 +31,7 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	
 	function fetchAssoc()
 	{
-		return sqlite_fetch_array($this->result, SQLITE_ASSOC);
+		return sqlite_fetch_array($this->result, self::FETCH_ASSOC);
 	}
 	
 	function fetchObject($className, array $params=array() )
@@ -50,7 +54,7 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	
 	function fetchRow()
 	{
-		return sqlite_fetch_array($this->result, SQLITE_NUM);
+		return sqlite_fetch_array($this->result, self::FETCH_NUM);
 	}
 	
 	function fetchStdObject()

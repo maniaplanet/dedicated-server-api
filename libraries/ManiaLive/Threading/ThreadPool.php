@@ -32,6 +32,7 @@ use ManiaLive\Database\SQLite\Connection;
  */
 class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Features\Tick\Listener
 {
+	private $running;
 	private $threads;
 	private $threadsPending;
 	private $threadsCount;
@@ -44,6 +45,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	
 	function __construct()
 	{
+		$this->running = false;
 		$this->threads = array();
 		$this->threadsPending = array();
 		$this->threadsCount = 0;
@@ -86,6 +88,22 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		
 		// register me ...
 		Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
+	}
+	
+	/**
+	 * Starts thread processing.
+	 */
+	function run()
+	{
+		$this->running = true;
+	}
+	
+	/**
+	 * Stops thread processing.
+	 */
+	function stop()
+	{
+		$this->running = false;
 	}
 	
 	/**
@@ -247,6 +265,11 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function onTick()
 	{
+		if (!$this->running)
+		{
+			return;
+		}
+		
 		if (self::$threadingEnabled)
 		{
 			// afterwards collect responses,
@@ -336,6 +359,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		}
 		catch (\Exception $ex)
 		{
+			sqlite_busy_timeout($this->database->getHandle(), 60000);
 			if (strpos($ex->getMessage(), 'database is locked') === false)
 			{
 				throw $ex;

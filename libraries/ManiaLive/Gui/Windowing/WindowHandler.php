@@ -11,6 +11,9 @@
 
 namespace ManiaLive\Gui\Windowing;
 
+use ManiaLive\DedicatedApi\Connection;
+use ManiaLive\DedicatedApi\Structures\Player;
+use ManiaLive\Gui\Windowing\Windows\Shortkey;
 use ManiaLive\Gui\Windowing\Windows\Info;
 use ManiaLive\Gui\Windowing\Windows\Thumbnail;
 use ManiaLive\Gui\Displayables\Blank;
@@ -37,6 +40,7 @@ class WindowHandler
 	protected static $dialogStack = array();
 	public static $dialogRefreshed = array();
 	protected static $maximized = array();
+	protected static $playerHiddenWindows = array();
 	
 	protected static $currentManagedWindow = array();
 	protected static $minimizedManagedWindows = array();
@@ -66,6 +70,35 @@ class WindowHandler
 		return parent::getInstance();
 	}
 	
+	static function showHideInterface($login)
+	{
+		$player = new Player();
+		$player->login = $login;
+		
+		if (isset(self::$playerHiddenWindows[$login]))
+		{
+			foreach (self::$playerHiddenWindows[$login] as $window)
+			{
+				$window->show();
+			}
+			unset(self::$playerHiddenWindows[$login]);
+		}
+		else
+		{
+			self::$playerHiddenWindows[$login] = array();
+			foreach (Window::Get($login) as $window)
+			{
+				if ($window->isShown() && !($window instanceof Shortkey))
+				{
+					$group = GuiHandler::getInstance()->getGroup($player);
+					$group->displayableGroup->addDisplayable(new Blank($window->getId()));
+					self::$playerHiddenWindows[$login][] = $window;
+				}
+			}
+			Connection::getInstance()->chatSendServerMessage('ManiaLive interface has been deactivated, press F7 to enable ...', array($player), true);
+		}
+	}
+	
 	/**
 	 * Draws the Windows, that have been modified this loop, in correct order.
 	 * @see libraries/ManiaLive/Application/ManiaLive\Application.Listener::onPostLoop()
@@ -91,6 +124,12 @@ class WindowHandler
 			if (isset(self::$dialogStack[$login])
 				&& end(self::$dialogStack[$login])
 				&& self::$dialogRefreshed[$login])
+			{
+				continue;
+			}
+			
+			// don't draw if player's hiding interface
+			if (isset(self::$playerHiddenWindows[$login]))
 			{
 				continue;
 			}
@@ -531,6 +570,38 @@ class WindowHandler
 	
 	/**
 	 * (non-PHPdoc)
+	 * @see libraries/ManiaLive/Application/ManiaLive\Application.Listener::onInit()
+	 */
+	function onInit()
+	{
+		foreach ($this->storage->players as $login => $player)
+		{
+			$sk = Shortkey::Create($login);
+			$sk->addCallback(Shortkey::F7, array('\ManiaLive\Gui\Windowing\WindowHandler', 'showHideInterface'));
+			$sk->show();
+		}
+		
+		foreach ($this->storage->spectators as $login => $spectator)
+		{
+			$sk = Shortkey::Create($login);
+			$sk->addCallback(Shortkey::F7, array('\ManiaLive\Gui\Windowing\WindowHandler', 'showHideInterface'));
+			$sk->show();
+		}
+	}
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see libraries/ManiaLive/DedicatedApi/Callback/ManiaLive\DedicatedApi\Callback.Listener::onPlayerConnect()
+	 */
+	function onPlayerConnect($login, $IsSpectator)
+	{
+		$sk = Shortkey::Create($login);
+		$sk->addCallback(Shortkey::F7, array('\ManiaLive\Gui\Windowing\WindowHandler', 'showHideInterface'));
+		$sk->show();
+	}
+	
+	/**
+	 * (non-PHPdoc)
 	 * @see libraries/ManiaLive/DedicatedApi/Callback/ManiaLive\DedicatedApi\Callback.Listener::onPlayerDisconnect()
 	 */
 	function onPlayerDisconnect($login)
@@ -632,7 +703,6 @@ class WindowHandler
 	
 	function onTerminate() {}
 	function onRun() {}
-	function onInit() {}
 	
 	function onBeginChallenge($challenge, $warmUp, $matchContinuation) {}
 	function onBeginRace($challenge) {}
@@ -646,7 +716,6 @@ class WindowHandler
 	function onManualFlowControlTransition($transition) {}
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
-	function onPlayerConnect($login, $isSpectator) {}
 	function onPlayerFinish($playerUid, $login, $timeOrScore) {}
 	function onPlayerIncoherence($playerUid, $login) {}
 	function onPlayerInfoChanged($playerInfo) {}
