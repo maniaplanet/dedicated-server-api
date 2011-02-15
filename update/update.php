@@ -165,6 +165,8 @@ rrmdir('../libraries/ManiaLib');
 @unlink('../README');
 @unlink('../CONVENTIONS');
 @unlink('../update/update.php');
+@unlink('../run');
+@unlink('../run.bat');
 
 echo NL;
 
@@ -175,11 +177,14 @@ rcopy('./temp/ManiaLive/libraries/ManiaHome', '../libraries/ManiaHome');
 rcopy('./temp/ManiaLive/libraries/ManiaLib', '../libraries/ManiaLib');
 copy('./temp/ManiaLive/config/config-example.ini', '../config/config-example.ini');
 copy('./temp/ManiaLive/bootstrapper.php', '../bootstrapper.php');
+copy('./temp/ManiaLive/changelog.txt', '../changelog.txt');
 copy('./temp/ManiaLive/utils.inc.php', '../utils.inc.php');
 copy('./temp/ManiaLive/LICENSE', '../LICENSE');
 copy('./temp/ManiaLive/README', '../README');
 copy('./temp/ManiaLive/CONVENTIONS', '../CONVENTIONS');
 copy('./temp/ManiaLive/update/update.php', '../update/update.php'); // update the updater itself!
+copy('./temp/ManiaLive/run', '../run');
+copy('./temp/ManiaLive/run.bat', '../run.bat');
 
 echo NL;
 

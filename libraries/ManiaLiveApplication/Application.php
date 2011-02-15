@@ -13,7 +13,7 @@ namespace ManiaLiveApplication;
 
 use ManiaLive\Features\Updater;
 
-const Version = 179;
+const Version = 188;
 
 if (extension_loaded('pcntl'))
 	declare(ticks = 1); 
