@@ -90,7 +90,7 @@
 + Plugin events for loading and unloading.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r2207 (7 feb. 2011)	|
+|	ManiaLive 1.0b - r179 (7 feb. 2011)		|
 +-------------------------------------------+
 + dialog window now uses autonewline.
 + windowhandler has been updated.
@@ -106,3 +106,17 @@
 - fixed issue 14 uses login now instead id.
 ! when calling public methods of plugins the pluginid is added as last parameter now.
 */! from the next release on version numbering will happen based on the google code revision.
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r189 (15 feb. 2011)	|
++-------------------------------------------+
++ implemented f7 shortcut to hide/show all windows.
+* use webservice to compare manialive version.
+* updated the automatic update script to get the manialive version and downloadurl from the webservice.
++ use webservices to get new plugin updates from the remote repository.
++ implmented time sanity checks into the storage class.
+* preformance improvements.
+* swapped to newer version of manialib.
+* edited callvote in connection to be more dynamic.
+* improved panel control.
+* performance and architecture updates.
