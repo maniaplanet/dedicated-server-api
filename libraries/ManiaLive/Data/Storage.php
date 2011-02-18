@@ -130,10 +130,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$currentIndex = $connection->getCurrentChallengeIndex();
 		$nextIndex = $connection->getNextChallengeIndex();
 		$this->nextChallenge = $this->challenges[$nextIndex];
-		if($currentIndex != -1)
-		{
-			$this->currentChallenge = $connection->getCurrentChallengeInfo();
-		}
+		$this->currentChallenge = $connection->getCurrentChallengeInfo();
 
 		$this->server = $connection->getServerOptions();
 		$this->gameInfos = $connection->getCurrentGameInfo();
