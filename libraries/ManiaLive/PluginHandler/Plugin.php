@@ -648,6 +648,18 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	}
 	
 	/**
+	 * Checks whether there is a cache entry with
+	 * the given key.
+	 * @param string $pluginId
+	 * @param string $key
+	 * @return bool If the plugin is not found it will return NULL
+	 */
+	final function exists($pluginId, $key)
+	{
+		return $this->plugin_handler->existsPluginCacheEntry($pluginId, $key);
+	}
+	
+	/**
 	 * Fetch value from own cache.
 	 * @param string $key
 	 */

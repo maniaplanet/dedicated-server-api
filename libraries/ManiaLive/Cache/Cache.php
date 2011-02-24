@@ -4,9 +4,9 @@
  * 
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
- * @version     $Revision: 2453 $:
+ * @version     $Revision: 2624 $:
  * @author      $Author: florian $:
- * @date        $Date: 2011-02-17 19:02:35 +0100 (jeu., 17 févr. 2011) $:
+ * @date        $Date: 2011-02-24 15:55:27 +0100 (jeu., 24 févr. 2011) $:
  */
 
 namespace ManiaLive\Cache;
@@ -105,6 +105,15 @@ class Cache extends Singleton
 	}
 	
 	/**
+	 * Checks if a key exists.
+	 * @param string $key
+	 */
+	function exists($key)
+	{
+		return isset(self::$storage[$key]);
+	}
+	
+	/**
 	 * Stores a value in the cache.
 	 * It will be stored in the module
 	 * its namespace.
@@ -131,6 +140,17 @@ class Cache extends Singleton
 	{
 		$prefix = spl_object_hash($module);
 		return parent::getInstance()->fetch($prefix . '_' . $key);
+	}
+	
+	/**
+	 * Checks if a key exists in the module chache.
+	 * @param object $module
+	 * @param string $key
+	 */
+	static function existsInModuleCache($module, $key)
+	{
+		$prefix = spl_object_hash($module);
+		return parent::getInstance()->exists($prefix . '_' . $key);
 	}
 	
 	/**

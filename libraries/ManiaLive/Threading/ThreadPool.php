@@ -457,7 +457,7 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 				$this->removeThread($id);
 			}
 		}
-		catch (Exception $ex)
+		catch (\Exception $ex)
 		{
 			// uncaught errors in destructors are bad ...
 		}

@@ -461,6 +461,7 @@ implements \ManiaLive\Application\Listener
 		$client = new \ManiaLib\Rest\Client();
 		$client->setAPIURL(APP_API);
 
+		$response = null;
 		try
 		{
 			$response = $client->execute('GET', '/manialive/repository/entry/' . $repositoryId . '/index.json');
@@ -473,7 +474,7 @@ implements \ManiaLive\Application\Listener
 			}
 		}
 
-		if ($response->id && isset($this->repositoryEntries[$response->id]))
+		if ($response && isset($response->id) && isset($this->repositoryEntries[$response->id]))
 		{
 			$repositoryEntry = $this->repositoryEntries[$response->id];
 			$entry = RepositoryEntry::fromResponse($response);
@@ -504,6 +505,14 @@ implements \ManiaLive\Application\Listener
 		if (isset($this->plugins[$pluginId]))
 		{
 			return Cache::fetchFromModuleCache($this->plugins[$pluginId], $key);
+		}
+	}
+	
+	final public function existsPluginCacheEntry($pluginId, $key)
+	{
+		if (isset($this->plugins[$pluginId]))
+		{
+			return Cache::existsInModuleCache($this->plugins[$pluginId], $key);
 		}
 	}
 
