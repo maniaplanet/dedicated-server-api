@@ -8,6 +8,7 @@
  * @author      $Author$:
  * @date        $Date$:
  */
+
 namespace ManiaLive\Data;
 
 use ManiaLive\DedicatedApi\Structures\Vote;
@@ -504,6 +505,7 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	}
 
 	function onManualFlowControlTransition($transition) {}
+	
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) 
 	{
 		if(!($this->currentVote instanceof Vote))
