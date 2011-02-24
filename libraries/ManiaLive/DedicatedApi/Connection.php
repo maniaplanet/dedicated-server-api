@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -56,7 +56,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 * @var integer
 	 */
 	static protected $voteId = 0;
-	
+
 	/**
 	 * @return Connection
 	 */
@@ -67,7 +67,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 	/**
 	 * Game Modes
-     * TODO maybe put this somewhere else?
+	 * TODO maybe put this somewhere else?
 	 */
 	const GAMEMODE_ROUNDS = 0;
 	const GAMEMODE_TIMEATTACK = 1;
@@ -75,7 +75,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	const GAMEMODE_LAPS = 3;
 	const GAMEMODE_STUNTS = 4;
 	const GAMEMODE_CUP = 5;
-	
+
 	/**
 	 * Constructor of the class
 	 * @param int $port represents the communication port
@@ -149,10 +149,10 @@ class Connection extends \ManiaLive\Utilities\Singleton
 			return $this->xmlrpcClient->getResponse();
 		}
 	}
-	
+
 	/**
-	 * Given the name of a method, return an array of legal signatures. 
-	 * Each signature is an array of strings. 
+	 * Given the name of a method, return an array of legal signatures.
+	 * Each signature is an array of strings.
 	 * The first item of each signature is the return type, and any others items are parameter types.
 	 * @param string $methodName
 	 * @return array
@@ -161,7 +161,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	{
 		return $this->execute('system.methodSignature', array( $methodName ));
 	}
-	
+
 	/**
 	 * Change the password for the specified login/user.
 	 * @param string $username
@@ -211,7 +211,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($username, $password), false);
 	}
-	
+
 	/**
 	 * Call a vote for a cmd. The command is a XML string corresponding to an XmlRpc request.
 	 * You can additionally specifiy specific parameters for this vote: a ratio, a time out
@@ -249,7 +249,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		}
 
 		$tmpCmd = new Xmlrpc\Request($vote->cmdName, $vote->cmdParam);
-		
+
 		return  $this->execute(ucfirst(__FUNCTION__).'Ex', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
@@ -537,7 +537,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('messages = '.print_r($messages,true));
 		}
-		
+
 		$signature = $this->methodSignature(ucfirst(__FUNCTION__));
 		$signature = $signature[0];
 		if (count($signature) == 3)
@@ -555,14 +555,14 @@ class Connection extends \ManiaLive\Utilities\Singleton
 				$receiverString = Player::getPropertyFromArray($receiver, 'login');
 				$receiverString = implode(',', $receiverString);
 			}
-			else 
+			else
 			{
 				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 			}
-			
+
 			return $this->execute(ucfirst(__FUNCTION__), array($messages, $receiverString), $multicall);
 		}
-		else 
+		else
 		{
 			if ($receiver == null)
 			{
@@ -606,7 +606,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 				}
 				return;
 			}
-			else 
+			else
 			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 		}
 	}
@@ -626,7 +626,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('message = '.print_r($message,true));
 		}
-		
+
 		$params = array($message);
 		$method = 'ChatSendServerMessage';
 		if (is_null($players))
@@ -684,14 +684,14 @@ class Connection extends \ManiaLive\Utilities\Singleton
 				$receiverString = Player::getPropertyFromArray($receiver, 'login');
 				$receiverString = implode(',', $receiverString);
 			}
-			else 
+			else
 			{
 				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 			}
-			
+
 			return $this->execute(ucfirst(__FUNCTION__), array($messages, $receiverString), $multicall);
 		}
-		else 
+		else
 		{
 			if ($receiver == null)
 			{
@@ -737,7 +737,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 				}
 				return;
 			}
-			else 
+			else
 			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 		}
 	}
@@ -837,10 +837,10 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('sender must be set');
 		}
-		
+
 		$senderLogin = $sender->login;
 		$receiverLogin = $receiver ? $receiver->login : '';
-		
+
 		return $this->execute(ucfirst(__FUNCTION__), array($message,$senderLogin,$receiverLogin), $multicall);
 	}
 
@@ -1083,7 +1083,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		
+
 		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
 	}
 
@@ -1568,7 +1568,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	 */
 	function sendBill(Player $fromPlayer, $amount, $label, Player $toPlayer = null, $multicall = false)
 	{
-		
+
 		if (!is_int($amount) || $amount < 1)
 		{
 			throw new InvalidArgumentException('amount = '.print_r($amount, true));
@@ -1581,7 +1581,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('from Player must be set');
 		}
-		
+
 		$toPlayer = (is_null($toPlayer) ? '' : $toPlayer->login);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($fromPlayer->login, $amount, $label, $toPlayer), $multicall);
@@ -1627,6 +1627,27 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	{
 		$result = $this->execute(ucfirst(__FUNCTION__));
 		return Structures\SystemInfos::fromArray($result);
+	}
+
+	/**
+	 * Sets up- and download speed for the server in kbps.
+	 * @param int $downloadRate the download rate in kbps
+	 * @param int $uploadRate the upload rate in kbps
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function setConnectionRates($downloadRate, $uploadRate, $multicall = false)
+	{
+		if (!is_int($downloadRate))
+		{
+			throw new InvalidArgumentException('downloadRate = '.print_r($downloadRate, true));
+		}
+		if (!is_int($uploadRate))
+		{
+			throw new InvalidArgumentException('uploadRate = '.print_r($uploadRate, true));
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__),array($downloadRate, $uploadRate),$multicall);
 	}
 
 	/**
@@ -1881,27 +1902,6 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	}
 
 	/**
-	 * Sets up- and download speed for the server in kbps.
-	 * @param int $downloadRate
-	 * @param int $uploadRate
-	 * @param bool $multicall
-	 * @return bool
-	 */
-	function setConnectionRates($downloadRate, $uploadRate, $multicall = false)
-	{
-		if (!is_int($downloadRates))
-		{
-			throw new InvalidArgumentException('downloadRate = '.print_r($rates, true));
-		}
-		if (!is_int($uploadRate))
-		{
-			throw new InvalidArgumentException('uploadRate = '.print_r($rates, true));
-		}
-		
-		return $this->execute(ucfirst(__FUNCTION__),array($downloadRate, $uploadRate),$multicall);
-	}
-	
-	/**
 	 * Allow clients to download challenges from the server.
 	 * @param bool $allow
 	 * @param bool $multicall
@@ -2126,12 +2126,12 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	function setServerOptions(array $options, $multicall = false)
 	{
 		if (!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment', $options)
-			|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
-			|| !array_key_exists('NextMaxPlayers', $options) || !array_key_exists('NextMaxSpectators', $options)
-			|| !array_key_exists('IsP2PUpload', $options) || !array_key_exists('IsP2PDownload', $options)
-			|| !array_key_exists('NextLadderMode', $options) || !array_key_exists('NextVehicleNetQuality', $options)
-			|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
-			|| !array_key_exists('AllowChallengeDownload', $options) || !array_key_exists('AutoSaveReplays', $options)
+		|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
+		|| !array_key_exists('NextMaxPlayers', $options) || !array_key_exists('NextMaxSpectators', $options)
+		|| !array_key_exists('IsP2PUpload', $options) || !array_key_exists('IsP2PDownload', $options)
+		|| !array_key_exists('NextLadderMode', $options) || !array_key_exists('NextVehicleNetQuality', $options)
+		|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
+		|| !array_key_exists('AllowChallengeDownload', $options) || !array_key_exists('AutoSaveReplays', $options)
 		)
 		{
 			throw  new InvalidArgumentException('options = '.print_r($options,true));
@@ -2218,7 +2218,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 			{
 				if (!($mod instanceof Structures\Mod))
 				throw new InvalidArgumentException('mods = '.print_r($mods, true));
-				else 
+				else
 				$modList[] = $mods->toArray();
 			}
 		}
@@ -2484,19 +2484,19 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	function setGameInfos(array $gameInfos, $multicall = false)
 	{
 		if (!is_array($gameInfos)
-			|| !array_key_exists('GameMode', $gameInfos)
-			|| !array_key_exists('ChatTime', $gameInfos)
-			|| !array_key_exists('RoundsPointsLimit', $gameInfos)
-			|| !array_key_exists('RoundsUseNewRules', $gameInfos)
-			|| !array_key_exists('RoundsForcedLaps', $gameInfos)
-			|| !array_key_exists('TimeAttackLimit', $gameInfos)
-			|| !array_key_exists('TimeAttackSynchStartPeriod', $gameInfos)
-			|| !array_key_exists('TeamPointsLimit', $gameInfos)
-			|| !array_key_exists('TeamMaxPoints', $gameInfos)
-			|| !array_key_exists('TeamUseNewRules', $gameInfos)
-			|| !array_key_exists('LapsNbLaps', $gameInfos)
-			|| !array_key_exists('LapsTimeLimit', $gameInfos)
-			|| !array_key_exists('FinishTimeout', $gameInfos)
+		|| !array_key_exists('GameMode', $gameInfos)
+		|| !array_key_exists('ChatTime', $gameInfos)
+		|| !array_key_exists('RoundsPointsLimit', $gameInfos)
+		|| !array_key_exists('RoundsUseNewRules', $gameInfos)
+		|| !array_key_exists('RoundsForcedLaps', $gameInfos)
+		|| !array_key_exists('TimeAttackLimit', $gameInfos)
+		|| !array_key_exists('TimeAttackSynchStartPeriod', $gameInfos)
+		|| !array_key_exists('TeamPointsLimit', $gameInfos)
+		|| !array_key_exists('TeamMaxPoints', $gameInfos)
+		|| !array_key_exists('TeamUseNewRules', $gameInfos)
+		|| !array_key_exists('LapsNbLaps', $gameInfos)
+		|| !array_key_exists('LapsTimeLimit', $gameInfos)
+		|| !array_key_exists('FinishTimeout', $gameInfos)
 		)
 		{
 			throw new InvalidArgumentException('gameInfos = '.print_r($gameInfos,true));
@@ -3402,7 +3402,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
-	
+
 	/**
 	 * Set as next challenges the list of challenges with the specified filenames, if they are present in the selection.
 	 * The list of challenges to remove is an array of strings.
@@ -3420,7 +3420,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
 	}
-	
+
 	/**
 	 * Set a list of challenges defined in the playlist with the specified filename
 	 * as the current selection of the server, and load the gameinfos from the same file.
@@ -3593,7 +3593,9 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	}
 
 	/**
-	 * Returns the current ranking for the race in progress. This method take two parameters.
+	 * Returns the current rankings for the race in progress. 
+	 * (in team mode, the scores for the two teams are returned. 
+	 * In other modes, it's the individual players' scores) This method take two parameters. 
 	 * The first parameter specifies the maximum number of infos to be returned,
 	 * the second one the starting index in the ranking.
 	 * The ranking returned is a list of ManiaLive\DedicatedApi\Structures\Player.
@@ -3615,6 +3617,38 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		}
 
 		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset)));
+	}
+
+	/**
+	 * Returns the current ranking for the race in progressof the player with the specified login (or list of comma-separated logins).
+	 * The ranking returned is a list of structures that contains the following fields : 
+	 * Login, NickName, PlayerId, Rank, BestTime, Score, NbrLapsFinished and LadderScore. 
+	 * It also contains an array BestCheckpoints that contains the checkpoint times for the best race.
+	 * @param Player|Player[] $player
+	 * @throws InvalidArgumentException
+	 * @return array[ManiaLive\DedicatedApi\Structures\Player] The list is an array of ManiaLive\DedicatedApi\Structures\Player.
+	 */
+	function getCurrentRankingForLogin($player = null)
+	{
+		if ($player == null)
+		{
+			$playerString = '';
+		}
+		elseif ($player instanceof Player)
+		{
+			$playerString = $receiver->login;
+		}
+		elseif (is_array($player))
+		{
+			$playerString = Player::getPropertyFromArray($player, 'login');
+			$playerString = implode(',', $playerString);
+		}
+		else
+		{
+			throw new InvalidArgumentException('player = '.print_r($player,true));
+		}
+		
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($playerString)));
 	}
 
 	/**

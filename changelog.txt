@@ -120,3 +120,11 @@
 * edited callvote in connection to be more dynamic.
 * improved panel control.
 * performance and architecture updates.
+
++-------------------------------------------+
+|	ManiaLive 1.0b - r??? (24 feb. 2011)	|
++-------------------------------------------+
++ add compatibility with server build of 21st feb 2011
++ add the currentVote to the storage class
++ add Cache system to ManiaLive to store data to be share between classes
+* bug fixes

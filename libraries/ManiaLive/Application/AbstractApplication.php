@@ -11,6 +11,7 @@
 
 namespace ManiaLive\Application;
 
+use ManiaLive\Cache\Cache;
 use ManiaLive\Gui\Windowing\WindowHandler;
 use ManiaLive\Threading\Tools;
 use ManiaLive\Threading\ThreadPool;
@@ -37,6 +38,10 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 	 * @todo Connection is not the best name here. $dedicatedApi ? $api? $apiConnection ? etc.
 	 */
 	protected $connection;
+	/**
+	 * @var \ManiaLive\Cache\Cache
+	 */
+	protected $cache;
 	
 	protected function __construct()
 	{
@@ -90,7 +95,14 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 	{
 		// initialize components
 		new Ticker();
+		
+		// initialize caching
+		$this->cache = Cache::getInstance();
+		
+		// synchronize information with dedicated server
 		Storage::getInstance();
+		
+		// initialize plugin handler
 		PluginHandler::getInstance();
 		
 		// establish connection

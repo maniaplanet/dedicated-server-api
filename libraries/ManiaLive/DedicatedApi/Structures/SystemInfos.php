@@ -18,5 +18,7 @@ class SystemInfos extends AbstractStructure
 	public $p2PPort;
 	public $serverLogin;
 	public $serverPlayerId;
+	public $connectionDownloadRate;
+    public $connectionUploadRate;
 }
 ?>

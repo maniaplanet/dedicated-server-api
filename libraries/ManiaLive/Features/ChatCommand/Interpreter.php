@@ -277,6 +277,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified) {}
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
 }
 
 class CommandAlreadyRegisteredException extends \Exception {}

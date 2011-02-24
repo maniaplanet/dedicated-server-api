@@ -182,6 +182,15 @@ interface Listener extends  \ManiaLive\Event\Listener
 	 * @param string $transition
 	*/
 	function onManualFlowControlTransition($transition);
+	
+	/**
+	 * Method called when a vote change of State
+	 * @param string $stateName can be NewVote, VoteCancelled, votePassed, voteFailed
+	 * @param string $login the login of the player who start the vote if empty the server start the vote
+	 * @param string $cmdName the command used for the vote
+	 * @param string $cmdParam the parameters of the vote
+	 */
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam);
 }
 
 ?>

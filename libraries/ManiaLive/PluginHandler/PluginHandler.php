@@ -11,6 +11,8 @@
 
 namespace ManiaLive\PluginHandler;
 
+use ManiaLive\Cache\Cache;
+
 use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Singleton;
 use ManiaLive\Utilities\Console;
@@ -47,7 +49,8 @@ class PluginHandler extends Singleton
 	
 	static function getClassFromPluginId($pluginId)
 	{
-		$class = end(explode('\\', $pluginId));
+		$parts = explode('\\', $pluginId);
+		$class = end($parts);
 		return '\ManiaLivePlugins\\' . $pluginId . '\\' . $class;
 	}
 
@@ -474,6 +477,14 @@ class PluginHandler extends Singleton
 		}
 		
 		return true;
+	}
+	
+	final public function fetchPluginCacheEntry($pluginId, $key)
+	{
+		if (isset($this->plugins[$pluginId]))
+		{
+			return Cache::fetchFromModuleCache($this->plugins[$pluginId], $key);
+		}
 	}
 	
 	final public function refreshRepositoryInfo()

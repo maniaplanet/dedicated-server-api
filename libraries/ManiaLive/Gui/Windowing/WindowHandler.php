@@ -724,6 +724,7 @@ class WindowHandler
 	function onServerStop() {}
 	function onStatusChanged($statusCode, $statusName) {}
 	function onTunnelDataReceived($playerUid, $login, $data) {}
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
 }
 
 ?>

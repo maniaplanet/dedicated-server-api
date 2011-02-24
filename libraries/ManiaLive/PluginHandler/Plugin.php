@@ -11,6 +11,9 @@
 
 namespace ManiaLive\PluginHandler;
 
+use ManiaLive\Cache\Entry;
+
+use ManiaLive\Cache\Cache;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Application\FatalException;
 use ManiaLive\Config\Loader;
@@ -44,8 +47,10 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	\ManiaLive\Features\Tick\Listener,
 	\ManiaLive\Application\Listener,
 	\ManiaLive\Data\Listener,
-	\ManiaLive\PluginHandler\Listener
+	\ManiaLive\PluginHandler\Listener,
+	\ManiaLive\Cache\Listener
 {
+	private $uid;
 	/**
 	 * @var string
 	 */
@@ -80,6 +85,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	private $events_server;
 	private $events_storage;
 	private $events_plugins;
+	private $events_caching;
 	/**
 	 * @var ManiaLive\PluginHandler\PluginHandler
 	 */
@@ -134,6 +140,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$classPath = get_class($this);
 		$items = explode('\\', $classPath);
 
+		$this->uid = uniqid();
+		
 		$this->id = $plugin_id;
 		array_shift($items);
 		array_pop($items);
@@ -149,6 +157,11 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 		$this->chatCommands = array();
 		$this->repositoryId = null;
 		$this->repositoryVersion = null;
+	}
+	
+	final protected function getUid()
+	{
+		return $this->uid;
 	}
 	
 	// TODO maybe tell the plugin handler here that the plugin did successfully unload?
@@ -592,6 +605,58 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	}
 	
 	/**
+	 * Start listen for cache events like
+	 * onStore, onModify and onDestroy
+	 */
+	final function enableCachingEvents()
+	{
+		$this->restrictIfUnloaded();
+		if (!$this->events_caching)
+		{
+			Dispatcher::register(\ManiaLive\Cache\Event::getClass(), $this);
+		}
+		$this->events_caching = true;
+	}
+	
+	/**
+	 * Stop listen for cache events.
+	 */
+	final function disableCachingEvents()
+	{
+		$this->restrictIfUnloaded();
+		Dispatcher::unregister(\ManiaLive\Cache\Event::getClass(), $this);
+		$this->events_caching = false;
+	}
+	
+	/**
+	 * @param string $key
+	 * @param mixed $value
+	 * @param integer $timeToLive
+	 */
+	final function store($key, $value, $timeToLive = null)
+	{
+		return Cache::storeInModuleCache($this, $key, $value, $timeToLive);
+	}
+	
+	/**
+	 * Fetches data from the cache.
+	 * @param string $key
+	 */
+	final function fetch($pluginId, $key)
+	{
+		return $this->plugin_handler->fetchPluginCacheEntry($pluginId, $key);
+	}
+	
+	/**
+	 * Fetch value from own cache.
+	 * @param string $key
+	 */
+	final function fetchOwn($key)
+	{
+		return Cache::fetchFromModuleCache($this, $key);
+	}
+	
+	/**
 	 * Creates a new Thread.
 	 * @return integer
 	 */
@@ -810,6 +875,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 
 	function onManualFlowControlTransition($transition) {}
 	
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
+	
 	// windowing events
 	
 	function onWindowClose($login, $window) {}
@@ -845,5 +912,11 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	function onPluginLoaded($pluginId) {}
 	
 	function onPluginUnloaded($pluginId) {}
+	
+	// caching events
+	
+	function onStore(Entry $entry) {}
+	
+	function onEvict(Entry $entry) {}
 }
 ?>

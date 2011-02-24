@@ -35,6 +35,7 @@ abstract class Adapter implements Listener
 	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified) {} 
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
 }
 
 ?>

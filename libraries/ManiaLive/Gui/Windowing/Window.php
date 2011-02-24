@@ -197,7 +197,10 @@ abstract class Window extends Container implements
 		{
 			if (is_subclass_of($class_name, $pclass))
 			{
-				$windows = array_merge($windows, self::$instancesByClass[$class_name][$login]);
+				if (isset(self::$instancesByClass[$class_name][$login]))
+				{
+					$windows = array_merge($windows, self::$instancesByClass[$class_name][$login]);
+				}
 			}
 		}
 		

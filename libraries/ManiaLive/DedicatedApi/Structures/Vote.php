@@ -13,6 +13,12 @@ namespace ManiaLive\DedicatedApi\Structures;
 
 class Vote extends AbstractStructure
 {
+	const STATE_NEW = 'NewVote';
+	const STATE_CANCELLED = 'VoteCancelled';
+	const STATE_PASSED = 'VotePassed';
+	const STATE_FAILED = 'VoteFailed';
+	
+	public $status;
 	public $callerLogin;
 	public $cmdName;
 	public $cmdParam;
