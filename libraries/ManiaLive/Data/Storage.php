@@ -8,9 +8,9 @@
  * @author      $Author$:
  * @date        $Date$:
  */
-
 namespace ManiaLive\Data;
 
+use ManiaLive\DedicatedApi\Structures\GameInfos;
 use ManiaLive\DedicatedApi\Structures\Vote;
 use ManiaLive\Utilities\String;
 use ManiaLive\Application\SilentCriticalEventException;
@@ -28,6 +28,11 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 {
 	protected $disconnetedPlayers = array();
 
+	/**
+	 * Player's checkpoints
+	 */
+	protected $checkpoints = array();
+	
 	/**
 	 * Contains Player object. It represents the player connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
@@ -271,6 +276,8 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	function onBeginChallenge($challenge, $warmUp, $matchContinuation)
 	{
+		$this->checkpoints = array();
+		
 		$oldChallenge = $this->currentChallenge;
 		$this->currentChallenge = Challenge::fromArray($challenge);
 		Console::printlnFormatted('Map change: ' . String::stripAllTmStyle($oldChallenge->name) . ' -> ' . String::stripAllTmStyle($this->currentChallenge->name));
@@ -319,7 +326,100 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		$this->serverStatus->name = $statusName;
 	}
 
-	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
+	function getLapCheckpoints($player)
+	{
+		$login = $player->login;
+		if (isset($this->checkpoints[$login]))
+		{
+			$checkCount = count($this->checkpoints[$login]) - 1;
+			$offset = ($checkCount % $this->currentChallenge->nbCheckpoints) + 1;
+			$checks = array_slice($this->checkpoints[$login], -$offset);
+			
+			if ($checkCount >= $this->currentChallenge->nbCheckpoints)
+			{
+				$timeOffset = $this->checkpoints[$login][$checkCount - $offset];
+				
+				for ($i = 0; $i < count($checks); $i++)
+				{
+					$checks[$i] -= $timeOffset;
+				}
+			}
+			
+			return $checks;
+		}
+		else
+		{
+			return array();
+		}
+	}
+	
+	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex)
+	{
+		// reset all checkpoints on first checkpoint
+		if (!isset($this->checkpoints[$login]))
+		{
+			$this->checkpoints[$login] = array();
+		}
+		elseif ($checkpointIndex == 0)
+		{
+			$this->checkpoints[$login] = array();
+		}
+		
+		// sanity check
+		if ($checkpointIndex > 0)
+		{
+			// we need to have previous time
+			if (!isset($this->checkpoints[$login][$checkpointIndex - 1]))
+			{
+				return;
+			}
+			
+			// time or score needs to increase or stay the same each checkpoint
+			if ($timeOrScore < $this->checkpoints[$login][$checkpointIndex - 1])
+			{
+				return;
+			}
+		}
+		
+		// store current checkpoint score in array
+		$this->checkpoints[$login][$checkpointIndex] = $timeOrScore;
+		
+		//print_r($this->checkpoints[$login]);
+		
+		// if player has finished a complete round
+		if (($checkpointIndex + 1) % $this->currentChallenge->nbCheckpoints == 0)
+		{
+			if ($player = $this->getPlayerObject($login))
+			{
+				// get the checkpoints for current lap
+				$checkpoints = array_slice($this->checkpoints[$login], -$this->currentChallenge->nbCheckpoints);
+				
+				// if we're at least in second lap we need to
+				// strip times from previous laps
+				if ($checkpointIndex >= $this->currentChallenge->nbCheckpoints)
+				{
+					// calculate checkpoint scores for current lap
+					$offset = $this->checkpoints[$login][($checkpointIndex - $this->currentChallenge->nbCheckpoints)];
+					for ($i = 0; $i < count($checkpoints); $i++)
+					{
+						$checkpoints[$i] -= $offset;
+					}
+					
+					// calculate current lap score
+					$timeOrScore -= $offset;
+				}
+				
+				// last checkpoint has to be equal to finish time
+				if (end($checkpoints) != $timeOrScore)
+				{
+					return;
+				}
+				
+				// finally we tell everyone of the new lap time
+				Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_FINISH_LAP, array($player, end($checkpoints), $checkpoints, $curLap)));
+			}
+		}
+	}
 
 	function onPlayerFinish($playerUid, $login, $timeOrScore)
 	{
@@ -331,12 +431,8 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 		switch ($this->gameInfos->gameMode)
 		{
-			// waiting for new dedicated server
-			case Connection::GAMEMODE_TEAM:
-				return;
-			
 			// check stunts
-			case Connection::GAMEMODE_STUNTS:
+			case GameInfos::GAMEMODE_STUNTS:
 				if (($timeOrScore > $player->score || $player->score <= 0) && $timeOrScore > 0)
 				{
 					$old_score = $player->score;
@@ -369,8 +465,17 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 					$old_best = $player->bestTime;
 					$player->bestTime = $timeOrScore;
 					
-					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
-					$this->updateRanking($rankings);
+					if ($this->gameInfos->gameMode == GameInfos::GAMEMODE_TEAM)
+					{
+						$ranking = Connection::getInstance()->getCurrentRankingForLogin($player);
+						$player->bestTime = $ranking[0]->bestTime;
+						$player->bestCheckpoints = $ranking[0]->bestCheckpoints;
+					}
+					else
+					{
+						$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
+						$this->updateRanking($rankings);
+					}
 					
 					if ($player->bestTime == $timeOrScore)
 					{
@@ -378,12 +483,13 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 						$totalChecks = 0;
 						switch ($this->gameInfos->gameMode)
 						{
-							case Connection::GAMEMODE_LAPS:
+							case GameInfos::GAMEMODE_LAPS:
 								$totalChecks = $this->currentChallenge->nbCheckpoints * $this->gameInfos->lapsNbLaps;
 								break;
 								
-							case Connection::GAMEMODE_ROUNDS:
-							case Connection::GAMEMODE_CUP:
+							case GameInfos::GAMEMODE_TEAM:
+							case GameInfos::GAMEMODE_ROUNDS:
+							case GameInfos::GAMEMODE_CUP:
 								if ($this->currentChallenge->nbLaps > 0)
 								{
 									$totalChecks = $this->currentChallenge->nbCheckpoints * $this->currentChallenge->nbLaps;
@@ -505,7 +611,6 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 	}
 
 	function onManualFlowControlTransition($transition) {}
-	
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) 
 	{
 		if(!($this->currentVote instanceof Vote))

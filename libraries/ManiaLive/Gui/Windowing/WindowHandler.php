@@ -122,10 +122,14 @@ class WindowHandler
 			
 			// if there's a dialog shown currently
 			if (isset(self::$dialogStack[$login])
-				&& end(self::$dialogStack[$login])
-				&& self::$dialogRefreshed[$login])
+				&& end(self::$dialogStack[$login]))
 			{
-				continue;
+				// and it has been refreshed yet
+				if (isset(self::$dialogRefreshed[$login])
+					&& self::$dialogRefreshed[$login])
+				{
+					continue;
+				}
 			}
 			
 			// don't draw if player's hiding interface

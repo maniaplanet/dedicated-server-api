@@ -13,6 +13,16 @@ namespace ManiaLive\DedicatedApi\Structures;
 
 class GameInfos extends AbstractStructure
 {
+	/**
+	 * Game Modes
+	 */
+	const GAMEMODE_ROUNDS = 0;
+	const GAMEMODE_TIMEATTACK = 1;
+	const GAMEMODE_TEAM = 2;
+	const GAMEMODE_LAPS = 3;
+	const GAMEMODE_STUNTS = 4;
+	const GAMEMODE_CUP = 5;
+	
 	public $gameMode;
 	public $nbChallenge;
 	public $chatTime;

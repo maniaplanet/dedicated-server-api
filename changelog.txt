@@ -122,9 +122,12 @@
 * performance and architecture updates.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r??? (24 feb. 2011)	|
+|	ManiaLive 1.0b - r??? (?? feb. 2011)	|
 +-------------------------------------------+
-+ add compatibility with server build of 21st feb 2011
-+ add the currentVote to the storage class
-+ add Cache system to ManiaLive to store data to be share between classes
-* bug fixes
++ add compatibility with server build.
++ add the currentVote to the storage class.
+- fixed bug when loading single plugins, that a new version has been announced.
+* implemented cache and integrated it into plugin architecture.
+- plugin errors in onLoad won't crash whole manialive anymore.
+- version checks are failsafe now.
++ implemented onPlayerFinishLap event in storage class.

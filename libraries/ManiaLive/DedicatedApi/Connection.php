@@ -66,17 +66,6 @@ class Connection extends \ManiaLive\Utilities\Singleton
 	}
 
 	/**
-	 * Game Modes
-	 * TODO maybe put this somewhere else?
-	 */
-	const GAMEMODE_ROUNDS = 0;
-	const GAMEMODE_TIMEATTACK = 1;
-	const GAMEMODE_TEAM = 2;
-	const GAMEMODE_LAPS = 3;
-	const GAMEMODE_STUNTS = 4;
-	const GAMEMODE_CUP = 5;
-
-	/**
 	 * Constructor of the class
 	 * @param int $port represents the communication port
 	 * @param string $hostname represents the ip to reach
@@ -3636,7 +3625,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		}
 		elseif ($player instanceof Player)
 		{
-			$playerString = $receiver->login;
+			$playerString = $player->login;
 		}
 		elseif (is_array($player))
 		{

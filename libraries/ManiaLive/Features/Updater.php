@@ -58,10 +58,18 @@ implements \ManiaLive\Features\Tick\Listener
 		$version = 0;
 		
 		// check for manialive update
-		$client = new \ManiaLib\Rest\Client();
-		$client->setAPIURL(APP_API);
-		$response = $client->execute('GET', '/manialive/version/check/' . \ManiaLiveApplication\Version . '/index.json');
-		$newManiaLive = $response->update;
+		$newManiaLive = false;
+		try
+		{
+			$client = new \ManiaLib\Rest\Client();
+			$client->setAPIURL(APP_API);
+			$response = $client->execute('GET', '/manialive/version/check/' . \ManiaLiveApplication\Version . '/index.json');
+			$newManiaLive = $response->update;
+		}
+		catch (\Exception $e)
+		{
+			Console::println('ERROR: Update service was unable to contact server ...');
+		}
 		
 		// check for plugin updates 
 		$this->pluginHandler->refreshRepositoryInfo();

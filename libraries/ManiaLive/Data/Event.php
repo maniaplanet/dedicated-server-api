@@ -17,6 +17,7 @@ class Event extends \ManiaLive\Event\Event
 	const ON_PLAYER_NEW_RANK = 2;
 	const ON_PLAYER_NEW_BEST_SCORE = 3;
 	const ON_PLAYER_CHANGE_SIDE = 4;
+	const ON_PLAYER_FINISH_LAP = 5;
 	
 	protected $onWhat;
 	protected $params;
@@ -38,6 +39,7 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_PLAYER_NEW_RANK: $method = 'onPlayerNewRank'; break;
 			case self::ON_PLAYER_NEW_BEST_SCORE: $method = 'onPlayerNewBestScore'; break;
 			case self::ON_PLAYER_CHANGE_SIDE: $method = 'onPlayerChangeSide'; break;
+			case self::ON_PLAYER_FINISH_LAP: $method = 'onPlayerFinishLap'; break;
 		}
 		
 		if ($method != null)

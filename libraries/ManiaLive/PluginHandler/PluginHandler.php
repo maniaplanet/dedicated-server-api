@@ -11,8 +11,8 @@
 
 namespace ManiaLive\PluginHandler;
 
+use ManiaLive\Application\ErrorHandling;
 use ManiaLive\Cache\Cache;
-
 use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Singleton;
 use ManiaLive\Utilities\Console;
@@ -29,7 +29,7 @@ use ManiaLive\Utilities;
  * @author Florian Schnell
  */
 class PluginHandler extends Singleton
-	implements \ManiaLive\Application\Listener
+implements \ManiaLive\Application\Listener
 {
 	/**
 	 * @var array[Plugins]
@@ -46,7 +46,7 @@ class PluginHandler extends Singleton
 	{
 		return parent::getInstance();
 	}
-	
+
 	static function getClassFromPluginId($pluginId)
 	{
 		$parts = explode('\\', $pluginId);
@@ -104,7 +104,7 @@ class PluginHandler extends Singleton
 	final protected function loadPlugins()
 	{
 		Console::println('[PluginHandler] Start plugin load process:');
-		
+
 		foreach (Loader::$config->plugins->load as $path)
 		{
 			$plugin = null;
@@ -129,21 +129,30 @@ class PluginHandler extends Singleton
 		}
 
 		$plugins = array();
-		
-		foreach ($this->plugins as $plugin)
+
+		foreach ($this->plugins as $id => $plugin)
 		{
 			if ($this->checkPluginDependency($plugin))
 			{
-				$plugins[] = array($plugin->getId(), $plugin->getVersion());
-				
+				$plugins[] = array($id, $plugin->getVersion());
+					
 				// this plugin is accepted
-				$plugin->onLoad();
-				
+				try
+				{
+					$plugin->onLoad();
+				}
+				catch (\Exception $e)
+				{
+					$this->unLoadPlugin(self::getClassFromPluginId($id));
+					ErrorHandling::processRuntimeException($e);
+					continue;
+				}
+					
 				// plugin loaded!
-				Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
+				Dispatcher::dispatch(new Event($id, Event::ON_PLUGIN_LOADED));
 			}
 		}
-		
+
 		// everything's up and ready to go!
 		foreach ($this->plugins as $plugin)
 		{
@@ -159,7 +168,7 @@ class PluginHandler extends Singleton
 			$plugin = new $className(self::getPluginIdFromClass($className));
 
 			Console::println('[PluginHandler] is loading ' . $plugin->getId() . ' ...');
-			
+				
 			// init plugin ...
 			$plugin->onInit();
 
@@ -168,7 +177,7 @@ class PluginHandler extends Singleton
 			{
 				throw new Exception("The plugin '{$plugin->getId()}' could not be registered, maybe there is a naming conflict!");
 			}
-			
+				
 			return $plugin;
 		}
 		else
@@ -229,9 +238,9 @@ class PluginHandler extends Singleton
 				}
 			}
 			$this->plugins[$pluginId]->onUnload();
-			
+				
 			$this->removeRepositoryEntry($pluginId);
-			
+				
 			$this->plugins[$pluginId] = null;
 			unset($this->plugins[$pluginId]);
 			Dispatcher::dispatch(new Event($pluginId, Event::ON_PLUGIN_UNLOADED));
@@ -332,7 +341,7 @@ class PluginHandler extends Singleton
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Call a public method of a registered Plugin.
 	 * @param Plugin $pluginCalling
@@ -369,23 +378,34 @@ class PluginHandler extends Singleton
 		if ($this->checkPluginDependency($plugin))
 		{
 			$this->refreshPluginRepositoryInfo($plugin->getId());
-			
+				
 			// this plugin is accepted
-			$plugin->onLoad();
-			
+			try
+			{
+				$plugin->onLoad();
+			}
+			catch (\Exception $e)
+			{
+				$this->unLoadPlugin($classname);
+				ErrorHandling::processRuntimeException($e);
+				return false;
+			}
+				
 			// plugin loaded!
 			Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
 		}
 
 		// everything's up and ready to go!
 		$plugin->onReady();
+		
+		return true;
 	}
-	
+
 	final public function deletePlugin($classname)
 	{
 		//Unload Plugins
 		$this->unLoadPlugin($classname);
-		
+
 		// clean last parts from memory
 		gc_collect_cycles();
 	}
@@ -424,23 +444,23 @@ class PluginHandler extends Singleton
 		}
 		return $list;
 	}
-	
+
 	final public function refreshPluginRepositoryInfo($pluginId)
 	{
 		if (!isset($this->plugins[$pluginId]))
 		{
 			return false;
 		}
-		
+
 		$repositoryId = $this->plugins[$pluginId]->getRepositoryId();
 		if ($repositoryId === null)
 		{
 			return false;
 		}
-		
+
 		$client = new \ManiaLib\Rest\Client();
 		$client->setAPIURL(APP_API);
-		
+
 		try
 		{
 			$response = $client->execute('GET', '/manialive/repository/entry/' . $repositoryId . '/index.json');
@@ -452,7 +472,7 @@ class PluginHandler extends Singleton
 				return false;
 			}
 		}
-		
+
 		if ($response->id && isset($this->repositoryEntries[$response->id]))
 		{
 			$repositoryEntry = $this->repositoryEntries[$response->id];
@@ -467,18 +487,18 @@ class PluginHandler extends Singleton
 				$repositoryEntry->category = $entry->category;
 				$repositoryEntry->description = $entry->description;
 			}
-			$repositoryEntry->plugins[$pluginId] = $this->plugins[$pluginId]->getVersion();
+			$repositoryEntry->plugins[$pluginId] = $this->plugins[$pluginId]->getRepositoryVersion();
 		}
 		else
 		{
 			$entry = RepositoryEntry::fromResponse($response);
 			$this->repositoryEntries[$entry->id] = $entry;
-			$entry->plugins[$pluginId] = $this->plugins[$pluginId]->getVersion();
+			$entry->plugins[$pluginId] = $this->plugins[$pluginId]->getRepositoryVersion();
 		}
-		
+
 		return true;
 	}
-	
+
 	final public function fetchPluginCacheEntry($pluginId, $key)
 	{
 		if (isset($this->plugins[$pluginId]))
@@ -486,7 +506,7 @@ class PluginHandler extends Singleton
 			return Cache::fetchFromModuleCache($this->plugins[$pluginId], $key);
 		}
 	}
-	
+
 	final public function refreshRepositoryInfo()
 	{
 		// build local repository
@@ -495,7 +515,7 @@ class PluginHandler extends Singleton
 			$id = $plugin->getRepositoryId();
 			$version = $plugin->getRepositoryVersion();
 			$entry = new RepositoryEntry();
-			
+				
 			if ($id !== null)
 			{
 				if (isset($this->repositoryEntries[$id]))
@@ -516,36 +536,44 @@ class PluginHandler extends Singleton
 				}
 			}
 		}
-		
+
 		// check all plugins for updates ...
 		$toCheck = array();
 		foreach ($this->repositoryEntries as $entry)
 		{
 			$toCheck[] = $entry->id;
 		}
-		$client = new \ManiaLib\Rest\Client();
-		$client->setAPIURL(APP_API);
-		$response = $client->execute('POST', '/manialive/repository/entries/index.json', array($toCheck));
 		
-		// every plugin has a response
-		foreach ($response as $entry)
+		try
 		{
-			if ($entry)
+			$client = new \ManiaLib\Rest\Client();
+			$client->setAPIURL(APP_API);
+			$response = $client->execute('POST', '/manialive/repository/entries/index.json', array($toCheck));
+	
+			// every plugin has a response
+			foreach ($response as $entry)
 			{
-				$repositoryEntry = $this->repositoryEntries[$entry->id];
-				$repositoryEntry->author = $entry->author;
-				$repositoryEntry->name = $entry->name;
-				$repositoryEntry->description = $entry->description;
-				$repositoryEntry->urlDownload = $entry->address;
-				$repositoryEntry->urlInfo = $entry->addressMore;
-				$repositoryEntry->version = floatval($entry->version);
-				$repositoryEntry->dateCreated = $entry->dateCreated;
-				$repositoryEntry->category = $entry->category;
+				if ($entry)
+				{
+					$repositoryEntry = $this->repositoryEntries[$entry->id];
+					$repositoryEntry->author = $entry->author;
+					$repositoryEntry->name = $entry->name;
+					$repositoryEntry->description = $entry->description;
+					$repositoryEntry->urlDownload = $entry->address;
+					$repositoryEntry->urlInfo = $entry->addressMore;
+					$repositoryEntry->version = floatval($entry->version);
+					$repositoryEntry->dateCreated = $entry->dateCreated;
+					$repositoryEntry->category = $entry->category;
+				}
 			}
+		}
+		catch (\Exception $e)
+		{
+			$this->repositoryEntries = array();
 		}
 		$this->repositoryLoaded = true;
 	}
-	
+
 	final public function removeRepositoryEntry($pluginId)
 	{
 		foreach ($this->repositoryEntries as $i => $entry)
@@ -562,7 +590,7 @@ class PluginHandler extends Singleton
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Check if there's a new version available for a loaded plugin.
 	 * @param string $pluginId
@@ -579,16 +607,16 @@ class PluginHandler extends Singleton
 		}
 		return null;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Enter description here ...
 	 */
 	final public function isRepositoryLoaded()
 	{
 		return $this->repositoryLoaded;
 	}
-	
+
 	/**
 	 * Gets the references from the plugin repository
 	 * of all the loaded plugins that could be found.
@@ -597,7 +625,7 @@ class PluginHandler extends Singleton
 	{
 		return $this->repositoryEntries;
 	}
-	
+
 	/**
 	 * Gets references from the plugin repository of all
 	 * the plugins that are loaded.
@@ -637,7 +665,7 @@ class PluginHandler extends Singleton
 		}
 		return $updates;
 	}
-	
+
 	// implement the listener interface ...
 
 	function onInit()

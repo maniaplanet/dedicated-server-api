@@ -43,6 +43,14 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param string $oldSide - it can take 2 values spectator or player
 	 */
 	function onPlayerChangeSide($player, $oldSide);
+	
+	/**
+	 * Event launched when a player finishes a lap.
+	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
+	 * @param integer $time
+	 * @param integer $nbLap
+	 */
+	function onPlayerFinishLap($player, $timeOrScore, $checkpoints, $nbLap);
 }
 
 ?>
