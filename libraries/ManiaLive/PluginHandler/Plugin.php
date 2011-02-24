@@ -907,6 +907,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	
 	function onPlayerChangeSide($player, $oldSide) {}
 	
+	function onPlayerFinishLap($player, $time, $checkpoints, $nbLap) {}
+	
 	// plugin events
 	
 	function onPluginLoaded($pluginId) {}

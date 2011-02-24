@@ -66,6 +66,18 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 		// continue depending whether threading is enabled or not ...
 		if (self::$threadingEnabled)
 		{
+			// keep manialive clean!
+			// delete unused threading databases ...
+			$files = glob(APP_ROOT . '/data/threading_*.db'); 
+			foreach($files as $file)
+			{
+				try
+				{
+					unlink($file);
+				}
+				catch (\Exception $e) {}
+			}
+			
 			$this->database = Tools::getDb();
 			
 			// setup database ...
