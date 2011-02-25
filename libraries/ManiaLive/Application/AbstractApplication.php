@@ -102,11 +102,11 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		// synchronize information with dedicated server
 		Storage::getInstance();
 		
-		// initialize plugin handler
-		PluginHandler::getInstance();
-		
 		// establish connection
 		$this->connection = Connection::getInstance();
+		
+		// initialize plugin handler
+		PluginHandler::getInstance();
 		
 		// enable callbacks
 		$this->connection->enableCallbacks(true);

@@ -11,6 +11,8 @@
 
 namespace ManiaLive\Gui\Windowing;
 
+use ManiaLive\Gui\Windowing\Windows\Taskbar;
+
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\DedicatedApi\Structures\Player;
 use ManiaLive\Gui\Windowing\Windows\Shortkey;
@@ -77,11 +79,12 @@ class WindowHandler
 		
 		if (isset(self::$playerHiddenWindows[$login]))
 		{
-			foreach (self::$playerHiddenWindows[$login] as $window)
+			$temp = self::$playerHiddenWindows[$login];
+			unset(self::$playerHiddenWindows[$login]);
+			foreach ($temp as $window)
 			{
 				$window->show();
 			}
-			unset(self::$playerHiddenWindows[$login]);
 		}
 		else
 		{
@@ -114,8 +117,18 @@ class WindowHandler
 		
 		foreach (self::$drawStack as $login => &$stack)
 		{	
+			
+			// if window is addressed to everyone
+			if ($login == Window::RECIPIENT_ALL)
+			{
+				// but there is no one on the server
+				if (!count($this->storage->players) && !count($this->storage->spectators))
+				{
+					continue; // then we don't need to draw anything!
+				}
+			}
 			// if player has left the server
-			if ($this->storage->getPlayerObject($login) == null)
+			elseif ($this->storage->getPlayerObject($login) == null)
 			{
 				continue; // then we don't need to draw anything!
 			}
@@ -345,7 +358,7 @@ class WindowHandler
 	 * @param string $login
 	 */
 	static function add(Window $window, $login)
-	{
+	{	
 		self::$drawStack[$login][] = $window;
 		self::$drawStackCount++;
 		
@@ -360,6 +373,11 @@ class WindowHandler
 	 */
 	static function addManaged(ManagedWindow $window, $login)
 	{
+		if (isset(self::$playerHiddenWindows[$login]))
+		{
+			return;
+		}
+		
 		// if window gets removed from screen
 		if (!$window->isShown())
 		{
@@ -553,7 +571,7 @@ class WindowHandler
 		$windowsCount = count($windows);
 		for ($i = 0; $i < $windowsCount; $i++)
 		{
-			if ($windows[$i]['thumb'] == $thumb)
+			if ($windows[$i]['thumb'] === $thumb)
 			{
 				unset(self::$minimizedManagedWindowHashes[$login][spl_object_hash($windows[$i]['window'])]);
 				$windows[$i] = null;
@@ -563,13 +581,45 @@ class WindowHandler
 		
 		foreach (Window::$instancesNonSingleton[$login] as $i => $win)
 		{
-			if (Window::$instancesNonSingleton[$login][$i] == $thumb)
+			if (Window::$instancesNonSingleton[$login][$i] === $thumb)
 			{
 				unset(Window::$instancesNonSingleton[$login][$i]);
 			}
 		}
 		
 		$thumb->destroy();
+	}
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $login
+	 */
+	static function showNextWindow($login)
+	{
+		for ($i = 0; $i < count(self::$minimizedManagedWindows[$login]); $i++)
+		{
+			if (self::$minimizedManagedWindows[$login][$i] !== null)
+			{
+				self::$minimizedManagedWindows[$login][$i]['window']->show();
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * Enter description here ...
+	 * @param unknown_type $login
+	 */
+	static function showPreviousWindow($login)
+	{
+		for ($i = count(self::$minimizedManagedWindows[$login]) - 1; $i >= 0; --$i)
+		{
+			if (self::$minimizedManagedWindows[$login][$i] !== null)
+			{
+				self::$minimizedManagedWindows[$login][$i]['window']->show();
+			}
+		}
 	}
 	
 	/**
@@ -582,6 +632,8 @@ class WindowHandler
 		{
 			$sk = Shortkey::Create($login);
 			$sk->addCallback(Shortkey::F7, array('\ManiaLive\Gui\Windowing\WindowHandler', 'showHideInterface'));
+			$sk->addCallback(Shortkey::F6, array('\ManiaLive\Gui\Windowing\WindowHandler', 'showPreviousWindow'));
+			$sk->addCallback(Shortkey::F5, array('\ManiaLive\Gui\Windowing\WindowHandler', 'showNextWindow'));
 			$sk->show();
 		}
 		

@@ -131,7 +131,7 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 		// position the window miniature ...
 		if ($factorX > $factorY)
 		{
-			$this->windowContent->setPosition($factor, $factor + ($sizeYWindow * $factor - $sizeYWindow * $factorX) / 2);
+			$this->windowContent->setPosition($factor, $factor + ($sizeYWindow * $factor - $sizeYWindow * $factorY) / 2);
 		}
 		else
 		{

@@ -730,14 +730,17 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter
 	 */
 	protected function sendWorkToThread(\ManiaLive\Threading\Runnable $work, $callback = null)
 	{
+		$command = null;
 		if ($callback != null)
 		{
 			$callback = array($this, $callback);
 		}
 		if ($this->threadPool->getThreadCount() > 0)
 		{
-			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback));
+			$command = new \ManiaLive\Threading\Commands\RunCommand($work, $callback);
+			$this->threadPool->addCommand($command);
 		}
+		return $command;
 	}
 	
 	/**

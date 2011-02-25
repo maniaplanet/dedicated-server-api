@@ -35,6 +35,29 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 	private $old_x;
 	private $old_y;
 	
+	/**
+	 * This will create a new instance of the window
+	 * that extends this class.
+	 * @param string $login
+	 * @param bool $singleton
+	 * @return \ManiaLive\Gui\Windowing\ManagedWindow
+	 * @throws \Exception
+	 */
+	static function Create($login, $singleton = true)
+	{
+		if ($login == self::RECIPIENT_ALL)
+		{
+			throw new \Exception('You can not send a window instance of ManagedWindow to more than one player!');
+		}
+		
+		return parent::Create($login, $singleton);
+	}
+	
+	/**
+	 * Use the static Create method to instanciate
+	 * a new object of that class.
+	 * @param string $login
+	 */
 	protected function __construct($login)
 	{
 		$this->old_x = null;
@@ -280,6 +303,15 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 		{
 			$this->isHidden = $state;
 		}
+	}
+	
+	function destroy()
+	{
+		parent::destroy();
+		
+		$this->btn_min = null;
+		$this->btn_max = null;
+		$this->panel = null;
 	}
 }
 

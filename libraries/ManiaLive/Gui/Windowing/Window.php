@@ -81,6 +81,13 @@ abstract class Window extends Container implements
 	static $instancesByClass = array();
 	
 	/**
+	 * this will address the window to all
+	 * players that are currently on the server.
+	 * @var string
+	 */
+	const RECIPIENT_ALL = '$all';
+	
+	/**
 	 * Can't be called from outside of the class
 	 * to retrieve a new instance call Create.
 	 * @param string $login
@@ -114,7 +121,7 @@ abstract class Window extends Container implements
 	 * @param string $login
 	 * @return \ManiaLive\Gui\Windowing\Window
 	 */
-	static function Create($login = null, $singleton = true)
+	static function Create($login, $singleton = true)
 	{
 		$class_name = get_called_class();
 		if (!isset(self::$instancesByClass[$class_name]))
@@ -592,7 +599,7 @@ abstract class Window extends Container implements
 	public function render($login)
 	{
 		// get group ...
-		if ($login == null)
+		if ($login == Window::RECIPIENT_ALL)
 		{
 			$group = GuiHandler::getInstance()->getGroup();
 		}
@@ -632,11 +639,11 @@ abstract class Window extends Container implements
 	 * Simply show the window on the lowest z-layer.
 	 * @param string $login Update or show window for specific player only.
 	 */
-	public function show($login = null)
+	public function show($login = self::RECIPIENT_ALL)
 	{
 		$this->uptodate = false;
 		
-		if ($this->login != null)
+		if ($this->login != self::RECIPIENT_ALL)
 		{
 			$login = $this->login;
 		}
@@ -666,11 +673,11 @@ abstract class Window extends Container implements
 	 * Closes the window and informs other windows about it.
 	 * @param string $login
 	 */
-	public function hide($login = null)
+	public function hide($login = self::RECIPIENT_ALL)
 	{
 		$this->uptodate = false;
 		
-		if ($this->login != null)
+		if ($this->login != self::RECIPIENT_ALL)
 		{
 			$login = $this->login;
 		}

@@ -438,7 +438,14 @@ class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Fe
 	 */
 	function getThreadCount()
 	{
-		return $this->threadsCount;
+		if (!self::$threadingEnabled)
+		{
+			return 1;
+		}
+		else
+		{
+			return $this->threadsCount;
+		}
 	}
 	
 	/**
