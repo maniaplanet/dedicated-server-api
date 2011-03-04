@@ -61,6 +61,9 @@ class Config extends Configurable
 	
 	public $dedicatedPath;
 	
+	//Set to true to disable the updater
+	public $lanMode;
+	
 	function validate()
 	{
 		$conf = array();
@@ -105,6 +108,8 @@ class Config extends Configurable
 		$this->setDefault('logsPrefix', '');
 		
 		$this->setDefault('dedicatedPath', APP_ROOT);
+		
+		$this->setDefault('lanMode', false);
 	}
 }
 

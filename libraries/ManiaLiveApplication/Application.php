@@ -11,6 +11,8 @@
 
 namespace ManiaLiveApplication;
 
+use ManiaLive\Config\Loader;
+
 use ManiaLive\Features\Updater;
 
 const Version = 194;
@@ -34,7 +36,10 @@ class Application extends \ManiaLive\Application\AbstractApplication
 	protected function init()
 	{
 		parent::init();
-		Updater::getInstance();
+		if(!Loader::$config->lanMode)
+		{
+			Updater::getInstance();
+		}
 	}
 }
 
