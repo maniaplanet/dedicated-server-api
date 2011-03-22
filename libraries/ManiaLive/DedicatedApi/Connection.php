@@ -1120,7 +1120,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute('BlackListId', array($player->playerId), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
 	}
 
 	/**
@@ -1451,7 +1451,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute('IgnoreId', array($player->playerId), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
 	}
 
 	/**
