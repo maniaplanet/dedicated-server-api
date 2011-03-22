@@ -74,7 +74,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		list($requiredParametersCount, $parametersCount) = $this->getCommandParametersCount($command);
 		//Now we can register the command for each count of parameters
 		$increment = $requiredParametersCount;
-		try 
+		try
 		{
 			do
 			{
@@ -140,7 +140,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	{
 		list($requiredParametersCount, $parametersCount) = $this->getCommandParametersCount($command);
 		$increment = $requiredParametersCount;
-		do 
+		do
 		{
 			if($this->isRegistered($command->name, $increment) == 2
 			&& $this->registeredCommands[$command->name][$increment] === $command)
@@ -177,7 +177,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 					$parameters[] = $tmpResult[$i+1];
 				}
 			}
-				
+
 			if($parameters)
 			{
 				$command = substr(array_shift($parameters), 1);
@@ -234,7 +234,10 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 			{
 				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin)))
 				{
-					$commandeAvalaible[] = $command->name;
+					if(!in_array($commande->name, $commandeAvalaible))
+					{
+						$commandeAvalaible[] = $command->name;
+					}
 				}
 			}
 		}
@@ -280,7 +283,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 
 		Connection::getInstance()->chatSendServerMessage($text, $receiver, true);
 	}
-	
+
 	protected function getCommandParametersCount(Command $command)
 	{
 		if($command->parametersCount !== null)
