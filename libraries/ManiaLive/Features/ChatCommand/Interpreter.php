@@ -70,12 +70,32 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	 */
 	function register(Command $command)
 	{
-		if($this->isRegistered($command->name, $command->parametersCount) == 2)
+		//Get the number of parameters
+		list($requiredParametersCount, $parametersCount) = $this->getCommandParametersCount($command);
+		//Now we can register the command for each count of parameters
+		$increment = $requiredParametersCount;
+		try 
 		{
-			throw new CommandAlreadyRegisteredException($command->name.'|'.$command->parametersCount);
+			do
+			{
+				if($this->isRegistered($command->name, $command->parametersCount) == 2)
+				{
+					throw new CommandAlreadyRegisteredException($command->name.'|'.$command->parametersCount);
+				}
+				$this->registeredCommands[strtolower($command->name)][$increment] = $command;
+			} while ($increment++ < $parametersCount);
 		}
-
-		$this->registeredCommands[strtolower($command->name)][$command->parametersCount] = $command;
+		catch (\Exception $e)
+		{
+			for($i = $increment; $i >= $requiredParametersCount; $i--)
+			{
+				if($this->registeredCommands[strtolower($command->name)][$i] === $command)
+				{
+					unset($this->registeredCommands[strtolower($command->name)][$i]);
+				}
+			}
+			throw $e;
+		}
 	}
 
 	/**
@@ -118,16 +138,21 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 	 */
 	function unregister(Command $command)
 	{
-		if($this->isRegistered($command->name, $command->parametersCount) == 2
-		&& $this->registeredCommands[$command->name][$command->parametersCount] === $command)
+		list($requiredParametersCount, $parametersCount) = $this->getCommandParametersCount($command);
+		$increment = $requiredParametersCount;
+		do 
 		{
-			unset($this->registeredCommands[$command->name][$command->parametersCount]);
-			if(!$this->registeredCommands[$command->name])
+			if($this->isRegistered($command->name, $increment) == 2
+			&& $this->registeredCommands[$command->name][$increment] === $command)
 			{
-				unset($this->registeredCommands[$command->name]);
+				unset($this->registeredCommands[$command->name][$increment]);
+				if(!$this->registeredCommands[$command->name])
+				{
+					unset($this->registeredCommands[$command->name]);
+				}
+				unset($command);
 			}
-			unset($command);
-		}
+		}while ($increment++ < $parametersCount);
 	}
 
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
@@ -180,7 +205,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 				}
 				elseif ($isRegistered == 1)
 				{
-					$message = 'The command you entered exists but has not the correct number of parameters';
+					$message = 'The command you entered exists but has not the correct number of parameters, use $<$o$FC4/man '.$command.'$> for more details';
 					Connection::getInstance()->chatSendServerMessage($message, Storage::getInstance()->getPlayerObject($login), true);
 					$this->man($login, $command, -1);
 				}
@@ -209,14 +234,14 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 			{
 				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin)))
 				{
-					$commandeAvalaible[] = $command->name.' ('.$argumentCount.')'.($command->help ? ': '.$command->help : '');
+					$commandeAvalaible[] = $command->name;
 				}
 			}
 		}
 
 		$receiver = Storage::getInstance()->getPlayerObject($login);
 
-		$connection->chatSendServerMessage('Available commands: '.implode(', ', $commandeAvalaible), $receiver, true);
+		$connection->chatSendServerMessage('Available commands the number between () is the number of parameters: '.implode(', ', $commandeAvalaible), $receiver, true);
 	}
 
 	function man($login, $commandName, $parametersCount = -1)
@@ -254,6 +279,39 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		}
 
 		Connection::getInstance()->chatSendServerMessage($text, $receiver, true);
+	}
+	
+	protected function getCommandParametersCount(Command $command)
+	{
+		if($command->parametersCount !== null)
+		{
+			return array($command->parametersCount, $command->parametersCount);
+		}
+		else
+		{
+			if(is_array($command->callback))
+			{
+				$className = $command->callback[0];
+				$method = $command->callback[1];
+			}
+			else
+			{
+				$callback = explode('::', $command->callback);
+				$className = $callback[0];
+				$method = $callback[1];
+			}
+			if($className != '')
+			{
+				$reflection = new \ReflectionMethod($className, $method);
+			}
+			else
+			{
+				$reflection = new \ReflectionFunction($method);
+			}
+			$requiredParametersCount = ($command->addLoginAsFirstParameter  ? $reflection->getNumberOfRequiredParameters() - 1 : $reflection->getNumberOfRequiredParameters());
+			$parametersCount = ($command->addLoginAsFirstParameter  ? $reflection->getNumberOfParameters() - 1 : $reflection->getNumberOfParameters());
+			return array( $requiredParametersCount, $parametersCount);
+		}
 	}
 
 	function onPlayerConnect($login, $isSpectator) {}
