@@ -234,7 +234,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 			{
 				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin)))
 				{
-					if(!in_array($commande->name, $commandeAvalaible))
+					if(!in_array($command->name, $commandeAvalaible))
 					{
 						$commandeAvalaible[] = $command->name;
 					}
