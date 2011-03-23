@@ -48,6 +48,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		$command->addLoginAsFirstParameter = true;
 		$command->help = 'Display help for every commands you give as parameter'."\n".
 		'exemple of usage: /man man';
+		$command->isPublic = true;
 		$command->log = false;
 		$command->callback = array($this, 'man');
 
@@ -57,6 +58,7 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		$command->addLoginAsFirstParameter = true;
 		$command->help = 'Display help for the command with the corresponding parameters'."\n".
 		'exemple of usage: /man man 2';
+		$command->isPublic = true;
 		$command->log = false;
 		$command->callback = array($this, 'man');
 
@@ -243,8 +245,14 @@ class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\
 		}
 
 		$receiver = Storage::getInstance()->getPlayerObject($login);
-
-		$connection->chatSendServerMessage('Available commands the number between () is the number of parameters: '.implode(', ', $commandeAvalaible), $receiver, true);
+		if(count($commandeAvalaible))
+		{
+			$connection->chatSendServerMessage('Available commands are: '.implode(', ', $commandeAvalaible), $receiver, true);
+		}
+		else 
+		{
+			$connection->chatSendServerMessage('There is no command available', $receiver, true);
+		}
 	}
 
 	function man($login, $commandName, $parametersCount = -1)

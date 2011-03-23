@@ -105,6 +105,9 @@ abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
 		// establish connection
 		$this->connection = Connection::getInstance();
 		
+		//Initialize Chat Command Interpreter
+		\ManiaLive\Features\ChatCommand\Interpreter::getInstance();
+		
 		// initialize plugin handler
 		PluginHandler::getInstance();
 		

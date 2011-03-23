@@ -158,6 +158,8 @@ implements \ManiaLive\Application\Listener
 		{
 			$plugin->onReady();
 		}
+		
+		Console::println('[PluginHandler] All registered plugins have been loaded');
 	}
 
 	protected function loadPlugin($className)
