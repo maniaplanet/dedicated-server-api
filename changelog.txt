@@ -1,15 +1,15 @@
 +-------------------------------------------+
-|			ManiaLive Changelog				|
-|	Authors by:								|
-|	- Philippe "farfa" Melot				|
-| 	- Maxime "Gouxim" Raoust				|
-| 	- Florian "aseco" Schnell				|
-|	Copyright NADEO (C) 2010-2011			|
-|	see LICENSE file for more details		|
+|            ManiaLive Changelog            |
+|       Authors by:                         |
+|       - Philippe "farfa" Melot            |
+|       - Maxime "Gouxim" Raoust            |
+|       - Florian "aseco" Schnell           |
+|       Copyright NADEO (C) 2010-2011       |
+|       see LICENSE file for more details   |
 +-------------------------------------------+
 
 +-------------------------------------------+
-|					Legend					|
+|                 Legend                    |
 +-------------------------------------------+
 - represents a bug fix
 * represents an important change
@@ -17,7 +17,7 @@
 ! represents a compability breaking change
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r1453 (29 dec. 2010)	|
+|   ManiaLive 1.0b - r1453 (29 dec. 2010)   |
 +-------------------------------------------+
 +/- Player object is not destroy on disconnection but at the end of the loop
 + Possibility to send message in different languages (chatSendServerMessageToLanguage & chatSendToLanguage) to a list of player (just put the list as a second argument)
@@ -28,7 +28,7 @@
 + removed debug messages
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r1462 (1 jan. 2011)	|
+|   ManiaLive 1.0b - r1462 (1 jan. 2011)    |
 +-------------------------------------------+
 +/- added automatic database keep-alive.
 + added method to convert rank to string to the Utilities\String class.
@@ -37,7 +37,7 @@
 - fixed issue 2: http://code.google.com/p/manialive/issues/detail?id=2&can=1
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r1545 (4 jan. 2011)	|
+|   ManiaLive 1.0b - r1545 (4 jan. 2011)    |
 +-------------------------------------------+
 - CRT issue 10: http://code.google.com/p/manialive/issues/detail?id=10
 - addDependency issue 9: http://code.google.com/p/manialive/issues/detail?id=9
@@ -47,7 +47,7 @@
 - fixed callPublicMethod to return result.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r1627 (5 jan. 2011)	|
+|   ManiaLive 1.0b - r1627 (5 jan. 2011)    |
 +-------------------------------------------+
 - fixed issue 6.
 - refixed issue 8.
@@ -57,7 +57,7 @@
 + added possibility to set dependency on a specific manialive version.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r1685 (6 jan. 2011)	|
+|   ManiaLive 1.0b - r1685 (6 jan. 2011)    |
 +-------------------------------------------+
 * clean code to respect guidelines
 + add Filter module abstraction (see http://fr2.php.net/manual/en/book.filter.php) (can be used to check command line parameters)
@@ -67,7 +67,7 @@
 - fixed bug when spectator could not interact with windowing system (may be related to issue 13).
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r1830 (13 jan. 2011)	|
+|   ManiaLive 1.0b - r1830 (13 jan. 2011)   |
 +-------------------------------------------+
 * manialib has been moved to its own library folder and is completely independent now.
 - fixed issues in the updater script.
@@ -75,7 +75,7 @@
 + improved windowing performance.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r2028 (25 jan. 2011)	|
+|   ManiaLive 1.0b - r2028 (25 jan. 2011)   |
 +-------------------------------------------+
 - secured require_once in the autoload method
 + now plugins class can be named Plugin (e.g: the full class name will be \ManiaLivePlugins\MyName\MySuperPluginName\Plugin)
@@ -90,7 +90,7 @@
 + Plugin events for loading and unloading.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r179 (7 feb. 2011)		|
+|   ManiaLive 1.0b - r179 (7 feb. 2011)	    |
 +-------------------------------------------+
 + dialog window now uses autonewline.
 + windowhandler has been updated.
@@ -108,7 +108,7 @@
 */! from the next release on version numbering will happen based on the google code revision.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r189 (15 feb. 2011)	|
+|   ManiaLive 1.0b - r189 (15 feb. 2011)    |
 +-------------------------------------------+
 + implemented f7 shortcut to hide/show all windows.
 * use webservice to compare manialive version.
@@ -122,7 +122,7 @@
 * performance and architecture updates.
 
 +-------------------------------------------+
-|	ManiaLive 1.0b - r194 (24 feb. 2011)	|
+|   ManiaLive 1.0b - r194 (24 feb. 2011)    |
 +-------------------------------------------+
 + add compatibility with server build.
 + add the currentVote to the storage class.
@@ -131,3 +131,16 @@
 - plugin errors in onLoad won't crash whole manialive anymore.
 - version checks are failsafe now.
 + implemented onPlayerFinishLap event in storage class.
+
++-------------------------------------------+
+|   ManiaLive 1.0b - r209 (4 apr. 2011)     |
++-------------------------------------------+
++ add exists method to Cache 
+- fix some bug in window handler
++ add LAN mod to disable updater
+- use login instead of playerId for method ignore and blacklist
+- change help display behaviour
++/* change register chatCommand behaviour, is command parameter is null, command
+is automatically registered from the number of required parameters to the number
+of optional parameters
+- update ManiaLib version included in ManiaLive

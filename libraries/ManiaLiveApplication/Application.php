@@ -15,7 +15,7 @@ use ManiaLive\Config\Loader;
 
 use ManiaLive\Features\Updater;
 
-const Version = 194;
+const Version = 209;
 
 if (extension_loaded('pcntl'))
 	declare(ticks = 1); 
