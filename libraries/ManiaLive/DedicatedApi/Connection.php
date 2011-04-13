@@ -2208,7 +2208,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 				if (!($mod instanceof Structures\Mod))
 				throw new InvalidArgumentException('mods = '.print_r($mods, true));
 				else
-				$modList[] = $mods->toArray();
+				$modList[] = $mod->toArray();
 			}
 		}
 		elseif ($mods instanceof Structures\Mod)
