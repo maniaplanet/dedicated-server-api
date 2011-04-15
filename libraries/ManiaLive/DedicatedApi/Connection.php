@@ -1214,7 +1214,7 @@ class Connection extends \ManiaLive\Utilities\Singleton
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute('AddGuestId', array($player->playerId), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($player->login), $multicall);
 	}
 
 	/**
