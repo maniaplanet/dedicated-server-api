@@ -42,7 +42,7 @@ class Logger
 		// if path does not exist ...
 		if(!is_dir(Loader::$config->logsPath))
 		{
-			mkdir(Loader::$config->logsPath, "0493", true);
+			mkdir(Loader::$config->logsPath, "0777", true);
 		}
 			
 		// build path ...

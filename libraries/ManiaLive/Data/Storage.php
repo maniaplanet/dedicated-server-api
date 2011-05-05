@@ -427,9 +427,11 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 
 	//print_r($this->checkpoints[$login]);
 	// if player has finished a complete round
-	if(($checkpointIndex + 1) % $this->currentChallenge->nbCheckpoints == 0)
+	$modulo = ($this->currentChallenge->nbCheckpoints ? ($checkpointIndex + 1) % $this->currentChallenge->nbCheckpoints : 1);
+	if($modulo == 0)
 	{
-	    if($player = $this->getPlayerObject($login))
+	    $player = $this->getPlayerObject($login);
+	    if($player)
 	    {
 		// get the checkpoints for current lap
 		$checkpoints = array_slice($this->checkpoints[$login], -$this->currentChallenge->nbCheckpoints);
@@ -504,12 +506,18 @@ class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Dedic
 		{
 		    $old_best = $player->bestTime;
 		    $player->bestTime = $timeOrScore;
-
-		    if($this->gameInfos->gameMode == GameInfos::GAMEMODE_TEAM)
+		    if($this->gameInfos->gameMode !== GameInfos::GAMEMODE_TIMEATTACK)
 		    {
 			$ranking = Connection::getInstance()->getCurrentRankingForLogin($player);
+			$rankOld = $player->rank;
+			$player->rank = $ranking[0]->rank;
 			$player->bestTime = $ranking[0]->bestTime;
 			$player->bestCheckpoints = $ranking[0]->bestCheckpoints;
+
+			if($rankOld != $player->rank)
+			{
+			    Dispatcher::dispatch(new Event($this, Event::ON_PLAYER_NEW_RANK, array($player, $rankOld, $player->rank)));
+			}
 		    }
 		    else
 		    {
