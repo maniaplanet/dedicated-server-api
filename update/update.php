@@ -17,7 +17,7 @@ if (file_exists('../noupdate'))
 
 $includes = array(
 	'../libraries/ManiaLib/Rest/Client.php',
-	'../libraries/ManiaLive/Utilities/Singleton.php',
+	'../libraries/ManiaLib/Utils/Singleton.php',
 	'../libraries/ManiaLive/Application/AbstractApplication.php',
 	'../libraries/ManiaLiveApplication/Application.php'
 );

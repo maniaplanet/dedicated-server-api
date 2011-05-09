@@ -20,7 +20,7 @@ use ManiaLive\Event\Dispatcher;
  *
  * @author Florian Schnell
  */
-class Updater extends \ManiaLive\Utilities\Singleton
+class Updater extends \ManiaLib\Utils\Singleton
 implements \ManiaLive\Features\Tick\Listener
 {
 	protected $lastDisplayed;

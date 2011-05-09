@@ -25,7 +25,7 @@ use ManiaLive\DedicatedApi\Connection;
 /**
  * Contain every important data about the server
  */
-class Storage extends \ManiaLive\Utilities\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener, \ManiaLive\Application\Listener
+class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener, \ManiaLive\Application\Listener
 {
 
     protected $disconnetedPlayers = array();

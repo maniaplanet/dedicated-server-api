@@ -24,7 +24,7 @@ use ManiaLive\Utilities\Console;
  * Dedicated Server Connection Instance
  * Methods returns nothing if $multicall = true
  */
-class Connection extends \ManiaLive\Utilities\Singleton
+class Connection extends \ManiaLib\Utils\Singleton
 {
 	/**
 	 * XML-RPC server port

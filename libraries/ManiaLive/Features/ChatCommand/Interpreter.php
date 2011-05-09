@@ -17,10 +17,9 @@ use ManiaLive\Data\Storage;
 
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Utilities\Console;
-use ManiaLive\Utilities\Singleton;
 use ManiaLive\Event\Dispatcher;
 
-class Interpreter extends Singleton implements \ManiaLive\DedicatedApi\Callback\Listener
+class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener
 {
 	protected $registeredCommands = array();
 

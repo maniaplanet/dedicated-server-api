@@ -30,7 +30,7 @@ use ManiaLive\Event\Dispatcher;
  * @author Florian Schnell
  */
 class WindowHandler
-	extends \ManiaLive\Utilities\Singleton
+	extends \ManiaLib\Utils\Singleton
 	implements \ManiaLive\Application\Listener,
 	\ManiaLive\DedicatedApi\Callback\Listener
 {

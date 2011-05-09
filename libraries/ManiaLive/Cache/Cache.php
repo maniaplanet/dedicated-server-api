@@ -13,13 +13,12 @@ namespace ManiaLive\Cache;
 
 use ManiaLive\Cache\Event;
 use ManiaLive\Event\Dispatcher;
-use ManiaLive\Utilities\Singleton;
 
 /**
  * Stores values from all parts of ManiaLive.
  * @author Florian Schnell
  */
-class Cache extends Singleton
+class Cache extends \ManiaLib\Utils\Singleton
 	implements \ManiaLive\Features\Tick\Listener
 {
 	protected static $instanceReturned = false;

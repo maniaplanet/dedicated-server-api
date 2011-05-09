@@ -14,7 +14,6 @@ namespace ManiaLive\PluginHandler;
 use ManiaLive\Application\ErrorHandling;
 use ManiaLive\Cache\Cache;
 use ManiaLive\Config\Loader;
-use ManiaLive\Utilities\Singleton;
 use ManiaLive\Utilities\Console;
 use ManiaLive\PluginHandler\Plugin;
 use ManiaLive\Utilities\XmlParser;
@@ -28,7 +27,7 @@ use ManiaLive\Utilities;
  *
  * @author Florian Schnell
  */
-class PluginHandler extends Singleton
+class PluginHandler extends \ManiaLib\Utils\Singleton
 implements \ManiaLive\Application\Listener
 {
 	/**

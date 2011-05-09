@@ -30,7 +30,7 @@ use ManiaLive\Database\SQLite\Connection;
  * 
  * @author Florian Schnell
  */
-class ThreadPool extends \ManiaLive\Utilities\Singleton implements \ManiaLive\Features\Tick\Listener
+class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Features\Tick\Listener
 {
 	private $running;
 	private $threads;

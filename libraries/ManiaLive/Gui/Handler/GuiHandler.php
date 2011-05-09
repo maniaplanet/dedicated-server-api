@@ -16,7 +16,7 @@ use ManiaLive\Event\Dispatcher;
 use ManiaLive\Gui\Handler\DisplayableGroup;
 use ManiaLive\DedicatedApi\Structures\Player;
 
-class GuiHandler extends \ManiaLive\Utilities\Singleton implements Listener
+class GuiHandler extends \ManiaLib\Utils\Singleton implements Listener
 {
 	protected $groups = array();
 	protected static $nextNewManialinkId = 1;

@@ -146,10 +146,15 @@ of optional parameters
 - update ManiaLib version included in ManiaLive
 
 +-------------------------------------------+
-|    ManiaLive 1.0 - r213 (5 may 2011)      |
+|    ManiaLive 1.0 - r214 (5 may 2011)      |
 +-------------------------------------------+
 - correct bug in forceMod method
 - correct error reported by 4lturbo http://forum.maniaplanet.com/viewtopic.php?f=46&t=765&start=10#p14759
 -/+ change algorithm to allow the creation of an offline guest
 + add system compatibility on runtime
 - fix bugs in storage engine in lap mod
+- change manialib revision used to revision 493
+! Remove package Filter in ManiaLive/Utilities, duplicate code with ManiaLib/Filters
+  (it may represent a compatibility break with some plugins)
++ Refactor Singleton class ManiaLive\Utilities\Singleton is now deprecated
+  use ManiaLib\Utils\Singleton instead

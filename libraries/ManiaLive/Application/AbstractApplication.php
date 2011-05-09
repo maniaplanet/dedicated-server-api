@@ -26,7 +26,7 @@ use ManiaLive\Event\Dispatcher;
 use ManiaLive\Gui\Handler\GuiHandler;
 use ManiaLive\Features\Tick\Ticker;
 
-abstract class AbstractApplication extends \ManiaLive\Utilities\Singleton
+abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 {
 	const USLEEP_DELAY = 15000;
 	/**
