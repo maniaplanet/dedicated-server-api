@@ -15,10 +15,9 @@ if (file_exists('../noupdate'))
 	die('ERROR: This version is locked for updates!' . NL);
 }
 
+require_once '../utils.inc.php';
+
 $includes = array(
-	'../libraries/ManiaLib/Rest/Client.php',
-	'../libraries/ManiaLib/Utils/Singleton.php',
-	'../libraries/ManiaLive/Application/AbstractApplication.php',
 	'../libraries/ManiaLiveApplication/Application.php'
 );
 
