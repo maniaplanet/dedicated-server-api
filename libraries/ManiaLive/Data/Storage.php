@@ -339,6 +339,18 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 		  $rankings = Player::fromArrayOfArray($rankings);
 		  $this->updateRanking($rankings);
 	   }
+	   else
+	   {
+		  foreach($this->players as $key => $player)
+		  {
+			 $player->bestTime = 0;
+		  }
+
+		  foreach($this->spectators as $spectator)
+		  {
+			 $spectator->bestTime = 0;
+		  }
+	   }
     }
 
     function onBeginRound()

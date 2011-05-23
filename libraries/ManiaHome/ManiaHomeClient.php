@@ -11,59 +11,48 @@ define('APP_MANIAHOME_SERVICES_URL'	, 'http://maniahome.trackmania.com/services/
 
 use ManiaHome\Rest\RestClient;
 
-class ManiaHomeClient extends RestClient
+class ManiaHomeClient
 {
 	const NONE 		= 0;
 	const TRACK 	= 1;
 	const REPLAY 	= 2;
 	
 	protected $provider;
+    protected $restClient;
 	
-	static function sendNotificationToPlayer($message, $login, $link, $type = 0)
+    static function sendNotificationToPlayer($message, $login, $link, $type = self::NONE, $iconStyle = null, $iconSubStyle = null)
 	{
 		if (Loader::$config->maniahome->enabled)
 		{
 			$maniahome_client = new static();
-			$maniahome_client->send($message, $login, $link, $type);
+		  $maniahome_client->send($message, $login, $link, $type, $iconStyle, $iconSubStyle);
 		}
 	}
 	
 	protected function __construct()
 	{
-		parent::__construct(Loader::$config->maniahome->user, Loader::$config->maniahome->password);
+	   $this->restClient = new \ManiaLib\Rest\Client(Loader::$config->maniahome->user, Loader::$config->maniahome->password);
 		$this->provider = Loader::$config->maniahome->manialink;
 	}
 	
-	protected function send($message, $login, $link, $type = 0)
+    protected function send($message, $login, $link, $type = self::NONE, $iconStyle = null, $iconSubStyle = null)
 	{
 		
-		$this->url = APP_MANIAHOME_SERVICES_URL.'c=Notifications&m=setNotification';
-		$this->request->setUrl($this->url);
-		
-		$this->request->setVerb('POST');
-		//Préparation du corps de la requête
 		$body = array(
 			'message' => $message,
-            'emetteur' => $this->provider,
-            'login' => $login,
+		  'senderName' => $this->provider,
+		  'receiverName' => $player,
             'link' => $link,
-            'type' => $type
+		  'type' => $type,
+		  'iconStyle' => $iconStyle,
+		  'iconStyle' => $iconSubStyle,
 		);
-		$this->request->buildPostBody($body);
-		//Exéctuin
-		$this->request->execute();
-		//Récupération du header et du corps de la réponse
-		$infos = $this->request->getResponseInfo();
-		$this->responseBody = $this->request->getResponseBody();
-		$this->flush();
-		if($infos['http_code'] == 200)
+	   try
 		{
-			return true;
+		  $this->restClient->execute('POST', '/maniahome/notification/', $body);
 		}
-		else
+	   catch(\Exception $e)
 		{
-			$this->lastError = $infos['http_code'];
-			return false;
 		}
 	}
 }

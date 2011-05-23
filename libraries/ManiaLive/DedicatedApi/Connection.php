@@ -632,8 +632,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 		}
 		elseif ($players instanceof Player)
 		{
-			$params[] = $players->playerId;
-			$method .= 'ToId';
+			$params[] = $players->login;
+			$method .= 'ToLogin';
 		}
 		else
 		throw new InvalidArgumentException('players = '.print_r($players,true));
@@ -761,8 +761,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 		}
 		elseif ($players instanceof Player)
 		{
-			$params[] = $players->playerId;
-			$method .= 'ToId';
+			$params[] = $players->login;
+			$method .= 'ToLogin';
 		}
 		else
 		{
@@ -1997,7 +1997,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function saveBestGhostsReplay(Player $player, $filename = '', $multicall = false)
+	function saveBestGhostsReplay(Player $player = null, $filename = '', $multicall = false)
 	{
 		if (!is_string($filename))
 		{

@@ -681,11 +681,6 @@ class WindowHandler
 		self::destroyPlayerWindows($login);
 		gc_collect_cycles();
 
-//		echo "Controls that have not been freed:\n";
-//		foreach (Control::$controls as $control)
-//		{
-//			echo "- " . $control . "\n";
-//		}
 	}
 	
 	/**
@@ -695,7 +690,6 @@ class WindowHandler
 	 */
 	static function destroyPlayerWindows($login)
 	{
-//		echo "\nremoving player windows!\n";
 		
 		if (isset(Window::$instances[$login]))
 		{
