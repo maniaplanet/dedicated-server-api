@@ -88,6 +88,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	* @var Vote
 	*/
     public $currentVote;
+    protected $isWarmUp = false;
 
     /**
 	* @return \ManiaLive\Data\Storage
@@ -289,8 +290,15 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onEndRace($rankings, $challenge)
     {
-	   $rankings = Player::fromArrayOfArray($rankings);
-	   $this->updateRanking($rankings);
+	   if($this->isWarmUp && $this->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
+	   {
+		  $this->deleteWarmupScore();
+	   }
+	   else
+	   {
+		  $rankings = Player::fromArrayOfArray($rankings);
+		  $this->updateRanking($rankings);
+	   }
     }
 
     function onBeginChallenge($challenge, $warmUp, $matchContinuation)
@@ -301,16 +309,11 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   $this->currentChallenge = Challenge::fromArray($challenge);
 	   Console::printlnFormatted('Map change: '.String::stripAllTmStyle($oldChallenge->name).' -> '.String::stripAllTmStyle($this->currentChallenge->name));
 
-	   foreach($this->players as $player)
-	   {
-		  $player->bestTime = 0;
-		  $player->score = 0;
-	   }
 
-	   foreach($this->spectators as $spectator)
+
+	   if($warmUp)
 	   {
-		  $spectator->bestTime = 0;
-		  $spectator->score = 0;
+		  $this->isWarmUp = true;
 	   }
 
 	   $gameInfos = Connection::getInstance()->getCurrentGameInfo();
@@ -341,15 +344,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   }
 	   else
 	   {
-		  foreach($this->players as $key => $player)
-		  {
-			 $player->bestTime = 0;
-		  }
-
-		  foreach($this->spectators as $spectator)
-		  {
-			 $spectator->bestTime = 0;
-		  }
+		  $this->deleteWarmupScore();
 	   }
     }
 
@@ -768,6 +763,20 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 			 $this->ranking[$ranking->rank] = $this->spectators[$ranking->login];
 		  }
 	   }
+    }
+
+    protected function deleteWarmupScore()
+    {
+	   foreach($this->players as $key => $player)
+	   {
+		  $player->bestTime = 0;
+	   }
+
+	   foreach($this->spectators as $spectator)
+	   {
+		  $spectator->bestTime = 0;
+	   }
+	   $this->isWarmUp = false;
     }
 
 }
