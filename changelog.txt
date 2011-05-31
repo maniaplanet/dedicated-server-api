@@ -158,3 +158,14 @@ of optional parameters
   (it may represent a compatibility break with some plugins)
 + Refactor Singleton class ManiaLive\Utilities\Singleton is now deprecated
   use ManiaLib\Utils\Singleton instead
+
+
++-------------------------------------------+
+|   ManiaLive 1.0 - r223 (31 may 2011)      |
++-------------------------------------------+
+- improve utf-8 support in TM String stripping
+- update ManiaLib Version
+- improve data update (improvement submit by oliverde8 http://forum.maniaplanet.com/viewtopic.php?f=46&t=1235&p=20664#p20633)
+- correct issue 31, ChatSendMessage now use login to send message to one player
+- update ManiaHome Client to use the latest version of the API
+- correct Storage class to have a better support of the lap mod

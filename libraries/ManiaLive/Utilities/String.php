@@ -20,6 +20,7 @@ abstract class String
 	 * sentance becomes bold)
 	 * @param string Unprotected string
 	 * @param string Protected string
+	 * @deprecated please use \ManiaLib\Utils\TMString::protectStyles
 	 */
 	static function protectStyles($string)
 	{
@@ -30,6 +31,7 @@ abstract class String
 	 * Removes the protecting styles ($< and $>) from a string
 	 * @param string Protected string
 	 * @return string Unprotected string
+	 * @deprecated please use \ManiaLib\Utils\TMString::unprotectStyles
 	 */
 	static function unprotectStyles($string)
 	{
@@ -43,10 +45,11 @@ abstract class String
 	 * Removes some TM styles (wide, bold and shadowed) to avoid wide words
 	 * @param string
 	 * @return string
+	 * @deprecated please use \ManiaLib\Utils\TMString::stripWideFonts
 	 */
 	static function stripWideFonts($string)
 	{
-		return str_replace(array (
+		return str_ireplace(array (
 		'$w',
 		'$o',
 		'$s'
@@ -57,6 +60,7 @@ abstract class String
 	 * Removes TM links
 	 * @param string
 	 * @return string
+	 * @deprecated please use \ManiaLib\Utils\TMString::stripLinks
 	 */
 	static function stripLinks($string)
 	{
@@ -69,6 +73,7 @@ abstract class String
 	 * Removes all color in string
 	 * @param string $str
 	 * @return string
+	 * @deprecated please use \ManiaLib\Utils\TMString::stripColors
 	 */
 	static function stripColors($string){
 		return preg_replace('/\\$([tinmgz]|[0-9a-fA-F]{3}|[0-9a-fA-F].{2}|[0-9a-fA-F].[0-9a-fA-F]|[0-9a-fA-F]{2}.|[^$hlpwos<>]?)/ixu',"", $string);
@@ -78,6 +83,7 @@ abstract class String
 	 * Removes all label formating from the string
 	 * @param string $string
 	 * @return string
+	 * @deprecated please use \ManiaLib\Utils\TMString::stripAllTmStyle
 	 */
 	static function stripAllTmStyle($string)
 	{
@@ -92,6 +98,7 @@ abstract class String
 	 * For instance: 1 -> first, 2 -> second, 6 -> 6th
 	 * @param integer $rank
 	 * @return string
+	 * @deprecated please use \ManiaLib\Utils\TMString::formatRank
 	 */
 	static function formatRank($rank)
 	{
