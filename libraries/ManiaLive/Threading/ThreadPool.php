@@ -69,15 +69,17 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 			// keep manialive clean!
 			// delete unused threading databases ...
 			$files = glob(APP_ROOT . '/data/threading_*.db'); 
-			foreach($files as $file)
+			if(is_array($files))
 			{
-				try
-				{
-					unlink($file);
-				}
-				catch (\Exception $e) {}
+			    foreach($files as $file)
+			    {
+				    try
+				    {
+					    unlink($file);
+				    }
+				    catch (\Exception $e) {}
+			    }
 			}
-			
 			$this->database = Tools::getDb();
 			
 			// setup database ...
