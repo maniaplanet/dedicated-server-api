@@ -64,7 +64,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	*/
     public $nextChallenge;
     /**
-	* Represents the Current Server Options 
+	* Represents the Current Server Options
 	* @var \ManiaLive\DedicatedApi\Structures\ServerOptions
 	*/
     public $server;
@@ -138,7 +138,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 		  }
 		  catch(\Exception $e)
 		  {
-			 
+
 		  }
 	   }
 
@@ -157,12 +157,12 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onRun()
     {
-	   
+
     }
 
     function onPreLoop()
     {
-	   
+
     }
 
     function onPostLoop()
@@ -190,7 +190,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onTerminate()
     {
-	   
+
     }
 
     #endRegion
@@ -260,32 +260,32 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
     {
-	   
+
     }
 
     function onPlayerManialinkPageAnswer($playerUid, $login, $answer)
     {
-	   
+
     }
 
     function onEcho($internal, $public)
     {
-	   
+
     }
 
     function onServerStart()
     {
-	   
+
     }
 
     function onServerStop()
     {
-	   
+
     }
 
     function onBeginRace($challenge)
     {
-	   
+
     }
 
     function onEndRace($rankings, $challenge)
@@ -309,7 +309,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   $this->currentChallenge = Challenge::fromArray($challenge);
 	   Console::printlnFormatted('Map change: '.String::stripAllTmStyle($oldChallenge->name).' -> '.String::stripAllTmStyle($this->currentChallenge->name));
 
-
+	   $this->deleteWarmupScore();
 
 	   if($warmUp)
 	   {
@@ -350,7 +350,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onBeginRound()
     {
-	   
+
     }
 
     function onEndRound()
@@ -366,7 +366,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   }
 	   catch(\Exception $ex)
 	   {
-		  
+
 	   }
     }
 
@@ -580,17 +580,17 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onPlayerIncoherence($playerUid, $login)
     {
-	   
+
     }
 
     function onBillUpdated($billId, $state, $stateName, $transactionId)
     {
-	   
+
     }
 
     function onTunnelDataReceived($playerUid, $login, $data)
     {
-	   
+
     }
 
     function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified)
@@ -681,7 +681,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     function onManualFlowControlTransition($transition)
     {
-	   
+
     }
 
     function onVoteUpdated($stateName, $login, $cmdName, $cmdParam)
