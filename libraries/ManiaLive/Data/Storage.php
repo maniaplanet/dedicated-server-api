@@ -292,7 +292,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
     {
 	   if($this->isWarmUp && $this->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 	   {
-		  $this->deleteWarmupScore();
+		  $this->resetScores();
+		  $this->isWarmUp = false;
 	   }
 	   else
 	   {
@@ -309,7 +310,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   $this->currentChallenge = Challenge::fromArray($challenge);
 	   Console::printlnFormatted('Map change: '.String::stripAllTmStyle($oldChallenge->name).' -> '.String::stripAllTmStyle($this->currentChallenge->name));
 
-	   $this->deleteWarmupScore();
+	   $this->resetScores();
 
 	   if($warmUp)
 	   {
@@ -344,7 +345,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   }
 	   else
 	   {
-		  $this->deleteWarmupScore();
+		  $this->resetScores();
+		  $this->isWarmUp = false;
 	   }
     }
 
@@ -765,18 +767,21 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   }
     }
 
-    protected function deleteWarmupScore()
+    protected function resetScores()
     {
 	   foreach($this->players as $key => $player)
 	   {
 		  $player->bestTime = 0;
+		  $player->rank = 0;
+		  $player->point = 0;
 	   }
 
 	   foreach($this->spectators as $spectator)
 	   {
 		  $spectator->bestTime = 0;
+		  $spectator->rank = 0;
+		  $spectator->point = 0;
 	   }
-	   $this->isWarmUp = false;
     }
 
 }
