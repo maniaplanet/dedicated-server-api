@@ -17,7 +17,7 @@ class ManiaHomeClient
 	   if(Loader::$config->maniahome->enabled)
 	   {
 		  $maniahome_client = new static();
-		  $maniahome_client->send($message, $login, $link, $type, $iconStyle, $iconSubStyle);
+		  $maniahome_client->send($message, $login, $link, $iconStyle, $iconSubStyle);
 	   }
     }
 
