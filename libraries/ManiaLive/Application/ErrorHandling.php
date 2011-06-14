@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -18,7 +18,7 @@ use ManiaLive\Utilities\Console;
 abstract class ErrorHandling
 {
 	static $errorCount = 0;
-	
+
 	/**
 	 * Counts number of errors that have been thrown
 	 * and stops the application at a certain amount.
@@ -26,13 +26,13 @@ abstract class ErrorHandling
 	public static function increaseErrorCount()
 	{
 		self::$errorCount++;
-		
+
 		// worst case, the application has reported maximal possible number of errors
 		if (Loader::$config->maxErrorCount !== false
 			&& self::$errorCount > Loader::$config->maxErrorCount)
 			die();
 	}
-	
+
 	/**
 	 * Takes a php error and converts it into an exception.
 	 * @param integer $errno
@@ -41,11 +41,11 @@ abstract class ErrorHandling
 	 * @param integer $errline
 	 * @throws \ErrorException
 	 */
-	public static function createExcpetionFromError($errno, $errstr, $errfile, $errline)
+	public static function createExceptionFromError($errno, $errstr, $errfile, $errline)
 	{
 		throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
 	}
-	
+
 	/**
 	 * Process an exception and decides what to do with it.
 	 * @param \Exception $e
@@ -55,7 +55,7 @@ abstract class ErrorHandling
 		self::increaseErrorCount();
 		self::displayAndLogError($e);
 	}
-	
+
 	/**
 	 * Process an exception and decides what to do with it.
 	 * @param \Exception $e
@@ -67,13 +67,13 @@ abstract class ErrorHandling
 		{
 			throw $e;
 		}
-		
+
 		// throw exception again to be caught by upper module exception hander
 		elseif ($e instanceof CriticalEventException)
 		{
 			throw $e;
 		}
-		
+
 		// display message and continue if possible
 		else
 		{
@@ -81,7 +81,7 @@ abstract class ErrorHandling
 			self::displayAndLogError($e);
 		}
 	}
-	
+
 	/**
 	 * This will stop an event from being processed!
 	 * @param \Exception $e
@@ -96,14 +96,14 @@ abstract class ErrorHandling
 				self::displayAndLogError($e);
 			}
 		}
-		
+
 		// anything else, this normally should(!) be a fatalexception ...
 		else
 		{
 			throw $e;
 		}
 	}
-	
+
 	/**
 	 * Writes error message into the standard log file and also
 	 * prints it to the console window.
@@ -120,14 +120,14 @@ abstract class ErrorHandling
 			Console::println(wordwrap($line, 73, APP_NL.'      ', true));
 		}
 		Console::println('');
-		
+
 		Logger::getLog('Error')->write($log);
-		
+
 		// write into global error log if config says so
 		if (Loader::$config->globalErrorLog)
 			error_log($log, 3, APP_ROOT . '/logs/GlobalErrorLog.txt');
 	}
-	
+
 	/**
 	 * Process an exception and decides what to do with it.
 	 * @param \Exception $e
@@ -140,13 +140,13 @@ abstract class ErrorHandling
 		foreach (self::computeMessage($e) as $line)
 			$message .=  wordwrap($line, 73, APP_NL.'      ', true) . APP_NL;
 		$message .=  APP_NL;
-		
+
 		// log and display error, then die!
 		error_log($message, 3, APP_ROOT . '/logs/ErrorLog_' . getmypid() . '.txt');
-			
+
 		die($message);
 	}
-	
+
 	/**
 	 * Computes a human readable log message from any exception.
 	 */
@@ -157,13 +157,13 @@ abstract class ErrorHandling
 		$file = $e->getFile();
 		$message = $e->getMessage();
 		$trace = $e->getTraceAsString();
-		
+
 		$buffer = array();
 		$buffer[] = ' -> ' . get_class($e) . ' with code ' . $code;
 		$buffer[] = '    ' . $message;
 		$buffer[] = '  - in ' . $file . ' on line ' . $line;
 		$buffer[] = '  - Stack: ';
-		
+
 		$lines = explode("\n", $trace);
 		foreach ($lines as $i => $line)
 		{
@@ -177,7 +177,7 @@ abstract class ErrorHandling
 				$buffer[] = $line;
 			}
 		}
-		
+
 		return $buffer;
 	}
 }
