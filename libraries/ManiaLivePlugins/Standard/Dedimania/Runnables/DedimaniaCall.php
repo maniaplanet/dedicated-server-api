@@ -8,6 +8,7 @@
  * @author      $Author$:
  * @date        $Date$:
  */
+
 namespace ManiaLivePlugins\Standard\Dedimania\Runnables;
 
 use ManiaLive\Utilities\Logger;
@@ -27,11 +28,10 @@ use ManiaLive\DedicatedApi\Xmlrpc\Message;
 
 class DedimaniaCall extends \ManiaLive\Threading\Runnable
 {
+
 	public $requests;
 	public $responses;
-
 	static protected $connection = array();
-
 	/**
 	 * @var \ManiaLive\Utilities\Logger
 	 */
@@ -50,7 +50,7 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		$this->requests[] = new Request('dedimania.WarningsAndTTR', array());
 
 		// build multicall param ...
-		foreach ($this->requests as $request)
+		foreach($this->requests as $request)
 		{
 			$calls[] = array(
 				'methodName' => $request->name,
@@ -67,55 +67,61 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		// reformat response because there can only be one param on first level ...
 		// I think so at least :-)
 		$return = array();
-		foreach ($results as $result)
+		if(is_array($results))
 		{
-			$response = null;
-			if (isset($result['faultCode']) || isset($result['faultString']))
+			foreach($results as $result)
 			{
-				$response = array
-				(
-					'Error' => array
-					(
-						'Message' => $result['faultString'],
-						'Code' => $result['faultCode']
-					),
-					'OK' => false
-				);
-			}
-			else
-			{
-				if (is_array($result[0]))
+				$response = null;
+				if(isset($result['faultCode']) || isset($result['faultString']))
 				{
-					$response = $result[0];
-					$response['OK'] = ($result[0] != false && $result[0] != null);
+					$response = array
+						(
+						'Error' => array
+							(
+							'Message' => $result['faultString'],
+							'Code' => $result['faultCode']
+						),
+						'OK' => false
+					);
 				}
 				else
 				{
-					$response = array();
-					$response['OK'] = ($result[0] != false && $result[0] != null);
+					if(is_array($result[0]))
+					{
+						$response = $result[0];
+						$response['OK'] = ($result[0] != false && $result[0] != null);
+					}
+					else
+					{
+						$response = array();
+						$response['OK'] = ($result[0] != false && $result[0] != null);
+					}
 				}
+				$return[] = $response;
 			}
-			$return[] = $response;
 		}
 		return $return;
 	}
 
 	static function connect($port)
 	{
-		if (isset(self::$connection[$port])) return self::$connection[$port];
+		if(isset(self::$connection[$port]))
+			return self::$connection[$port];
 
 		// dedimania.net
 		// http://12.172.123.228:8080
 		// open socket, use existing connection if there is one ...
 		$errno = 0;
 		$errstr = '';
-		self::$connection[$port] = pfsockopen('dedimania.net', $port, $errno, $errstr, 30);
+		self::$connection[$port] = pfsockopen('dedimania.net', $port, $errno, $errstr,
+			30);
 
 		// makes connection unblocking so we can read result ...
 		stream_set_blocking(self::$connection[$port], false);
 
 		// connection refused ...
-		if (self::$connection[$port] == null) throw new \Exception('Connection failed!');
+		if(self::$connection[$port] == null)
+			throw new \Exception('Connection failed!');
 
 		// create logfile ...
 		self::$log = Logger::getLog('XmlRpc', 'Dedimania');
@@ -133,7 +139,7 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		$size = $request->getLength();
 		$response = self::sendMessage($port, $file, $message);
 		$msg = new Message($response);
-		if ($msg === false)
+		if($msg === false)
 		{
 			return array();
 		}
@@ -151,17 +157,17 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 	{
 		$connection = self::connect($port);
 
-		if ($connection == null)
+		if($connection == null)
 			throw new \Exception('Not Connected!');
 
 		// prepare body ...
 		$contents = gzdeflate($message, 9);
 
 		// traffic log
-		self::$log->write('REQUEST:' . APP_NL . $message . APP_NL . APP_NL);
+		self::$log->write('REQUEST:'.APP_NL.$message.APP_NL.APP_NL);
 
 		// send header ...
-		if (fputs($connection, 'POST ' . $file . ' HTTP/1.1'.CRLF) === false)
+		if(fputs($connection, 'POST '.$file.' HTTP/1.1'.CRLF) === false)
 		{
 			return false;
 		}
@@ -171,7 +177,7 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		fputs($connection, 'Cache-Control: no-cache'.CRLF);
 		fputs($connection, 'Content-Encoding: deflate'.CRLF);
 		fputs($connection, 'Content-Type: text/xml; charset=UTF-8'.CRLF);
-		fputs($connection, 'Content-Length: ' . strlen($contents) . CRLF);
+		fputs($connection, 'Content-Length: '.strlen($contents).CRLF);
 		fputs($connection, 'Keep-Alive: timeout=600, max=2000'.CRLF);
 		fputs($connection, 'Accept-Encoding: deflate'.CRLF);
 		fputs($connection, 'Connection: Keep-Alive'.CRLF.CRLF);
@@ -182,17 +188,18 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		// receive response ...
 		// start reading header information
 		$size = 0;
-		while (!feof($connection))
+		while(!feof($connection))
 		{
 			$line = fgets($connection, 128);
 
 			// read content length ...
-			if (($pos = strpos($line, 'Content-Length:')) !== false)
+			if(($pos = strpos($line, 'Content-Length:')) !== false)
 			{
 				$size = intval(substr($line, $pos + 15));
 			}
 
-			if ($line == CRLF) break;
+			if($line == CRLF)
+				break;
 		}
 
 		// read body ...
@@ -202,16 +209,18 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 			$line = fgets($connection);
 			$data .= $line;
 		}
-		while (strlen($data) < $size);
+		while(strlen($data) < $size);
 
 		// decode body ...
 		$body = gzinflate($data);
 
 		// log xmlrpc traffic
-		self::$log->write('RESPONSE:' . APP_NL . $body . APP_NL . APP_NL);
+		self::$log->write('RESPONSE:'.APP_NL.$body.APP_NL.APP_NL);
 
 		// return body ...
 		return $body;
 	}
+
 }
+
 ?>
