@@ -41,7 +41,7 @@ class ManiaHomeClient
 		  'receiverName' => $login,
 		  'link' => $link,
 		  'iconStyle' => $iconStyle,
-		  'iconStyle' => $iconSubStyle
+		  'iconSubStyle' => $iconSubStyle
 	   );
 	   try
 	   {
