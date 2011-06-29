@@ -12,15 +12,14 @@
 namespace ManiaLive\Features\ChatCommand;
 
 use ManiaLive\Utilities\Logger;
-
 use ManiaLive\Data\Storage;
-
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Utilities\Console;
 use ManiaLive\Event\Dispatcher;
 
 class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener
 {
+
 	protected $registeredCommands = array();
 
 	/**
@@ -46,7 +45,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		$command = new Command('man', 1);
 		$command->addLoginAsFirstParameter = true;
 		$command->help = 'Display help for every commands you give as parameter'."\n".
-		'exemple of usage: /man man';
+			'exemple of usage: /man man';
 		$command->isPublic = true;
 		$command->log = false;
 		$command->callback = array($this, 'man');
@@ -56,7 +55,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		$command = new Command('man', 2);
 		$command->addLoginAsFirstParameter = true;
 		$command->help = 'Display help for the command with the corresponding parameters'."\n".
-		'exemple of usage: /man man 2';
+			'exemple of usage: /man man 2';
 		$command->isPublic = true;
 		$command->log = false;
 		$command->callback = array($this, 'man');
@@ -79,18 +78,20 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		{
 			do
 			{
-				if($this->isRegistered($command->name, $command->parametersCount) == 2)
+				$isRegitered = $this->isRegistered($command->name, $command->parametersCount);
+				if($isRegitered >= 2)
 				{
 					throw new CommandAlreadyRegisteredException($command->name.'|'.$command->parametersCount);
 				}
 				$this->registeredCommands[strtolower($command->name)][$increment] = $command;
-			} while ($increment++ < $parametersCount);
+			}
+			while($increment++ < $parametersCount);
 		}
-		catch (\Exception $e)
+		catch(\Exception $e)
 		{
 			for($i = $increment; $i >= $requiredParametersCount; $i--)
 			{
-				if($this->registeredCommands[strtolower($command->name)][$i] === $command)
+				if(isset($this->registeredCommands[strtolower($command->name)][$i]) && $this->registeredCommands[strtolower($command->name)][$i] === $command)
 				{
 					unset($this->registeredCommands[strtolower($command->name)][$i]);
 				}
@@ -109,7 +110,18 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 	{
 		if(isset($this->registeredCommands[strtolower($commandName)]))
 		{
-			return (isset($this->registeredCommands[strtolower($commandName)][$parametersCount]) ? 2 : 1);
+			if(isset($this->registeredCommands[strtolower($commandName)][-1]))
+			{
+				return 3;
+			}
+			elseif(isset($this->registeredCommands[strtolower($commandName)][$parametersCount]))
+			{
+				return 2;
+			}
+			else
+			{
+				return 1;
+			}
 		}
 		return 0;
 	}
@@ -121,10 +133,10 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 	function getRegisteredCommands()
 	{
 		$commands = array();
-		foreach ($this->registeredCommands as $commandName => $value)
+		foreach($this->registeredCommands as $commandName => $value)
 		{
 			$commands[$commandName] = array();
-			foreach ($value as $parametersCount => $command)
+			foreach($value as $parametersCount => $command)
 			{
 				$commands[$commandName][$parametersCount] = clone $command;
 			}
@@ -144,7 +156,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		do
 		{
 			if($this->isRegistered($command->name, $increment) == 2
-			&& $this->registeredCommands[$command->name][$increment] === $command)
+				&& $this->registeredCommands[$command->name][$increment] === $command)
 			{
 				unset($this->registeredCommands[$command->name][$increment]);
 				if(!$this->registeredCommands[$command->name])
@@ -153,7 +165,8 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 				}
 				unset($command);
 			}
-		}while ($increment++ < $parametersCount);
+		}
+		while($increment++ < $parametersCount);
 	}
 
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
@@ -161,11 +174,11 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		// TODO Handle params such as "a string with spaces"
 		if($isRegistredCmd)
 		{
-			$tmpResult = explode('"',$text);
+			$tmpResult = explode('"', $text);
 			$parameters = array();
 			for($i = 0; $i < count($tmpResult); $i += 2)
 			{
-				$tmp = explode(' ',$tmpResult[$i]);
+				$tmp = explode(' ', $tmpResult[$i]);
 				foreach($tmp as $temp)
 				{
 					if($temp !== '' && $temp !== ' ')
@@ -175,7 +188,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 				}
 				if($i + 1 < count($tmpResult))
 				{
-					$parameters[] = $tmpResult[$i+1];
+					$parameters[] = $tmpResult[$i + 1];
 				}
 			}
 
@@ -185,42 +198,63 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 				$isRegistered = $this->isRegistered($command, count($parameters));
 				if($isRegistered == 2)
 				{
-					$commandObject = $this->registeredCommands[strtolower($command)][count($parameters)];
-					if((!count($commandObject->authorizedLogin) || in_array($login, $commandObject->authorizedLogin)))
-					{
-						if($commandObject->log)
-						{
-							Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text);
-						}
-
-						if($commandObject->addLoginAsFirstParameter)
-						{
-							array_unshift($parameters, $login);
-						}
-						call_user_func_array($commandObject->callback, $parameters);
-					}
-					else
-					{
-						Connection::getInstance()->chatSendServerMessage('$f00You are not authorized to use this command!', Storage::getInstance()->getPlayerObject($login), true);
-					}
+					$this->callCommand($login, $text, $command, $parameters);
 				}
-				elseif ($isRegistered == 1)
+				elseif($isRegistered == 1)
 				{
 					$message = 'The command you entered exists but has not the correct number of parameters, use $<$o$FC4/man '.$command.'$> for more details';
-					Connection::getInstance()->chatSendServerMessage($message, Storage::getInstance()->getPlayerObject($login), true);
+					Connection::getInstance()->chatSendServerMessage($message,
+						Storage::getInstance()->getPlayerObject($login), true);
 					$this->man($login, $command, -1);
+				}
+				elseif($isRegistered == 3)
+				{
+					$this->callCommand($login, $text, $command, $parameters, true);
 				}
 				elseif($command !== 'version')
 				{
 					$player = Storage::getInstance()->getPlayerObject($login);
-					if ($player)
+					if($player)
 					{
 						Connection::getInstance()->chatSendServerMessage(
-							'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.', 
-						Storage::getInstance()->getPlayerObject($login), true);
+							'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.',
+							Storage::getInstance()->getPlayerObject($login), true);
 					}
 				}
 			}
+		}
+	}
+
+	protected function callCommand($login, $text, $command, $parameters = array(),
+		$polymorphicCommand = false)
+	{
+		if(!$polymorphicCommand)
+		{
+			$commandObject = $this->registeredCommands[strtolower($command)][count($parameters)];
+		}
+		else
+		{
+			$commandObject = $this->registeredCommands[strtolower($command)][-1];
+		}
+
+		if((!count($commandObject->authorizedLogin) || in_array($login,
+				$commandObject->authorizedLogin)))
+		{
+			if($commandObject->log)
+			{
+				Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text);
+			}
+
+			if($commandObject->addLoginAsFirstParameter)
+			{
+				array_unshift($parameters, $login);
+			}
+			call_user_func_array($commandObject->callback, $parameters);
+		}
+		else
+		{
+			Connection::getInstance()->chatSendServerMessage('$f00You are not authorized to use this command!',
+				Storage::getInstance()->getPlayerObject($login), true);
 		}
 	}
 
@@ -229,11 +263,12 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		$connection = Connection::getInstance();
 
 		$commandeAvalaible = array();
-		foreach ($this->registeredCommands as $commands)
+		foreach($this->registeredCommands as $commands)
 		{
 			foreach($commands as $argumentCount => $command)
 			{
-				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin)))
+				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login,
+						$command->authorizedLogin)))
 				{
 					if(!in_array($command->name, $commandeAvalaible))
 					{
@@ -246,11 +281,13 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		$receiver = Storage::getInstance()->getPlayerObject($login);
 		if(count($commandeAvalaible))
 		{
-			$connection->chatSendServerMessage('Available commands are: '.implode(', ', $commandeAvalaible), $receiver, true);
+			$connection->chatSendServerMessage('Available commands are: '.implode(', ',
+					$commandeAvalaible), $receiver, true);
 		}
-		else 
+		else
 		{
-			$connection->chatSendServerMessage('There is no command available', $receiver, true);
+			$connection->chatSendServerMessage('There is no command available',
+				$receiver, true);
 		}
 	}
 
@@ -262,11 +299,13 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		{
 			$help = array();
 			$help[] = 'Available $<$o$FC4'.$commandName.'$> commands:';
-			foreach ($this->registeredCommands[$commandName] as $command)
+			foreach($this->registeredCommands[$commandName] as $command)
 			{
-				if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
+				if(!count($command->authorizedLogin) || in_array($login,
+						$command->authorizedLogin))
 				{
-					$help[] = '$<$o$FC4'.$command->name.' ('.$command->parametersCount.')$>'.($command->help ? ':'.$command->help : '');
+					$help[] = '$<$o$FC4'.$command->name.' ('.$command->parametersCount.')$>'.($command->help
+								? ':'.$command->help : '');
 				}
 			}
 			$text = implode("\n", $help);
@@ -274,9 +313,11 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		elseif(isset($this->registeredCommands[$commandName][$parametersCount]))
 		{
 			$command = $this->registeredCommands[$commandName][$parametersCount];
-			if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
+			if(!count($command->authorizedLogin) || in_array($login,
+					$command->authorizedLogin))
 			{
-				$text = 'man page for command $<$o$FC4'.$command->name.' ('.$parametersCount.')$>'.($command->help ? "\n".$command->help : '');
+				$text = 'man page for command $<$o$FC4'.$command->name.' ('.$parametersCount.')$>'.($command->help
+							? "\n".$command->help : '');
 			}
 			else
 			{
@@ -318,35 +359,132 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 			{
 				$reflection = new \ReflectionFunction($method);
 			}
-			$requiredParametersCount = ($command->addLoginAsFirstParameter  ? $reflection->getNumberOfRequiredParameters() - 1 : $reflection->getNumberOfRequiredParameters());
-			$parametersCount = ($command->addLoginAsFirstParameter  ? $reflection->getNumberOfParameters() - 1 : $reflection->getNumberOfParameters());
-			return array( $requiredParametersCount, $parametersCount);
+			$requiredParametersCount = ($command->addLoginAsFirstParameter ? $reflection->getNumberOfRequiredParameters() - 1
+						: $reflection->getNumberOfRequiredParameters());
+			$parametersCount = ($command->addLoginAsFirstParameter ? $reflection->getNumberOfParameters() - 1
+						: $reflection->getNumberOfParameters());
+			return array($requiredParametersCount, $parametersCount);
 		}
 	}
 
-	function onPlayerConnect($login, $isSpectator) {}
-	function onPlayerDisconnect($login) {}
-	function onPlayerManialinkPageAnswer($playerUid, $login, $answer) {}
-	function onEcho($internal, $public) {}
-	function onServerStart() {}
-	function onServerStop() {}
-	function onBeginRace($challenge) {}
-	function onEndRace($rankings, $challenge) {}
-	function onBeginChallenge($challenge, $warmUp, $matchContinuation) {}
-	function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge) {}
-	function onBeginRound() {}
-	function onEndRound() {}
-	function onStatusChanged($statusCode, $statusName) {}
-	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
-	function onPlayerFinish($playerUid, $login, $timeOrScore) {}
-	function onPlayerIncoherence($playerUid, $login) {}
-	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
-	function onTunnelDataReceived($playerUid, $login, $data) {}
-	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified) {}
-	function onPlayerInfoChanged($playerInfo) {}
-	function onManualFlowControlTransition($transition) {}
-	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
+	function onPlayerConnect($login, $isSpectator)
+	{
+		
+	}
+
+	function onPlayerDisconnect($login)
+	{
+		
+	}
+
+	function onPlayerManialinkPageAnswer($playerUid, $login, $answer)
+	{
+		
+	}
+
+	function onEcho($internal, $public)
+	{
+		
+	}
+
+	function onServerStart()
+	{
+		
+	}
+
+	function onServerStop()
+	{
+		
+	}
+
+	function onBeginRace($challenge)
+	{
+		
+	}
+
+	function onEndRace($rankings, $challenge)
+	{
+		
+	}
+
+	function onBeginChallenge($challenge, $warmUp, $matchContinuation)
+	{
+		
+	}
+
+	function onEndChallenge($rankings, $challenge, $wasWarmUp,
+		$matchContinuesOnNextChallenge, $restartChallenge)
+	{
+		
+	}
+
+	function onBeginRound()
+	{
+		
+	}
+
+	function onEndRound()
+	{
+		
+	}
+
+	function onStatusChanged($statusCode, $statusName)
+	{
+		
+	}
+
+	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap,
+		$checkpointIndex)
+	{
+		
+	}
+
+	function onPlayerFinish($playerUid, $login, $timeOrScore)
+	{
+		
+	}
+
+	function onPlayerIncoherence($playerUid, $login)
+	{
+		
+	}
+
+	function onBillUpdated($billId, $state, $stateName, $transactionId)
+	{
+		
+	}
+
+	function onTunnelDataReceived($playerUid, $login, $data)
+	{
+		
+	}
+
+	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex,
+		$isListModified)
+	{
+		
+	}
+
+	function onPlayerInfoChanged($playerInfo)
+	{
+		
+	}
+
+	function onManualFlowControlTransition($transition)
+	{
+		
+	}
+
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam)
+	{
+		
+	}
+
 }
 
-class CommandAlreadyRegisteredException extends \Exception {}
+class CommandAlreadyRegisteredException extends \Exception
+{
+	
+}
+
 ?>
