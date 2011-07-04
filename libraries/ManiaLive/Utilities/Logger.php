@@ -70,10 +70,14 @@ class Logger
 		$this->enabled = false;
 	}
 	
-	function write($text)
+	function write($text, $addDate = false)
 	{		
 		if ($this->enabled)
 		{
+			if($addDate)
+			{
+				$text = date("Y.m.d_H:i ") . $text;
+			}
 			error_log($text, 3, $this->path);
 		}
 	}
