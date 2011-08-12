@@ -1,0 +1,12 @@
+ * Namespace === Directory structure under libraries/
+ * ONE CLASS PER FILE !
+ * Exception: for the exceptions, you can put an exception 
+   definition at the end of a file if the file is the only 
+   one that uses that exception
+ * Filename: ClassName.class.php
+ * Use long explicit names. Namespaces are made for that.
+ * Everything should be in at least one namespace
+ * Use classes as much as possible
+ * Every Event class must end with Event (....\SomeEvent or ...\Some\Event)
+ * Every Listener class must end with Listener (...\SomeListener or ...\Some\Listener)
+ * We decided to use only player logins to identify them, though there's also functions for Ids
