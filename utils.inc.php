@@ -19,7 +19,7 @@ spl_autoload_register('__autoload');
  * Path to the application's root directory.
  * @var string
  */
-define('APP_ROOT', __DIR__ . '/');
+define('APP_ROOT', __DIR__ . DIRECTORY_SEPARATOR);
 
 /**
  * Path to the webservices api.

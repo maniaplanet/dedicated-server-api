@@ -125,7 +125,7 @@ abstract class ErrorHandling
 
 		// write into global error log if config says so
 		if (Loader::$config->globalErrorLog)
-			error_log($log, 3, APP_ROOT . '/logs/GlobalErrorLog.txt');
+			error_log($log, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'GlobalErrorLog.txt');
 	}
 
 	/**
@@ -142,7 +142,7 @@ abstract class ErrorHandling
 		$message .=  APP_NL;
 
 		// log and display error, then die!
-		error_log($message, 3, APP_ROOT . '/logs/ErrorLog_' . getmypid() . '.txt');
+		error_log($message, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'ErrorLog_'.getmypid().'.txt');
 
 		die($message);
 	}
