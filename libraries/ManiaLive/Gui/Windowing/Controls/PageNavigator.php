@@ -27,7 +27,7 @@ class PageNavigator extends Control
 	public $arrowFirst;
 	public $text;
 
-	public $arrowNoneStyle = Elements\Icons64x64_1::StarGold;
+	public $arrowNoneStyle = Elements\Icons64x64_1::ClipPause;
 	public $arrowNextStyle = Elements\Icons64x64_1::ArrowNext;
 	public $arrowPrevStyle = Elements\Icons64x64_1::ArrowPrev;
 	public $arrowFastNextStyle = Elements\Icons64x64_1::ArrowFastNext;

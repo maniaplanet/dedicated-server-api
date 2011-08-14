@@ -50,7 +50,7 @@ abstract class DefaultStyles
 	/**#@+
 	 * Default styles for the page navigator 
 	 */
-	const PageNavigator_ArrowNone_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::StarGold;
+	const PageNavigator_ArrowNone_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ClipPause;
 	const PageNavigator_ArrowNext_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ArrowNext;
 	const PageNavigator_ArrowPrev_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ArrowPrev;
 	const PageNavigator_ArrowLast_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ArrowLast;
