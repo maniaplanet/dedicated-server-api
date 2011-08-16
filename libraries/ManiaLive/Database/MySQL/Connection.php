@@ -56,9 +56,9 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 		try
 		{
 			$this->connection = mysql_connect(
-			$this->host,
-			$this->user,
-			$this->password
+					$this->host,
+					$this->user,
+					$this->password
 			);
 		}
 		catch(\ErrorException $err)

@@ -11,22 +11,13 @@
 
 namespace ManiaLive\DedicatedApi;
 
-class Config extends \ManiaLive\Config\Configurable
+class Config extends \ManiaLib\Utils\Singleton
 {
-	public $host;
-	public $port;
-	public $password;
-	public $user;
-	public $timeout;
-	
-	function validate()
-	{
-		$this->setDefault('host', 'localhost');
-		$this->setDefault('port', 5000);
-		$this->setDefault('user', 'SuperAdmin');
-		$this->setDefault('password', 'SuperAdmin');
-		$this->setDefault('timeout', 1);
-	}
+	public $host = 'localhost';
+	public $port = 5000;
+	public $user = 'SuperAdmin';
+	public $password = 'SuperAdmin';
+	public $timeout = 1;
 }
 
 ?>

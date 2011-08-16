@@ -1,7 +1,5 @@
 <?php
 /**
- * ManiaLive - TrackMania dedicated server manager in PHP
- * 
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -9,16 +7,15 @@
  * @date        $Date$:
  */
 
-namespace ManiaLive\Features\Admin;
+namespace ManiaLive\Application;
 
-class Config extends \ManiaLive\Config\Configurable
+/**
+ * Description of Config
+ */
+class Config extends \ManiaLib\Utils\Singleton
 {
-	public $logins;
-	
-	function validate()
-	{
-		$this->setDefault('logins', array());
-	}
+	public $admins = array();
+	public $plugins = array();
 }
 
 ?>

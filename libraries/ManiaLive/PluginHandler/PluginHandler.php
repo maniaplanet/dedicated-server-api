@@ -100,7 +100,7 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	{
 		Console::println('[PluginHandler] Start plugin load process:');
 
-		foreach(Loader::$config->plugins->load as $path)
+		foreach(\ManiaLive\Application\Config::getInstance()->plugins as $path)
 		{
 			$plugin = null;
 
@@ -116,20 +116,10 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 			$this->loadPlugin($className);
 		}
 
-		// load config settings ...
-		foreach($this->plugins as $plugin)
-		{
-			$this->loadPluginConfiguration($plugin);
-		}
-
-		$plugins = array();
-
 		foreach($this->plugins as $id => $plugin)
 		{
 			if($this->checkPluginDependency($plugin))
 			{
-				$plugins[] = array($id, $plugin->getVersion());
-
 				// this plugin is accepted
 				try
 				{
@@ -179,45 +169,6 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 		else
 		{
 			throw new Exception("Could not load Plugin '$className' !");
-		}
-	}
-
-	protected function loadPluginConfiguration(Plugin $plugin)
-	{
-		$className = get_class($plugin);
-		$class = new \ReflectionClass($className);
-		$properties = $class->getProperties();
-		$pluginId = $plugin->getId();
-		$available = array();
-
-		// foreach public static property ...
-		foreach($properties as $property)
-		{
-			if(!$property->isStatic() || !$property->isPublic())
-			{
-				continue;
-			}
-
-			$propertyName = $property->getName();
-			$settings = Loader::$config->plugins->$pluginId;
-			$available[$propertyName] = true;
-
-			// if it is overwritten by the config
-			if(isset($settings[$propertyName]))
-			{
-				Console::printDebug("Overwriting config property '$pluginId.$propertyName' with value '".print_r($settings[$propertyName],
-						true)."'");
-				$className::$$propertyName = $settings[$propertyName];
-			}
-		}
-
-		// report every config setting that could not be used!
-		foreach(Loader::$config->plugins->$pluginId as $key => $value)
-		{
-			if(!isset($available[$key]))
-			{
-				Console::println("[Attention] '$pluginId.$key' is not a valid setting!");
-			}
 		}
 	}
 
@@ -327,8 +278,7 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	 * @param array $methodArgs
 	 * @throws Exception
 	 */
-	final public function callPublicMethod(Plugin $pluginCalling, $pluginId,
-		$pluginMethod, $methodArgs)
+	final public function callPublicMethod(Plugin $pluginCalling, $pluginId, $pluginMethod, $methodArgs)
 	{
 		$plugin = $this->getPlugin($pluginId);
 
@@ -351,7 +301,6 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	{
 		//Load Plugins
 		$plugin = $this->loadPlugin($classname);
-		$this->loadPluginConfiguration($plugin);
 
 		if($this->checkPluginDependency($plugin))
 		{

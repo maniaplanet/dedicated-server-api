@@ -8,8 +8,6 @@ use ManiaLive\Data\Storage;
 
 class WinnerLog extends \ManiaLive\PluginHandler\Plugin
 {
-	static public $maxRankingLogged = 3;
-	
 	function onInit()
 	{
 		$this->setVersion(1);
@@ -34,7 +32,7 @@ class WinnerLog extends \ManiaLive\PluginHandler\Plugin
 		else
 			$log->write("Bronze: ".Time::fromTM($this->storage->currentChallenge->bronzeTime).", Silver: ".Time::fromTM($this->storage->currentChallenge->silverTime).", Gold: ".Time::fromTM($this->storage->currentChallenge->goldTime).", Author: ".Time::fromTM($this->storage->currentChallenge->authorTime) . APP_NL);
 		
-		while (($rank = array_shift($rankings)) && $i++ < self::$maxRankingLogged)
+		while (($rank = array_shift($rankings)) && $i++ < Config::getInstance()->maxRankingLogged)
 		{			
 			if (isset($this->storage->players[$rank['Login']]))
 			{

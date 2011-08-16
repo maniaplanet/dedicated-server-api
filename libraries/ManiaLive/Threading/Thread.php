@@ -11,7 +11,6 @@
 
 namespace ManiaLive\Threading;
 
-use ManiaLive\Config\Loader;
 use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Threading\Commands\QuitCommand;
@@ -163,51 +162,25 @@ class Thread
 		
 		$log = Logger::getLog($pid, 'threading');
 		
-		$command = '';
+		$config = \ManiaLive\Config\Config::getInstance();
 		
-		// this will launch a new process on windows ...
-		if (APP_OS == 'WIN')
-		{
-			// start command, run in background and asign processid ...
-			$command .= 'start /B "manialive_thread_'. $pid. '" ';
-			
+		$command =
 			// add path to the php executeable ...
-			$command .= '"' . Loader::$config->phpPath . '" ';
-			
+			'"'.$config->phpPath.'" '.
 			// add thread_ignitor.php as argument ...
-			$command .= '"' . __DIR__ . '\\thread_ignitor.php" ';
-			
+			'"'.__DIR__.DIRECTORY_SEPARATOR.'thread_ignitor.php" '.
 			// forward output stream to file ...
-			$command .= '>"' . Loader::$config->logsPath . '\\' . Loader::$config->logsPrefix . 'threading_proc_' . $pid . '.txt" ';
-			
-			// add id as argument for thread_ignitor.php ...
-			$command .= $pid.' ';
-			
-			// add this process id ...
-			$command .= getmypid();
-		}
+			'>"'.$config->logsPath.DIRECTORY_SEPARATOR.$config->logsPrefix.'_threading_proc_'.$pid.'.txt" '.
+			// add id and this process id as arguments for thread_ignitor.php ...
+			$pid.' '.getmypid();
+			// this will launch a new process on windows ...
 		
-		// ... and this will do the trick on linux!
+		if (APP_OS == 'WIN')
+			// start command, run in background and asign processid on Windows...
+			$command = 'start /B "manialive_thread_'. $pid. '" '.$command;
 		else
-		{
-			// start command, run in background and asign processid ...
-			$command .= Loader::$config->phpPath . ' ';
-			
-			// add thread_ignitor.php as argument ...
-			$command .= '"' . __DIR__ . '/thread_ignitor.php" ';
-			
-			// forward output stream to file ...
-			$command .= '>"' . Loader::$config->logsPath . '/' .  Loader::$config->logsPrefix . '_threading_proc_' . $pid . '.txt" ';
-			
-			// add id as argument for thread_ignitor.php ...
-			$command .= $pid.' ';
-			
-			// add this process id ...
-			$command .= getmypid().' ';
-			
-			// start in background ...
+			// start in background on Linux...
 			$command .= '&';
-		}
 		
 		$log->write('Trying to start process using command:'.APP_NL);
 		$log->write($command.APP_NL);
@@ -284,9 +257,10 @@ class Thread
 		
 		// dont send commands if thread state is unkown
 		// maybe it got killed? ping!
+		$config = Config::getInstance();
 		if ($this->getState() == 2)
 		{
-			if (time() - $this->pingStarted > Loader::$config->threading->pingTimeout)
+			if (time() - $this->pingStarted > $config->pingTimeout)
 			{
 				$this->setState(4);
 				Dispatcher::dispatch(new Event($this, Event::ON_THREAD_DIES));
@@ -299,7 +273,7 @@ class Thread
 		// maybe it hung up, you can only wait and see ...
 		if ($this->isBusy())
 		{
-			if (time() - $this->busyStarted > Loader::$config->threading->busyTimeout)
+			if (time() - $this->busyStarted > $config->busyTimeout)
 			{
 				$this->setState(4);
 				Dispatcher::dispatch(new Event($this, Event::ON_THREAD_TIMES_OUT));
@@ -338,7 +312,7 @@ class Thread
 		
 		foreach ($this->commands as $cid => $command)
 		{
-			if (++$i > Loader::$config->threading->chunkSize) 
+			if (++$i > $config->chunkSize) 
 			{
 				break;
 			}

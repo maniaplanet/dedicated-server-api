@@ -11,7 +11,6 @@
 
 namespace ManiaLive\Application;
 
-use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Utilities\Console;
 
@@ -28,8 +27,8 @@ abstract class ErrorHandling
 		self::$errorCount++;
 
 		// worst case, the application has reported maximal possible number of errors
-		if (Loader::$config->maxErrorCount !== false
-			&& self::$errorCount > Loader::$config->maxErrorCount)
+		$config = \ManiaLive\Config\Config::getInstance();
+		if ($config->maxErrorCount !== false && self::$errorCount > $config->maxErrorCount)
 			die();
 	}
 
@@ -124,7 +123,7 @@ abstract class ErrorHandling
 		Logger::getLog('Error')->write($log);
 
 		// write into global error log if config says so
-		if (Loader::$config->globalErrorLog)
+		if (\ManiaLive\Config\Config::getInstance()->globalErrorLog)
 			error_log($log, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'GlobalErrorLog.txt');
 	}
 

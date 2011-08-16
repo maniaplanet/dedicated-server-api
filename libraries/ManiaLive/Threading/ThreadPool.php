@@ -60,7 +60,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 		}
 		else
 		{
-			self::$threadingEnabled = Loader::$config->threading->enabled;
+			self::$threadingEnabled = Config::getInstance()->enabled;
 		}
 		
 		// continue depending whether threading is enabled or not ...
@@ -307,7 +307,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 		else
 		{
 			// set maximal exec time
-			$start = time() + Loader::$config->threading->sequentialTimeout;
+			$start = time() + Config::getInstance()->sequentialTimeout;
 			
 			// get commands from each thread and execute them seqeuntially ...
 			foreach ($this->threads as $thread)

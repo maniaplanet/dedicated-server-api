@@ -14,8 +14,6 @@
 
 namespace ManiaLive\DedicatedApi\Xmlrpc;
 
-use ManiaLive\Config\Loader;
-
 use ManiaLive\Utilities\Console;
 
 if (!defined('LF'))
@@ -112,7 +110,7 @@ class Client
 		$this->bigEndianTest();
 
 		// open connection
-		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, Loader::$config->server->timeout);
+		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, \ManiaLive\DedicatedApi\Config::getInstance()->timeout);
 		if (!$this->socket) 
 		{
 			throw new Exception("transport error - could not open socket (error: $errno, $errstr)", -32300);

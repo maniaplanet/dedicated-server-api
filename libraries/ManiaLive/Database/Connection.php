@@ -49,7 +49,7 @@ abstract class Connection
 		}
 		
 		// create class name/path depending on the database type to create ...
-		$class_name = '\ManiaLive\Database\\' . $type . '\Connection';
+		$class_name = '\\ManiaLive\\Database\\' . $type . '\\Connection';
 		
 		// check whether database class exists ...
 		if (!class_exists($class_name))
@@ -58,7 +58,7 @@ abstract class Connection
 		}
 		
 		// check whether the class is an extension of the abstract connection class ...
-		if (!is_subclass_of($class_name, '\ManiaLive\Database\Connection'))
+		if (!is_subclass_of($class_name, '\\ManiaLive\\Database\\Connection'))
 		{
 			throw new NotSupportedException('The database type "' . $type . '" does not support the connection interface!');
 		}

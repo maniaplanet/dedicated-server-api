@@ -24,7 +24,7 @@ abstract class CommandLineInterpreter
 	static function preConfigLoad()
 	{
 		$options = getopt(null,array(
-		'manialive_cfg::',//Display Help
+			'manialive_cfg::',//Display Help
 		));
 		
 		if (array_key_exists('manialive_cfg', $options))
@@ -66,19 +66,21 @@ abstract class CommandLineInterpreter
 			echo $help;
 			exit;
 		}
+		
+		$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
 
 		if (array_key_exists('user', $options))
 		{
 			if($options['user'] != 'SuperAdmin' && $options['user'] != 'Admin' && $options['user'] != 'User')
 			{
-				echo 'Invalid Username'."\n".$help;
+				echo 'Invalid Username'.APP_NL.$help;
 				exit;
 			}
 
-			Loader::$config->server->user = $options['user'];
+			$serverConfig->user = $options['user'];
 		}
 
-		if (array_key_exists('cfg', $options))
+		if (array_key_exists('dedicated_cfg', $options))
 		{
 			$filename = __DIR__.'\\GameData\\Config\\'.$options['cfg'];
 			if (file_exists($filename))
@@ -89,40 +91,40 @@ abstract class CommandLineInterpreter
 
 				//Get the xml RPC port
 				$nodeList = $dom->getElementsByTagName('xmlrpc_port');
-				Loader::$config->server->port = (int)$nodeList->item(0)->nodeValue;
+				$serverConfig->port = (int)$nodeList->item(0)->nodeValue;
 
 				$nodeList = $dom->getElementsByTagName('level');
 				foreach ($nodeList as $node)
 				{
 					$name = $node->getElementsByTagName('name')->item(0)->nodeValue;
 					$pass = $node->getElementsByTagName('password')->item(0)->nodeValue;
-					if(Loader::$config->server->user == $name)
-					Loader::$config->server->password = $pass;
+					if($serverConfig->user == $name)
+					$serverConfig->password = $pass;
 				}
 
 				if (array_key_exists('address', $options))
 				{
-					Loader::$config->server->host = $options['address'];
+					$serverConfig->host = $options['address'];
 				}
 			}
 			else
 			{
-				throw new Exception('configuration file not found.....'."\n".'stopping software....');
+				throw new Exception('configuration file not found.....'.APP_NL.'stopping software....');
 			}
 		}
 		else
 		{
 			if (array_key_exists('rpcport', $options))
 			{
-				Loader::$config->server->port = $options['rpcport'];
+				$serverConfig->port = $options['rpcport'];
 			}
 			if (array_key_exists('address', $options))
 			{
-				Loader::$config->server->host = $options['address'];
+				$serverConfig->host = $options['address'];
 			}
 			if (array_key_exists('password', $options))
 			{
-				Loader::$config->server->password = $options['password'];
+				$serverConfig->password = $options['password'];
 			}
 		}
 	}

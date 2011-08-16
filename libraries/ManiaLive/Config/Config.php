@@ -11,101 +11,31 @@
 
 namespace ManiaLive\Config;
 
-class Config extends Configurable
+class Config extends \ManiaLib\Utils\Singleton
 {
-
-	/**
-	 * @var \ManiaLive\DedicatedApi\Config
-	 */
-	public $server;
-	
-	/**
-	 *
-	 * @var \ManiaLive\Database\Config
-	 */
-	public $database;
-	/**
-	 * @var \ManiaLive\Threading\Config
-	 */
-	public $threading;
-	/**
-	 * @var \ManiaHome\Config
-	 */
-	public $maniahome;
-	/**
-	 * @var \ManiaLive\PluginHandler\Config
-	 */
-	public $plugins;
-	/**
-	 * @var \ManiaLive\Features\Admin\Config
-	 */
-	public $admins;
-	/**
-	 * @var \ManiaLive\Features\ChatCommand\Config
-	 */
-	public $chatcommands;
 	// depends on os
 	public $phpPath;
 	// base path for logging
 	public $logsPath;
-	public $logsPrefix;
+	public $logsPrefix = '';
 	// enable runtime logging?
-	public $runtimeLog;
+	public $runtimeLog = false;
 	// log all errors from all instances?
-	public $globalErrorLog;
-	public $maxErrorCount;
-	public $dedicatedPath;
+	public $globalErrorLog = false;
+	public $maxErrorCount = false;
+	public $dedicatedPath = APP_ROOT;
 	//Set to true to disable the updater
-	public $lanMode;
+	public $lanMode = false;
 
-	function validate()
+	function __construct()
 	{
-		$conf = array();
-		if(file_exists(APP_ROOT.'run.ini'))
-		{
-			$conf = parse_ini_file(APP_ROOT.'run.ini');
-			if($conf === false)
-			{
-				$conf = array();
-			}
-		}
-
-		if(!isset($conf['phpPath']))
-		{
-			$conf['phpPath'] = '';
-		}
-
-		// set this depending on os.
 		if(APP_OS == 'WIN')
-		{
-			if(!$conf['phpPath'])
-				$conf['phpPath'] = 'php.exe';
-			$this->setDefault('phpPath', $conf['phpPath']);
-		}
+			$this->phpPath = 'php.exe';
 		else
-		{
-			if(!$conf['phpPath'])
-				$conf['phpPath'] = '`which php`';
-			$this->setDefault('phpPath', $conf['phpPath']);
-		}
-
-		$this->setDefault('logsPath', APP_ROOT.'logs');
-
-		$this->setDefault('admins', array());
-
-		$this->setDefault('runtimeLog', false);
-
-		$this->setDefault('globalErrorLog', false);
-
-		$this->setDefault('maxErrorCount', false);
-
-		$this->setDefault('logsPrefix', '');
-
-		$this->setDefault('dedicatedPath', APP_ROOT);
-
-		$this->setDefault('lanMode', false);
+			$this->phpPath = '`which php`';
+		
+		$this->logsPath = APP_ROOT.'logs';
 	}
-
 }
 
 ?>

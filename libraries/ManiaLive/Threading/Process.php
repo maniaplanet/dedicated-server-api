@@ -89,7 +89,12 @@ class Process
 		$this->incomingJob = null;
 		
 		// get configuration ...
-		Loader::$config = Tools::getData($this->db, 'config');
+		\ManiaLive\Config\Config::forceInstance(Tools::getData($this->db, 'config'));
+		\ManiaLive\Database\Config::forceInstance(Tools::getData($this->db, 'database'));
+		\ManiaHome\Config::forceInstance(Tools::getData($this->db, 'maniahome'));
+		\ManiaLive\Application\Config::forceInstance(Tools::getData($this->db, 'manialive'));
+		\ManiaLive\DedicatedApi\Config::forceInstance(Tools::getData($this->db, 'server'));
+		\ManiaLive\Threading\Config::forceInstance(Tools::getData($this->db, 'threading'));
 		
 		// thread state is ready ...
 		$this->setReady();

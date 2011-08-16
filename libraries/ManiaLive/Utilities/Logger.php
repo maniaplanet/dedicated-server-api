@@ -40,9 +40,10 @@ class Logger
 	function __construct($name, $subfolder = '')
 	{
 		// if path does not exist ...
-		if(!is_dir(Loader::$config->logsPath))
+		$config = \ManiaLive\Config\Config::getInstance();
+		if(!is_dir($config->logsPath))
 		{
-			mkdir(Loader::$config->logsPath, "0777", true);
+			mkdir($config->logsPath, "0777", true);
 		}
 			
 		// build path ...
@@ -52,8 +53,8 @@ class Logger
 		}
 		
 		// append filename to path ...
-		$this->path = Loader::$config->logsPath . '/';
-		$this->path .= Loader::$config->logsPrefix;
+		$this->path = $config->logsPath . '/';
+		$this->path .= $config->logsPrefix;
 		$this->path .= $subfolder;
 		$this->path .= 'log_' . $name . '.txt';
 		

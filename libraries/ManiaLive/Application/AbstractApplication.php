@@ -16,11 +16,9 @@ use ManiaLive\Gui\Windowing\WindowHandler;
 use ManiaLive\Threading\Tools;
 use ManiaLive\Threading\ThreadPool;
 use ManiaLive\Utilities\Logger;
-use ManiaLive\Config\Config;
 use ManiaLive\Config\Loader;
 use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLive\Data\Storage;
-use ManiaLive\Utilities\Console;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Gui\Handler\GuiHandler;
@@ -49,40 +47,41 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		
 		try 
 		{
-			
 			$configFile = CommandLineInterpreter::preConfigLoad();
 			
 			// load configuration file
 			$loader = Loader::getInstance();
-			$loader->setConfigFilename(APP_ROOT . 'config/'.$configFile);
-			$loader->load();
+			$loader->setConfigFilename(APP_ROOT.'config'.DIRECTORY_SEPARATOR.$configFile);
+			$loader->run();
 			
 			// load configureation from the command line ...
 			CommandLineInterpreter::postConfigLoad();
 		
 			// add logfile prefix ...
-			if (Loader::$config->logsPrefix != null)
+			$manialiveConfig = \ManiaLive\Config\Config::getInstance();
+			$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
+			if ($manialiveConfig->logsPrefix != null)
 			{
-				$ip = str_replace('.', '-', Loader::$config->server->host);
+				$ip = str_replace('.', '-', $serverConfig->host);
 				
-				Loader::$config->logsPrefix = str_replace('%ip%',
+				$manialiveConfig->logsPrefix = str_replace('%ip%',
 					$ip,
-					Loader::$config->logsPrefix);
+					$manialiveConfig->logsPrefix);
 					
-				Loader::$config->logsPrefix = str_replace('%port%',
-					Loader::$config->server->port,
-					Loader::$config->logsPrefix);
+				$manialiveConfig->logsPrefix = str_replace('%port%',
+					$serverConfig->port,
+					$manialiveConfig->logsPrefix);
 			}
 				
 			// disable logging?
-			if (!Loader::$config->runtimeLog)
+			if (!$manialiveConfig->runtimeLog)
 				Logger::getLog('Runtime')->disableLog();
 			
 			// configure the dedicated server connection
-			Connection::$hostname = Loader::$config->server->host;
-			Connection::$port = Loader::$config->server->port;
-			Connection::$username = 'SuperAdmin';
-			Connection::$password = Loader::$config->server->password;
+			Connection::$hostname = $serverConfig->host;
+			Connection::$port = $serverConfig->port;
+			Connection::$username = $serverConfig->user;
+			Connection::$password = $serverConfig->password;
 		}
 		catch (\Exception $e)
 		{
@@ -120,7 +119,12 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		// send config to threads
 		if ($pool->getDatabase() != null)
 		{
-			Tools::setData($pool->getDatabase(), 'config', Loader::$config);
+			Tools::setData($pool->getDatabase(), 'config', \ManiaLive\Config\Config::getInstance());
+			Tools::setData($pool->getDatabase(), 'database', \ManiaLive\Database\Config::getInstance());
+			Tools::setData($pool->getDatabase(), 'maniahome', \ManiaHome\Config::getInstance());
+			Tools::setData($pool->getDatabase(), 'manialive', \ManiaLive\Application\Config::getInstance());
+			Tools::setData($pool->getDatabase(), 'server', \ManiaLive\DedicatedApi\Config::getInstance());
+			Tools::setData($pool->getDatabase(), 'threading', \ManiaLive\Threading\Config::getInstance());
 		}
 		
 		// initialize windowing system

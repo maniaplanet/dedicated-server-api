@@ -17,12 +17,12 @@ use ManiaLivePlugins\Standard\TestPlugin;
 
 class Menubar extends \ManiaLive\PluginHandler\Plugin
 {
-	static $menu;
+	protected $menu;
 	protected $loaded = false;
 	
 	public function onInit()
 	{
-		self::$menu = array();
+		$this->menu = array();
 		$this->setVersion(1.1);
 		$this->setPublicMethod('addButton');
 		$this->setPublicMethod('initMenu');
@@ -74,7 +74,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 		$menu = array();
 		
 		// build first menu level
-		foreach (self::$menu as $plugin_id => $section)
+		foreach ($this->menu as $plugin_id => $section)
 		{
 			$entry = new Item($section['name']);
 			$entry->setIcon($section['icon']);
@@ -127,7 +127,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 			'buttons' => array()
 		);
 		
-		self::$menu[$plugin_id] = $entry;
+		$this->menu[$plugin_id] = $entry;
 		
 		if ($this->loaded)
 		{
@@ -138,7 +138,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 	// adds button for the plugin.
 	function addButton($name, $action, $admin = false, $plugin_id = null)
 	{
-		if (!isset(self::$menu[$plugin_id]))
+		if (!isset($this->menu[$plugin_id]))
 			$this->initMenu($plugin_id, Icons128x128_1::DefaultIcon);
 		
 		$button = array(
@@ -147,7 +147,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 			'admin' => $admin
 		);
 		
-		self::$menu[$plugin_id]['buttons'][] = $button;
+		$this->menu[$plugin_id]['buttons'][] = $button;
 		
 		if ($this->loaded)
 		{
@@ -164,9 +164,9 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 		}
 		
 		// remove button from bar
-		if (isset(self::$menu[$pluginId]))
+		if (isset($this->menu[$pluginId]))
 		{
-			unset(self::$menu[$pluginId]);
+			unset($this->menu[$pluginId]);
 		}
 		
 		// and redraw

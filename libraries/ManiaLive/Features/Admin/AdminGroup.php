@@ -11,8 +11,6 @@
 
 namespace ManiaLive\Features\Admin;
 
-use ManiaLive\Config\Loader;
-
 abstract class AdminGroup
 {
 	/**
@@ -23,7 +21,7 @@ abstract class AdminGroup
 	public static function contains($login)
 	{
 		$login = explode('/', $login, 1);
-		return (array_search($login[0], Loader::$config->admins->logins) !== false);
+		return (array_search($login[0], \ManiaLive\Application\Config::getInstance()->admins) !== false);
 	}
 
 	/**
@@ -32,7 +30,7 @@ abstract class AdminGroup
 	 */
 	public static function get()
 	{
-		return  Loader::$config->admins->logins;
+		return \ManiaLive\Application\Config::getInstance()->admins;
 	}
 }
 

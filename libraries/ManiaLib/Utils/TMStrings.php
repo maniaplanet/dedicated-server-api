@@ -140,7 +140,7 @@ abstract class TMStrings
 			}
 		}
 		
-		if($rank % 100 > 20)
+		if(intval(($rank % 100) / 10) != 1)
 		{
 			if($rank % 10 == 1)
 				$suffix = 'st';

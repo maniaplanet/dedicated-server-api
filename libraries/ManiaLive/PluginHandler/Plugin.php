@@ -107,10 +107,6 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * @var \ManiaLive\Database\Connection
 	 */
 	protected $db;
-	/**
-	 * @var \ManiaLive\PluginHandler\RepositoryPlugin
-	 */
-	public $repositoryEntry;
 
 	final function __construct($plugin_id)
 	{
@@ -379,12 +375,13 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	// Helpers
 	final function enableDatabase()
 	{
-		$config = Loader::$config->database;
-		$this->db = \ManiaLive\Database\Connection::getConnection
-				(
-				$config->host, $config->username,
+		$config = \ManiaLive\Database\Config::getInstance();
+		$this->db = \ManiaLive\Database\Connection::getConnection(
+				$config->host,
+				$config->username,
 				$config->password,
-				$config->database, $config->type,
+				$config->database,
+				$config->type,
 				$config->port
 		);
 	}

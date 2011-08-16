@@ -2,8 +2,6 @@
 
 namespace ManiaLivePlugins\Standard\Dedimania\Runnables;
 
-use ManiaHome\ManiaHomeClient;
-
 class NotificationCall extends \ManiaLive\Threading\Runnable
 {
 	public $message;
@@ -21,7 +19,7 @@ class NotificationCall extends \ManiaLive\Threading\Runnable
 	
 	function run()
 	{
-		ManiaHomeClient::sendNotificationToPlayer($this->message, $this->login, $this->link, $this->type);
+		\ManiaHome\Client::sendNotificationToPlayer($this->message, $this->login, $this->link, $this->type);
 	}
 }
 

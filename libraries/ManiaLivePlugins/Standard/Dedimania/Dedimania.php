@@ -12,8 +12,6 @@ use ManiaLive\PluginHandler\Dependency;
 use ManiaLivePlugins\Standard\Dedimania\Gui\Windows\CheckpointTime;
 use ManiaLivePlugins\Standard\Dedimania\Runnables\NotificationCall;
 use ManiaLive\Utilities\Time;
-use ManiaHome\ManiaHomeClient;
-use ManiaHome;
 use ManiaLivePlugins\Standard\Dedimania\Gui\Windows\Leaderboard;
 use ManiaLive\Gui\Windowing\Windows\Info;
 use ManiaLib\Utils\TMString as String;
@@ -963,9 +961,9 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 			$notification .= ' on ';
 			$notification .= String::stripWideFonts($this->storage->currentChallenge->name);
 			
-			// send notifications on maniahome ...
-			$runnable = new NotificationCall($notification, $record->login, ManiaHomeClient::REPLAY, 'tmtp://#join=' . $this->storage->serverLogin);
-			ThreadPool::getInstance()->addCommand(new RunCommand($runnable));
+			// FIXME send notifications on maniahome ...
+			//$runnable = new NotificationCall($notification, $record->login, \ManiaHome\Client::REPLAY, 'tmtp://#join=' . $this->storage->serverLogin);
+			//ThreadPool::getInstance()->addCommand(new RunCommand($runnable));
 		}
 	}
 	
@@ -1060,7 +1058,7 @@ class Dedimania extends \ManiaLive\PluginHandler\Plugin implements
 			'Private' => isset($this->server->password),
 			'SrvIP' => $sysinfo->publishedIp,
 			'SrvPort' => $sysinfo->port,
-			'XmlrpcPort' => Loader::$config->server->port,
+			'XmlrpcPort' => \ManiaLive\DedicatedApi\Config::getInstance()->port, //FIXME ?
 			'NumPlayers' => count($this->storage->players),
 			'MaxPlayers' => $this->storage->server->currentMaxPlayers,
 			'NumSpecs' => count($this->storage->spectators),

@@ -6,8 +6,6 @@ use ManiaLive\Utilities\Logger;
 
 class ChatLogger extends \ManiaLive\PluginHandler\Plugin
 {
-	static public $logFilename = 'ChatLog';
-	 
 	function onLoad()
 	{
 		$this->enableDedicatedEvents();
@@ -19,7 +17,7 @@ class ChatLogger extends \ManiaLive\PluginHandler\Plugin
 		
 		if($player)
 		{
-			$log = Logger::getLog(self::$logFilename);
+			$log = Logger::getLog(Config::getInstance()->logFilename);
 			$log->write('['.date('M d H:i:s').']['.$player->login.':'.$player->nickName.'] '.$text.APP_NL);
 		}
 	}
