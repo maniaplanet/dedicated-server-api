@@ -39,7 +39,7 @@ namespace ManiaLib\Rest;
  */
 class Client
 {
-	protected $APIURL = 'https://api.maniastudio.com';
+	protected $APIURL = 'https://ws.maniaplanet.com';
 	protected $username;
 	protected $password;
 	protected $contentType;

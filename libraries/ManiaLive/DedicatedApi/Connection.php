@@ -248,7 +248,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * and who is voting. Special timeout values: a timeout of '0' means default, '1' means
 	 * indefinite; a ratio of '-1' means default; Voters values: '0' means only active players,
 	 * '1' means any player, '2' is for everybody, pure spectators included.
-	 * @param mixed $player Player or string
+	 * @param Player|string $player Player or string
 	 * @param double $ratio -1 means default, else ration should be between 0 and 1
 	 * @param int $timeout time to vote in millisecondes, '0' means default
 	 * @param int $voters Voters values: '0' means only active players, '1' means any player, '2' is for everybody, pure spectators included
@@ -285,7 +285,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * and who is voting. Special timeout values: a timeout of '0' means default, '1' means
 	 * indefinite; a ratio of '-1' means default; Voters values: '0' means only active players,
 	 * '1' means any player, '2' is for everybody, pure spectators included.
-	 * @param mixed $player
+	 * @param Player|string $player
 	 * @param double $ratio -1 means default, else ration should be between 0 and 1
 	 * @param int $timeout time to vote in millisecondes, '0' means default
 	 * @param int $voters Voters values: '0' means only active players, '1' means any player, '2' is for everybody, pure spectators included
@@ -515,7 +515,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * The parameter is an array of structures {Lang='??', Text='...'}.
 	 * If no matching language is found, the last text in the array is used.
 	 * @param array $messages
-	 * @param Player|array[Player] $receiver Player(s) who will receive the message, put null to send the message to everyone
+	 * @param Player|string|array[Player|string] $receiver Player(s) who will receive the message, put null to send the message to everyone
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -542,7 +542,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Send a text message without the server login to everyone if players is null.
 	 * Players can be a Player object or an array of Player
 	 * @param string $message
-	 * @param Player|array[Player] $receiver Player(s) who will receive the message, put null to send the message to everyone
+	 * @param Player|string|array[Player|string] $receiver Player(s) who will receive the message, put null to send the message to everyone
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -574,7 +574,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * The parameter is an array of structures {Lang='??', Text='...'}.
 	 * If no matching language is found, the last text in the array is used.
 	 * @param array $messages
-	 * @param Player|array[Player] $receiver Player(s) who will receive the message, put null to send the message to everyone
+	 * @param Player|string|array[Player|string] $receiver Player(s) who will receive the message, put null to send the message to everyone
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -663,8 +663,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * on behalf of SenderLogin. DestLogin can be a single login or a list of comma-separated logins.
 	 * Only available if manual routing is enabled.
 	 * @param string $message
-	 * @param string $sender
-	 * @param string $receiver
+	 * @param Player|string $sender
+	 * @param Player|string $receiver
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -830,7 +830,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Ban the player with an optional message.
-	 * @param Player $player
+	 * @param Player|string $player
 	 * @param string $message
 	 * @param bool $multicall
 	 * @return bool
@@ -1234,7 +1234,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 		$data = new Xmlrpc\Base64($inputData);
 
-		return $this->execute('TunnelSendDataToId', array($login, $data), $multicall);
+		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
 	}
 
 	/**
