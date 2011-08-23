@@ -11,20 +11,12 @@
 
 namespace ManiaLive\Application;
 
-use ManiaLive\Config\Loader;
-
-use ManiaLive\DedicatedApi\ConnectionException;
-
-use ManiaLive\Utilities\Console;
-
-use ManiaLive\DedicatedApi\Connection;
-
 abstract class CommandLineInterpreter
 {
 	static function preConfigLoad()
 	{
 		$options = getopt(null,array(
-			'manialive_cfg::',//Display Help
+			'manialive_cfg::',//Set a configuration file to load instead of config.ini
 		));
 		
 		if (array_key_exists('manialive_cfg', $options))
@@ -44,14 +36,14 @@ abstract class CommandLineInterpreter
 			'rpcport::',//Set the XML RPC Port to use
 			'address::',//Set the adresse of the server
 			'password::',//Set the User Password
-			'cfg::',//Set the configuration file to use to define XML RPC Port, SuperAdmin, Admin and User passwords
+			'dedicated_cfg::',//Set the configuration file to use to define XML RPC Port, SuperAdmin, Admin and User passwords
 			'user::'//Set the user to use during the communication with the server
 		));
 
-		$help = 'ManiaMod - TrackMania Dedicated Manager v0.3 (2010 Aug 16)'."\n"
+		$help = 'ManiaLive - TrackMania Dedicated Server Manager v2.0 (2011 Aug 22)'."\n"
 		.'Authors : '."\n"
-		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell'."\n"
-		.'Usage: php index.php [args]'."\n"
+		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'."\n"
+		.'Usage: php bootstrapper.php [args]'."\n"
 		.'Arguments:'."\n"
 		.'  --help               - displays the present help'."\n"
 		.'  --rpcport=xxx        - xxx represents the xmlrpc to use for the connection to the server'."\n"
@@ -82,7 +74,7 @@ abstract class CommandLineInterpreter
 
 		if (array_key_exists('dedicated_cfg', $options))
 		{
-			$filename = __DIR__.'\\GameData\\Config\\'.$options['cfg'];
+			$filename = __DIR__.'\\UserData\\Config\\'.$options['cfg'];
 			if (file_exists($filename))
 			{
 				//Load the config file

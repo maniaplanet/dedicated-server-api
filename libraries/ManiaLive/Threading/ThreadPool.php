@@ -83,18 +83,18 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 			$this->database = Tools::getDb();
 			
 			// setup database ...
-			$this->logger->write("Setting up Database ...".APP_NL);
+			$this->logger->write("Setting up Database ...");
 			Tools::setupDb();
 			
 			// clean threads and states ...
-			$this->logger->write("Removing old threads and commands ...".APP_NL);
+			$this->logger->write("Removing old threads and commands ...");
 			$this->clean();
 		}
 		else
 		{
 			// just print some information ...
 			Console::println('[Attention] Threading disabled - this may cause performance issues!');
-			$this->logger->write("Application started with threading disabled!".APP_NL);
+			$this->logger->write("Application started with threading disabled!");
 			
 			// create emulated thread number 0 ...
 			$this->threads[0] = new Thread(0);
@@ -153,7 +153,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 			$thread = Thread::Create();
 			$this->threads[$thread->getId()] = $thread;
 			
-			$this->logger->write("Thread with ID " . $thread->getId() . " has been started!".APP_NL);
+			$this->logger->write("Thread with ID " . $thread->getId() . " has been started!");
 			
 			// increase thread count
 			$this->threadsCount++;
@@ -180,7 +180,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 			// check whether thread exists ...
 			if (array_key_exists($id, $this->threads))
 			{
-				$this->logger->write("Closing Thread with ID " . $id.APP_NL);
+				$this->logger->write("Closing Thread with ID " . $id);
 				
 				// exit and remove from list ...
 				$quit = new QuitCommand();
@@ -214,13 +214,13 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 	{
 		// on startup remove every thread, job and data from the database!
 		$this->database->execute("DELETE FROM threads");
-		$this->logger->write("DB threads are cleaned, rows affected: " . $this->database->affectedRows().APP_NL);
+		$this->logger->write("DB threads are cleaned, rows affected: " . $this->database->affectedRows());
 		
 		$this->database->execute("DELETE FROM cmd");
-		$this->logger->write("DB cmds are cleaned, rows affected: " . $this->database->affectedRows().APP_NL);
+		$this->logger->write("DB cmds are cleaned, rows affected: " . $this->database->affectedRows());
 		
 		$this->database->execute("DELETE FROM data");
-		$this->logger->write("DB data is cleaned, rows affected: " . $this->database->affectedRows().APP_NL);
+		$this->logger->write("DB data is cleaned, rows affected: " . $this->database->affectedRows());
 	}
 	
 	/**
@@ -458,7 +458,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 	{
 		try
 		{
-			$this->logger->write('ThreadPool is being deleted, stopping all threads!'.APP_NL);
+			$this->logger->write('ThreadPool is being deleted, stopping all threads!');
 			
 			// tell every thread to shut down ...
 			foreach ($this->threads as $id => $thread)

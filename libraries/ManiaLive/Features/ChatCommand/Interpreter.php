@@ -242,7 +242,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		{
 			if($commandObject->log)
 			{
-				Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text.APP_NL);
+				Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text);
 			}
 
 			if($commandObject->addLoginAsFirstParameter)

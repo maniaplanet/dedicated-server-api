@@ -149,7 +149,7 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		$contents = gzdeflate($message, 9);
 		
 		// traffic log
-		self::$log->write('REQUEST:' . APP_NL . $message . APP_NL . APP_NL);
+		self::$log->write('REQUEST:' . APP_NL . $message . APP_NL);
 		
 		// send header ...
 		if (fputs($connection, 'POST ' . $file . ' HTTP/1.1'.CRLF) === false)
@@ -199,7 +199,7 @@ class DedimaniaCall extends \ManiaLive\Threading\Runnable
 		$body = gzinflate($data);
 		
 		// log xmlrpc traffic
-		self::$log->write('RESPONSE:' . APP_NL . $body . APP_NL . APP_NL);
+		self::$log->write('RESPONSE:' . APP_NL . $body . APP_NL);
 
 		// return body ...
 		return $body;

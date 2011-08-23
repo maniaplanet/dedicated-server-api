@@ -182,8 +182,7 @@ class Thread
 			// start in background on Linux...
 			$command .= '&';
 		
-		$log->write('Trying to start process using command:'.APP_NL);
-		$log->write($command.APP_NL);
+		$log->write('Trying to start process using command:'.APP_NL.$command);
 		
 		// try to start process ...
 		$phandle = popen($command, 'r');

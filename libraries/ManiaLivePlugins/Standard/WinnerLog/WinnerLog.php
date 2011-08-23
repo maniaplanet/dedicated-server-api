@@ -25,12 +25,12 @@ class WinnerLog extends \ManiaLive\PluginHandler\Plugin
 		$score = 0;
 		$log = Logger::getLog('Winners');
 		
-		$log->write("Rankings for '{$this->storage->currentChallenge->name}' ({$this->storage->currentChallenge->uId}):" . APP_NL);
+		$log->write("Rankings for '{$this->storage->currentChallenge->name}' ({$this->storage->currentChallenge->uId}):");
 		
 		if ($this->storage->gameInfos->gameMode == 4)
-			$log->write("Bronze: {$this->storage->currentChallenge->bronzeTime}, Silver: {$this->storage->currentChallenge->silverTime}, Gold: {$this->storage->currentChallenge->goldTime}, Author: {$this->storage->currentChallenge->authorTime}" . APP_NL);
+			$log->write("Bronze: {$this->storage->currentChallenge->bronzeTime}, Silver: {$this->storage->currentChallenge->silverTime}, Gold: {$this->storage->currentChallenge->goldTime}, Author: {$this->storage->currentChallenge->authorTime}");
 		else
-			$log->write("Bronze: ".Time::fromTM($this->storage->currentChallenge->bronzeTime).", Silver: ".Time::fromTM($this->storage->currentChallenge->silverTime).", Gold: ".Time::fromTM($this->storage->currentChallenge->goldTime).", Author: ".Time::fromTM($this->storage->currentChallenge->authorTime) . APP_NL);
+			$log->write("Bronze: ".Time::fromTM($this->storage->currentChallenge->bronzeTime).", Silver: ".Time::fromTM($this->storage->currentChallenge->silverTime).", Gold: ".Time::fromTM($this->storage->currentChallenge->goldTime).", Author: ".Time::fromTM($this->storage->currentChallenge->authorTime));
 		
 		while (($rank = array_shift($rankings)) && $i++ < Config::getInstance()->maxRankingLogged)
 		{			
@@ -45,10 +45,8 @@ class WinnerLog extends \ManiaLive\PluginHandler\Plugin
 			else
 				$score = Time::fromTM($rank['BestTime']);
 			
-			$log->write("{$rank['Rank']}.\t{$rank['Login']}\t{$rank['NickName']}\t$score\t$ladderRank" . APP_NL);
+			$log->write("{$rank['Rank']}.\t{$rank['Login']}\t{$rank['NickName']}\t$score\t$ladderRank");
 		}
-		
-		$log->write(APP_NL);
 	}
 }
 ?>

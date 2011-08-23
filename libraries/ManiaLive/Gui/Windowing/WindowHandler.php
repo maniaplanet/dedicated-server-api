@@ -343,7 +343,7 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	   }
 	   else
 	   {
-		  Logger::getLog('Info')->write('Accessing window->below when it is not an array!'.APP_NL);
+		  Logger::getLog('Info')->write('Accessing window->below when it is not an array!');
 	   }
     }
 

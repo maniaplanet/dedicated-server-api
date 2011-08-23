@@ -13,8 +13,6 @@ namespace ManiaLive\Event;
 
 use ManiaLive\Application\ErrorHandling;
 
-use ManiaLive\Utilities\Console;
-
 abstract class Dispatcher
 {
 	static protected $listeners = array();

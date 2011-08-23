@@ -19,14 +19,14 @@ abstract class Console
 {
 	public static function println($string)
 	{
-		Logger::getLog('Runtime')->write($string.APP_NL);
+		Logger::getLog('Runtime')->write($string);
 		echo $string.APP_NL;
 	}
 	
 	public static function print_rln($string)
 	{
 		$line = print_r($string, true);
-		Logger::getLog('Runtime')->write($line.APP_NL);
+		Logger::getLog('Runtime')->write($line);
 		echo $line.APP_NL;
 	}
 	
