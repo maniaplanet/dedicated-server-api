@@ -66,14 +66,14 @@ class Plugin extends \ManiaLive\Gui\Windowing\Control
 		if ($this->loaded)
 		{
 			$this->labelLoaded->setText('$0f0Loaded');
-			$this->buttonLoad->setSubStyle(Icons64x64_1::MediaStop);
+			$this->buttonLoad->setSubStyle(Icons64x64_1::ClipPause);
 			$this->buttonLoad->setAction($this->callback('onUnload'));
 			$this->buttonLoad->setVisibility(true);
 		}
 		else
 		{
 			$this->labelLoaded->setText('$f00Unloaded');
-			$this->buttonLoad->setSubStyle(Icons64x64_1::MediaPlay);
+			$this->buttonLoad->setSubStyle(Icons64x64_1::ClipPlay);
 			$this->buttonLoad->setAction($this->callback('onLoad'));
 			$this->buttonLoad->setVisibility(true);
 		}

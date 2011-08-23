@@ -45,6 +45,7 @@ class Item extends \ManiaLive\Gui\Windowing\Control
 		$this->label->setText($this->name);
 		$this->label->setHalign('right');
 		$this->label->setValign('center');
+		$this->label->setStyle(Label::TextCardSmallScores2Rank);
 		$this->addComponent($this->label);
 	}
 	
@@ -77,7 +78,7 @@ class Item extends \ManiaLive\Gui\Windowing\Control
 		}
 		else
 		{
-			$this->background->setSubStyle(Bgs1::NavButton);
+			$this->background->setSubStyle(Bgs1::BgListLine);
 			$this->icon->setSize(4, 4);
 			$this->icon->setPosition(0.3, $this->getSizeY() / 2);
 		}

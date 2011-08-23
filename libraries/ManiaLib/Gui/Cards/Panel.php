@@ -33,7 +33,7 @@ class Panel extends Quad
 	 */
 	public $titleBg;
 	
-	function __construct ($sx=100, $sy=80)
+	function __construct ($sx=187.5, $sy=200)
 	{	
 		$this->sizeX = $sx;
 		$this->sizeY = $sy;
@@ -41,22 +41,23 @@ class Panel extends Quad
 		$this->cardElementsHalign = 'center';
 		$this->cardElementsPosY = -1.5;
 		
-		$titleBgWidth = $sx - 4;
+		$titleBgWidth = $sx;
 		$titleWidth = $sx - 6;
 		
 		$this->setStyle(Quad::Bgs1);
 		$this->setSubStyle(Bgs1::BgWindow3);
 		
-		$this->titleBg = new Quad ($titleBgWidth, 6.5);
-		$this->titleBg->setHalign("center");
+		$this->titleBg = new Quad ($titleBgWidth, 16.25	);
+		$this->titleBg->setAlign("center", 'center');
 		$this->titleBg->setStyle(Quad::Bgs1);
-		$this->titleBg->setSubStyle(Bgs1::BgTitle3);
+		$this->titleBg->setSubStyle(Bgs1::BgTitle3_1);
+		$this->titleBg->setPosY(10);
 		
 		$this->addCardElement($this->titleBg);
 		
 		$this->title = new Label($titleWidth);
-		$this->title->setAlign('center', 'center');
-		$this->title->setPositionY(-3.25);
+		$this->title->setAlign('center', 'center2');
+		$this->title->setPositionY(10);
 		$this->title->setStyle(Label::TextTitle3);
 		
 		$this->addCardElement($this->title);
@@ -65,7 +66,7 @@ class Panel extends Quad
 	function setSizeX($x)
 	{
 		parent::setSizeX($x);
-		$this->titleBg->setSizeX($x-2);
+		$this->titleBg->setSizeX($x);
 		$this->title->setSizeX($x-4);
 	}
 }

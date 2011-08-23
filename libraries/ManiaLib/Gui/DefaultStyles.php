@@ -31,9 +31,9 @@ abstract class DefaultStyles
 	 * Default styles for NavigationButton card
 	 */
 	const NavigationButton_Style = \ManiaLib\Gui\Elements\Quad::Bgs1;
-	const NavigationButton_Substyle = \ManiaLib\Gui\Elements\Bgs1::NavButton;
+	const NavigationButton_Substyle = \ManiaLib\Gui\Elements\Bgs1::BgEmpty;
 	const NavigationButton_Text_Style = \ManiaLib\Gui\Elements\Label::TextButtonNav;
-	const NavigationButton_Selected_Substyle = \ManiaLib\Gui\Elements\Bgs1::NavButtonBlink;
+	const NavigationButton_Selected_Substyle = \ManiaLib\Gui\Elements\Bgs1::BgEmpty;
 	/**#@-*/
 	
 	/**#@+
@@ -41,16 +41,16 @@ abstract class DefaultStyles
 	 */
 	const Navigation_Style = \ManiaLib\Gui\Elements\Quad::Bgs1;
 	const Navigation_Substyle = \ManiaLib\Gui\Elements\Bgs1::BgWindow1;
-	const Navigation_Title_Style = \ManiaLib\Gui\Elements\Label::TextRankingsBig;
+	const Navigation_Title_Style = \ManiaLib\Gui\Elements\Label::TextTitle1;
 	const Navigation_Subtitle_Style = \ManiaLib\Gui\Elements\Label::TextTips;
 	const Navigation_TitleBg_Style = \ManiaLib\Gui\Elements\Quad::Bgs1;
-	const Navigation_TitleBg_Substyle = \ManiaLib\Gui\Elements\Bgs1::BgTitlePage;
+	const Navigation_TitleBg_Substyle = \ManiaLib\Gui\Elements\Bgs1::BgTitle3_3;
 	/**#@-*/
 	
 	/**#@+
 	 * Default styles for the page navigator 
 	 */
-	const PageNavigator_ArrowNone_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ClipPause;
+	const PageNavigator_ArrowNone_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::StarGold;
 	const PageNavigator_ArrowNext_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ArrowNext;
 	const PageNavigator_ArrowPrev_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ArrowPrev;
 	const PageNavigator_ArrowLast_Substyle = \ManiaLib\Gui\Elements\Icons64x64_1::ArrowLast;

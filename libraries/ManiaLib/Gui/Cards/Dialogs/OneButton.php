@@ -50,8 +50,8 @@ class OneButton extends \ManiaLib\Gui\Cards\Panel
 	{
 		parent::preFilter();
 		$this->text->setSize($this->sizeX - 6, $this->sizeY - 11);
-		$this->text->setPositionY(2 - ($this->sizeY/2));
-		$this->button->setPositionY(2 - $this->sizeY);
+		$this->text->setPositionY(10 - ($this->sizeY/2));
+		$this->button->setPositionY(10 - $this->sizeY);
 	}
 	
 }

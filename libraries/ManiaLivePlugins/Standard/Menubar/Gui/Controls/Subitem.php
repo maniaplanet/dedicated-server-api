@@ -26,10 +26,11 @@ class Subitem extends \ManiaLive\Gui\Windowing\Control
 		
 		$this->background = new Bgs1();
 		$this->background->setSize($this->getSizeX(), $this->getSizeY());
-		$this->background->setSubStyle(Bgs1::NavButton);
+		$this->background->setSubStyle(Bgs1::BgListLine);
 		$this->addComponent($this->background);
 		
 		$this->label = new Label();
+		$this->label->setStyle(Label::TextCardSmallScores2Rank);
 		$this->addComponent($this->label);
 	}
 	

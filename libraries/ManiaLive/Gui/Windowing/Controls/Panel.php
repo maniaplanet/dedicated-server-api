@@ -30,7 +30,6 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 	public $titleBg;
 	public $main;
 	public $header;
-	public $btn_bg;
 	public $btn_close;
 	
 	function initializeComponents()
@@ -43,32 +42,27 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		
 		// title background ...
 		$this->titleBg = new Quad();
-		$this->titleBg->setStyle(DefaultStyles::Panel_TitleBg_Style);
+		$this->titleBg->setStyle(Quad::Bgs1InRace);
 		$this->titleBg->setSubStyle(DefaultStyles::Panel_TitleBg_Substyle);
-		$this->titleBg->setSizeY(4);
+		$this->titleBg->setSizeY(8);
 		$this->titleBg->setHalign('center');
-		
-		// ...
-		$this->btn_bg = new BgsPlayerCard();
-		$this->btn_bg->setSubStyle(BgsPlayerCard::BgRacePlayerLine);
 		
 		// title label ...
 		$this->title = new Label();
 		$this->title->setStyle(Label::TextCardScores2);
 		$this->title->setTextColor('fff');
 		$this->title->setTextSize(2.5);
-		$this->title->setPositionY(1);
-		$this->title->setHalign('center');
+		$this->title->setPositionY(4);
+		$this->title->setAlign('center', 'center2');
 		
 		// move title label and background together ...
 		$this->header = new Frame();
 		$this->header->addComponent($this->titleBg);
-		$this->header->addComponent($this->btn_bg);
 		$this->header->addComponent($this->title);
 		$this->addComponent($this->header);
 		
 		// create close button ...
-		$this->btn_close = new Icons64x64_1(3);
+		$this->btn_close = new Icons64x64_1(4);
 		$this->btn_close->setSubStyle(Icons64x64_1::Close);
 		$this->addComponent($this->btn_close);
 		
@@ -77,20 +71,18 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 	
 	function onResize()
 	{
-		$this->btn_bg->setPosition(-$this->getSizeX() / 2 + 0.5, 0.3);
-		$this->btn_bg->setSize($this->getSizeX() - 1, 3.5);
-		
 		// set action for close button ...
-		$this->btn_close->setPosition(2, 1.6);
+		$this->btn_close->setPosition(0, 2);
 		
 		// set size of form ...
-		$this->main->setSize($this->sizeX, $this->sizeY);
+		$this->main->setSize($this->sizeX, $this->sizeY - 8);
+		$this->main->setPosY(8);
 		
 		// set width of title according to control size ...
-		$this->titleBg->setSizeX($this->getSizeX() - 2);
-		$this->title->setSizeX($this->getSizeX() - 4);
+		$this->titleBg->setSizeX($this->getSizeX() + 2);
+		$this->title->setSizeX($this->getSizeX() + 4);
 		
-		$this->header->setPosition($this->sizeX / 2, 1);
+		$this->header->setPosition($this->sizeX / 2, 0);
 	}
 	
 	function beforeDraw()

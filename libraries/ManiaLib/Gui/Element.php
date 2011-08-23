@@ -180,6 +180,8 @@ abstract class Element extends Component implements Drawable
 	{
 		// FIXME ManiaLib Reset style+substyle
 		$this->bgcolor = $bgcolor;
+		$this->setStyle(null);
+		$this->setSubStyle(null);
 	}
 
 	/**

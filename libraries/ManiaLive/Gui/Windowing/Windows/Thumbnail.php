@@ -51,7 +51,7 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 		$this->addComponent($this->bgHighlight);
 		
 		$this->border = new Bgs1InRace();
-		$this->border->setSubStyle(Bgs1InRace::NavButton);
+		$this->border->setSubStyle(Bgs1InRace::BgTitleShadow);
 		$this->addComponent($this->border);
 		
 		$this->windowContent = new Frame();
@@ -60,7 +60,7 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 		
 		$this->btnCloseBg = new BgsPlayerCard();
 		$this->btnCloseBg->setStyle(Bgs1InRace::Bgs1InRace);
-		$this->btnCloseBg->setSubStyle(Bgs1InRace::NavButton);
+		$this->btnCloseBg->setSubStyle(Bgs1InRace::BgTitleShadow);
 		$this->btnCloseBg->setAlign('center', 'center');
 		$this->btnCloseBg->setAction($this->callback('hide'));
 		$this->addComponent($this->btnCloseBg);

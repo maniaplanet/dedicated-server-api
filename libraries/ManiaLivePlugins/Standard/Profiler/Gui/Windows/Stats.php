@@ -77,8 +77,8 @@ class Stats extends \ManiaLive\Gui\Windowing\ManagedWindow
 	{
 		$this->tabview->getTab(0)->time_started = $this->time_started;
 		
-		$this->tabview->setPosition(1, 6);
-		$this->tabview->setSize($this->getSizeX() - 2, $this->getSizeY() - 7);
+		$this->tabview->setPosition(1, 10);
+		$this->tabview->setSize($this->getSizeX() - 2, $this->getSizeY() - 12);
 	}
 	
 	function onShow()

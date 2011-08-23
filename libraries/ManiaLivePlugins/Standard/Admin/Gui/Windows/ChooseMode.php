@@ -42,7 +42,7 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		$this->btn_container->applyLayout(new Line());
 		$this->addComponent($this->btn_container);
 		
-		$this->setSize(count($this->modes) * 10 + 2, 17);
+		$this->setSize(count($this->modes) * 10 + 2, 25);
 	}
 	
 	function onDraw()
@@ -51,7 +51,7 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		$this->btn_container->clearComponents();
 		foreach ($this->modes as $i => $mode)
 		{
-			$frame = new Frame();
+			$frame = new Frame(0, 5);
 			$frame->setSize(10, 6);
 			
 			$ui = new Bgs1InRace();
@@ -61,7 +61,7 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 			}
 			else
 			{
-				$ui->setSubStyle(Bgs1InRace::NavButton);
+				$ui->setSubStyle(Bgs1InRace::BgTitleGlow);
 			}
 			$ui->setAction($this->callback('onClickMode', $i));
 			$ui->setSize(10, 10);
@@ -104,7 +104,7 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		{
 			Connection::getInstance()->setGameMode($mode);
 			$dialog = Dialog::Create($login);
-			$dialog->setSize(40, 20);
+			$dialog->setSize(50, 22);
 			$dialog->setTitle('Game Mode Changed!');
 			$message = 'You have selected '.$this->modes[$mode][0].",\n";
 			$message .= "New game mode will be set on map change!\n";

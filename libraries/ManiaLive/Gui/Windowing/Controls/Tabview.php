@@ -26,23 +26,23 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 {
 	protected $tabs;
 	protected $background;
-	protected $tab_fan;
+	protected $tabFan;
 	protected $content;
-	protected $active_id;
-	protected $active_id_prev;
+	protected $activeId;
+	protected $activeIdPrev;
 	
 	function initializeComponents()
 	{
 		$this->tabs = array();
-		$this->active_id = 0;
-		$this->active_id_prev = null;
+		$this->activeId = 0;
+		$this->activeIdPrev = null;
 		
 		$this->background = new BgsPlayerCard();
 		$this->background->setSubStyle(BgsPlayerCard::BgCardSystem);
 		$this->addComponent($this->background);
 		
-		$this->tab_fan = new Frame(0, 0, new Line());
-		$this->addComponent($this->tab_fan);
+		$this->tabFan = new Frame(0, 0, new Line());
+		$this->addComponent($this->tabFan);
 		
 		$this->content = new Frame();
 		$this->content->setPosition(0.5, 3.5);
@@ -51,7 +51,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 	
 	function onResize()
 	{
-		$tab = $this->tabs[$this->active_id];
+		$tab = $this->tabs[$this->activeId];
 		$tab->setSize($this->sizeX - 1, $this->sizeY - 4);
 	}
 	
@@ -61,7 +61,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		$this->background->setPosition(0, 3);
 		$this->background->setSize($this->getSizeX(), $this->getSizeY() - 3);
 		
-		$this->tab_fan->clearComponents();
+		$this->tabFan->clearComponents();
 		
 		// build tab fan on the top
 		foreach ($this->tabs as $i => $tab)
@@ -71,7 +71,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 			$frame->setSize(14, 3);
 			{
 				$ui = new Bgs1(14, 3);
-				if ($i == $this->active_id)
+				if ($i == $this->activeId)
 				{
 					$ui->setSubStyle(Bgs1::NavButtonBlink);
 				}
@@ -89,31 +89,31 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 				$ui->setText($tab->getTitle());
 				$frame->addComponent($ui);
 			}
-			$this->tab_fan->addComponent($frame);
+			$this->tabFan->addComponent($frame);
 		}
 		
 		// change tab content if it has been switched
-		if ($this->active_id_prev !== $this->active_id)
+		if ($this->activeIdPrev !== $this->activeId)
 		{
 			// remove old tab
-			if (isset($this->tabs[$this->active_id_prev]))
+			if (isset($this->tabs[$this->activeIdPrev]))
 			{
-				$old_tab = $this->tabs[$this->active_id_prev];
+				$old_tab = $this->tabs[$this->activeIdPrev];
 				$this->content->clearComponents();
 				$old_tab->onDeactivate();
 			}
 			
 			// add selected tab as content
-			if (isset($this->tabs[$this->active_id]))
+			if (isset($this->tabs[$this->activeId]))
 			{
-				$new_tab = $this->tabs[$this->active_id];
+				$new_tab = $this->tabs[$this->activeId];
 				$new_tab->setSize($this->getSizeX()-1, $this->getSizeY() - 4);
 				$this->content->addComponent($new_tab);
 				$new_tab->onActivate();
 			}
 		}
 		
-		$this->active_id_prev = $this->active_id;
+		$this->activeIdPrev = $this->activeId;
 	}
 	
 	/**
@@ -123,7 +123,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 	 */
 	function clickOnTab($login, $id)
 	{
-		$this->active_id = $id;
+		$this->activeId = $id;
 		$this->redraw();
 	}
 	
@@ -155,7 +155,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 	 */
 	function getActiveTabId()
 	{
-		return $this->active_id;
+		return $this->activeId;
 	}
 	
 	/**

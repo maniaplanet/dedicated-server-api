@@ -181,15 +181,15 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 	 */
 	final function resize($oldX, $oldY)
 	{
-		$this->buttonMax->setPosition(5, 1.7);
+		$this->buttonMax->setPosition(3.5, 2.5);
 		
 		if ($this->maximizable)
 		{
-			$this->buttonMin->setPosition(8.5, 0.8);
+			$this->buttonMin->setPosition(7, 2.5);
 		}
 		else
 		{
-			$this->buttonMin->setPosition(5, 0.8);
+			$this->buttonMin->setPosition(3.5, 2.5);
 		}
 		
 		$this->panel->setSize($this->sizeX, $this->sizeY);

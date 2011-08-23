@@ -20,7 +20,7 @@ class Button extends \ManiaLib\Gui\Elements\Quad
 	 * TrackMania formatting string appended to the text when a button
 	 * is selected (default is just a light blue color)
 	 */
-	static public $selectedTextStyle = '$0cf';
+	static public $unselectedTextStyle = '$fff';
 	
 	/**
 	 * @var \ManiaLib\Gui\Elements\Label
@@ -32,7 +32,12 @@ class Button extends \ManiaLib\Gui\Elements\Quad
 	public $icon;
 	public $iconSizeMinimizer = 1.5;
 	public $textSizeMinimizer = 3;
-	public $textOffset = 9;
+	public $textOffset = 8;
+	/**
+	 *
+	 * @var \ManiaLib\Gui\Elements\Icons64x64_1
+	 */
+	protected $selectedIcon;
 	/**
 	 * @ignore
 	 */
@@ -52,9 +57,9 @@ class Button extends \ManiaLib\Gui\Elements\Quad
 		$this->text->setPosition($this->textOffset, 0.25, 1);
 		$this->text->setStyle(\ManiaLib\Gui\DefaultStyles::NavigationButton_Text_Style);
 		
-		$this->icon = new \ManiaLib\Gui\Elements\Icons128x128_1($this->sizeY-$this->iconSizeMinimizer);
+		$this->icon = new \ManiaLib\Gui\Elements\Icons128x128_1($this->sizeY);
 		$this->icon->setValign("center");
-		$this->icon->setPosition(1, 0, 1);
+		$this->icon->setPosition(55, 0, 1);
 		
 	}
 	
@@ -63,8 +68,11 @@ class Button extends \ManiaLib\Gui\Elements\Quad
 	 */
 	function setSelected() 
 	{
-		$this->setSubStyle(\ManiaLib\Gui\DefaultStyles::NavigationButton_Selected_Substyle);
 		$this->isSelected = true;	
+		$this->selectedIcon = new \ManiaLib\Gui\Elements\Icons64x64_1(11);
+		$this->selectedIcon->setSubStyle(\ManiaLib\Gui\Elements\Icons64x64_1::ShowRight);
+		$this->selectedIcon->setValign('center');
+		$this->selectedIcon->setPosX(71);
 	}
 	
 	/**
@@ -72,17 +80,16 @@ class Button extends \ManiaLib\Gui\Elements\Quad
 	 */
 	protected function postFilter ()
 	{		
-		if($this->isSelected)
-		{	
+		if(!$this->isSelected)
+		{
 			if($this->text->getText())
 			{
-				$this->text->setText(self::$selectedTextStyle.$this->text->getText());
+				$this->text->setText(self::$unselectedTextStyle.$this->text->getText());
 			}
 		}
 		
 		$this->text->setSizeX($this->sizeX - $this->text->getPosX() - $this->textSizeMinimizer);
 		$this->text->setSizeY(0);
-		$this->icon->setSize($this->sizeY-$this->iconSizeMinimizer, $this->sizeY-$this->iconSizeMinimizer);
 		
 		if($this->forceLinks)
 		{
@@ -95,6 +102,10 @@ class Button extends \ManiaLib\Gui\Elements\Quad
 		\ManiaLib\Gui\Manialink::beginFrame($newPos["x"], $newPos["y"], $this->posZ+1);
 			$this->text->save();
 			$this->icon->save();
+			if($this->isSelected)
+			{
+				$this->selectedIcon->save();
+			}
 		\ManiaLib\Gui\Manialink::endFrame();
 	}
 }

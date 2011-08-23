@@ -25,6 +25,7 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 {
 	public $labels;
 	
+	protected $bg;
 	protected $panel;
 	protected $text;
 	protected $answer;
@@ -50,8 +51,12 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 			self::YES => 'Yes'
 		); 
 		
+		$this->bg = new \ManiaLib\Gui\Elements\Quad(130, 98);
+		$this->bg->setBgColor('234C');
+		$this->addComponent($this->bg);
+			
 		$this->panel = new Panel();
-		$this->panel->setBackgroundStyle(Bgs1::BgWindow1);
+		$this->panel->setBackgroundStyle(Bgs1::BgWindow2);
 		$this->addComponent($this->panel);
 		
 		$this->text = new Label();
@@ -67,6 +72,9 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 	{
 		$this->panel->setSize($this->getSizeX(), $this->getSizeY());
 		
+		$this->bg->setAlign('center','center');
+		$this->bg->setPosition($this->getSizeX() / 2, $this->getSizeY() / 2 + 5);
+		
 		// create container for buttons ...
 		$this->container->setSizeX($this->getSizeX());
 		$this->container->setHalign('center');
@@ -74,7 +82,7 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 		$this->container->clearComponents();
 		
 		// position and resize text ...
-		$this->text->setPosition(2, 6);
+		$this->text->setPosition(2, 9);
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 		
 		// count buttons ...

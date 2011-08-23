@@ -25,6 +25,7 @@ class TwoButtons extends OneButton
 	function __construct($sizeX = 65, $sizeY = 25)
 	{
 		parent::__construct($sizeX, $sizeY);
+		$this->titleBg->setSubStyle(\ManiaLib\Gui\Elements\Bgs1::BgTitle3_1);
 		
 		$this->button->setPosition(-15, 0, 0);
 		
@@ -38,9 +39,9 @@ class TwoButtons extends OneButton
 	{
 		parent::preFilter();
 		$this->button->setHalign('right');
-		$this->button2->setPositionY(2 - $this->sizeY);
-		$this->button->setPositionX(-2);
-		$this->button2->setPositionX(2);
+		$this->button2->setPositionY(10 - $this->sizeY);
+		$this->button->setPositionX(-5);
+		$this->button2->setPositionX(5);
 	}
 }
 

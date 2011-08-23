@@ -50,14 +50,14 @@ class Data extends Bgs1
 	{
 		foreach($this->data as $data)
 		{
-			$ui = new Label($this->sizeX - $this->cardElementsPosX * 2, 3.25);
+			$ui = new Label($this->sizeX - $this->cardElementsPosX * 2, 5);
 			$ui->setText(TMStrings::formatLine(
 					Arrays::get($data, 0, ''),
 					Arrays::get($data, 1, '')
 			));
 			$this->addCardElement($ui);
 		}
-		$this->setSizeY($this->sizeY + count($this->data) * 3.25 - $this->cardElementsPosY * 2);
+		$this->setSizeY($this->sizeY + count($this->data) * 3.25 - $this->cardElementsPosY * 3.5);
 	}
 
 }

@@ -53,6 +53,7 @@ class OverviewTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		if (empty($this->cpu_stats))
 		{
 			$this->lbl_left->setText('Retrieving information ...');
+			$this->lbl_left->setStyle(Label::TextCardSmallScores2Rank);
 			return;
 		}
 		
@@ -96,6 +97,7 @@ class OverviewTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		
 		// update left side of the page
 		$this->lbl_left->setText($text);
+		$this->lbl_left->setStyle(Label::TextCardSmallScores2Rank);
 		
 		// database
 		$text = '$oDatabase$z'."\n";
@@ -130,6 +132,7 @@ class OverviewTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		
 		// update right side of the page
 		$this->lbl_right->setText($text);
+		$this->lbl_right->setStyle(Label::TextCardSmallScores2Rank);
 	}
 	
 	function destroy()
