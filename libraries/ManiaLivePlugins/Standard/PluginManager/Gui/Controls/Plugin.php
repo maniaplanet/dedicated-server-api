@@ -41,7 +41,7 @@ class Plugin extends \ManiaLive\Gui\Windowing\Control
 		$this->loaded = $this->getParam(1);
 		$this->class = $this->getParam(2);
 		
-		$this->sizeY = 3.5;
+		$this->sizeY = 6;
 		
 		$this->background = new Quad();
 		$this->background->setStyle(BgsPlayerCard::BgsPlayerCard);
@@ -49,13 +49,13 @@ class Plugin extends \ManiaLive\Gui\Windowing\Control
 		$this->addComponent($this->background);
 		
 		$this->labelName = new Label();
-		$this->labelName->setText($this->name);
+		$this->labelName->setText('$fff'.$this->name.'$z');
 		$this->addComponent($this->labelName);
 		
 		$this->labelLoaded = new Label();
 		$this->addComponent($this->labelLoaded);
 		
-		$this->buttonLoad = new Quad(4.5, 4.5);
+		$this->buttonLoad = new Quad(7, 7);
 		$this->buttonLoad->setStyle(Quad::Icons64x64_1);
 		$this->addComponent($this->buttonLoad);
 		
@@ -82,14 +82,16 @@ class Plugin extends \ManiaLive\Gui\Windowing\Control
 	
 	function onResize()
 	{
-		$this->labelName->setPosition(1, 0.7);
+		$this->labelName->setPosition(1, $this->sizeY / 2);
+		$this->labelName->setValign('center2');
 		$this->labelName->setSizeX(($this->sizeX - 5) * 0.7);
 		
 		$this->labelLoaded->setSizeX(($this->sizeX - 5) * 0.3);
-		$this->labelLoaded->setPosition($this->labelName->getBorderRight() + 1, 0.7);
+		$this->labelLoaded->setValign('center2');
+		$this->labelLoaded->setPosition($this->labelName->getBorderRight() + 1, $this->sizeY / 2);
 		
-		$this->buttonLoad->setPosition($this->labelLoaded->getBorderRight() - 1.8, -0.5);
-		
+		$this->buttonLoad->setValign($this->sizeY / 2);
+		$this->buttonLoad->setPosition($this->labelLoaded->getBorderRight() - 4.5, -0.5);		
 		$this->background->setSize($this->sizeX, $this->sizeY);
 	}
 	

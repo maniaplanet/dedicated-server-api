@@ -71,7 +71,7 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 		$this->buttonMin->setStyle(Label::TextCardRaceRank);
 		$this->buttonMin->setText('$000_');
 		
-		$this->buttonMax = new Icons128x32_1(3);
+		$this->buttonMax = new Icons128x32_1(8);
 		$this->buttonMax->setSubStyle(Icons128x32_1::Windowed);
 		
 		$this->setMaximizable(false);
@@ -181,15 +181,15 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 	 */
 	final function resize($oldX, $oldY)
 	{
-		$this->buttonMax->setPosition(3.5, 2.5);
+		$this->buttonMax->setPosition(9, 2.5);
 		
 		if ($this->maximizable)
 		{
-			$this->buttonMin->setPosition(7, 2.5);
+			$this->buttonMin->setPosition(18, 2.5);
 		}
 		else
 		{
-			$this->buttonMin->setPosition(3.5, 2.5);
+			$this->buttonMin->setPosition(9, 2.5);
 		}
 		
 		$this->panel->setSize($this->sizeX, $this->sizeY);
@@ -232,8 +232,8 @@ abstract class ManagedWindow extends \ManiaLive\Gui\Windowing\Window
 					$this->oldX = $this->sizeX;
 					$this->oldY = $this->sizeY;
 				}
-				$this->setPosition(-64, -48);
-				$this->setSize(128, 96);
+				$this->setPosition(-160, -90);
+				$this->setSize(320, 180);
 			}
 			else
 			{

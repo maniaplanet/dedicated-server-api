@@ -38,11 +38,11 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		);
 		
 		// create layout for buttons ...
-		$this->btn_container = new Frame(1, 6);
+		$this->btn_container = new Frame(1, 15);
 		$this->btn_container->applyLayout(new Line());
 		$this->addComponent($this->btn_container);
 		
-		$this->setSize(count($this->modes) * 10 + 2, 25);
+		$this->setSize(count($this->modes) * 20 + 2, 40);
 	}
 	
 	function onDraw()
@@ -51,8 +51,8 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		$this->btn_container->clearComponents();
 		foreach ($this->modes as $i => $mode)
 		{
-			$frame = new Frame(0, 5);
-			$frame->setSize(10, 6);
+			$frame = new Frame(0, 2);
+			$frame->setSize(20, 20);
 			
 			$ui = new Bgs1InRace();
 			if ($i == Storage::getInstance()->gameInfos->gameMode)
@@ -64,17 +64,18 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 				$ui->setSubStyle(Bgs1InRace::BgTitleGlow);
 			}
 			$ui->setAction($this->callback('onClickMode', $i));
-			$ui->setSize(10, 10);
+			$ui->setSize(20, 20);
 			$frame->addComponent($ui);
 			
-			$ui = new Label(8);
+			$ui = new Label(20);
 			$ui->setText($mode[0]);
-			$ui->setPosition(5, 1);
+			$ui->setPosition(10, 1);
 			$ui->setHalign('center');
 			$frame->addComponent($ui);
 			
-			$ui = new Icons128x32_1(6);
-			$ui->setPosition(2, 3.5);
+			$ui = new Icons128x32_1(13);
+			$ui->setAlign('center', 'center');
+			$ui->setPosition(10, 13);
 			$ui->setSubStyle($mode[1]);
 			$frame->addComponent($ui);
 			
@@ -104,7 +105,7 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		{
 			Connection::getInstance()->setGameMode($mode);
 			$dialog = Dialog::Create($login);
-			$dialog->setSize(50, 22);
+			$dialog->setSize(125, 40);
 			$dialog->setTitle('Game Mode Changed!');
 			$message = 'You have selected '.$this->modes[$mode][0].",\n";
 			$message .= "New game mode will be set on map change!\n";

@@ -87,7 +87,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	function displayWrongState($login)
 	{
 		$info = Info::Create($login);
-		$info->setSize(50, 23);
+		$info->setSize(125, 40);
 		$info->setTitle('Bad Server State!');
 		$info->setText("This can not be done at the current server state,\nwait a bit and try again!");
 		$info->centerOnScreen();

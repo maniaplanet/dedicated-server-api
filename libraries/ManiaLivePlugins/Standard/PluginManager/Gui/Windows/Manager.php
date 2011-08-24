@@ -51,7 +51,7 @@ class Manager extends \ManiaLive\Gui\Windowing\ManagedWindow
 		$this->addComponent($this->label);
 		
 		$this->pager = new Pager();
-		$this->pager->setPosition(2, 14);
+		$this->pager->setPosition(2, 16);
 		$this->pager->setStretchContentX(true);
 		$this->addComponent($this->pager);
 	}
@@ -64,7 +64,7 @@ class Manager extends \ManiaLive\Gui\Windowing\ManagedWindow
 	function onResize()
 	{
 		$this->label->setSizeX($this->sizeX - 6);
-		$this->pager->setSize($this->sizeX - 4, $this->sizeY - 16);
+		$this->pager->setSize($this->sizeX - 4, $this->sizeY - 20);
 	}
 	
 	function clearPlugins()

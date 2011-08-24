@@ -21,11 +21,11 @@ class ListItem extends \ManiaLive\Gui\Windowing\Control
 	
 	function initializeComponents()
 	{
-		$this->sizeY = $this->getParam(0, 4);
+		$this->sizeY = $this->getParam(0, 6);
 		
 		$this->background = new Bgs1InRace();
 		$this->background->setSubStyle(Bgs1InRace::BgCardChallenge);
-		$this->background->setSizeY(4);
+		$this->background->setSizeY(6);
 		$this->addComponent($this->background);
 		
 		$this->label = new Label();

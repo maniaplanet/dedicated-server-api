@@ -116,12 +116,12 @@ class Thumbnail extends \ManiaLive\Gui\Windowing\Window
 		}
 		
 		// close button positioning and resizing
-		$this->btnClose->setSize(2.5 * $factor, 2.5 * $factor);
-		$this->btnClose->setPosition(18.7 * $factor, 12.7 * $factor);
+		$this->btnClose->setSize(4 * $factor, 4 * $factor);
+		$this->btnClose->setPosition(28 * $factor, 24 * $factor);
 		
 		// background for the close button
-		$this->btnCloseBg->setSize(2.5 * $factor, 2.5 * $factor);
-		$this->btnCloseBg->setPosition(18.7 * $factor, 12.7 * $factor);
+		$this->btnCloseBg->setSize(4 * $factor, 4 * $factor);
+		$this->btnCloseBg->setPosition(28 * $factor, 24 * $factor);
 		
 		$this->bgHighlight->setSize($sizeX * $factor, $sizeY * $factor);
 		

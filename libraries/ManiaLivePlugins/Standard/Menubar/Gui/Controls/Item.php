@@ -22,8 +22,8 @@ class Item extends \ManiaLive\Gui\Windowing\Control
 	function initializeComponents()
 	{
 		$this->name = $this->getParam(0, '');
-		$this->sizeX = $this->getParam(1, 18);
-		$this->sizeY = $this->getParam(2, 4);
+		$this->sizeX = $this->getParam(1, 30);
+		$this->sizeY = $this->getParam(2, 6);
 		$this->action = null;
 		
 		$this->subitems = array();
@@ -74,12 +74,12 @@ class Item extends \ManiaLive\Gui\Windowing\Control
 		{
 			$this->background->setSubStyle(Bgs1::NavButtonBlink);
 			$this->icon->setPosition(-3.5);
-			$this->icon->setSize(7, 7);
+			$this->icon->setSize(9, 9);
 		}
 		else
 		{
 			$this->background->setSubStyle(Bgs1::BgListLine);
-			$this->icon->setSize(4, 4);
+			$this->icon->setSize(7, 7);
 			$this->icon->setPosition(0.3, $this->getSizeY() / 2);
 		}
 		

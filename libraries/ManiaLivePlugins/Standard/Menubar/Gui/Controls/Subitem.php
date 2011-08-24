@@ -19,8 +19,8 @@ class Subitem extends \ManiaLive\Gui\Windowing\Control
 	function initializeComponents()
 	{
 		$this->name = $this->getParam(0, '');
-		$this->sizeX = $this->getParam(1, 18);
-		$this->sizeY = $this->getParam(2, 4);
+		$this->sizeX = $this->getParam(1, 30);
+		$this->sizeY = $this->getParam(2, 6);
 		
 		$this->action = array();
 		
@@ -36,9 +36,9 @@ class Subitem extends \ManiaLive\Gui\Windowing\Control
 	
 	function beforeDraw()
 	{
-		$this->label->setValign('center');
+		$this->label->setValign('center2');
 		$this->label->setText('$i'.$this->name);
-		$this->label->setPositionY($this->getSizeY() / 2 - 0.2);
+		$this->label->setPositionY($this->getSizeY() / 2 + 0.5);
 		$this->label->setHalign('left');
 		$this->label->setPositionX(1);
 		

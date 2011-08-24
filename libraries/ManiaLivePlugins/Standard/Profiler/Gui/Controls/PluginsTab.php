@@ -40,7 +40,7 @@ class PluginsTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		$this->addComponent($this->btnPluginManger);
 		
 		$this->pgPlugins = new Pager();
-		$this->pgPlugins->setPosition(0, $this->pluginManagerAvailable ? 5 : 2);
+		$this->pgPlugins->setPosition(0, $this->pluginManagerAvailable ? 8 : 2);
 		$this->pgPlugins->setStretchContentX(true);
 		$this->addComponent($this->pgPlugins);
 	}
@@ -68,7 +68,7 @@ class PluginsTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 	function onResize()
 	{
 		$this->btnPluginManger->setPosition($this->sizeX / 2, 1);
-		$this->pgPlugins->setSize($this->sizeX, $this->sizeY - ($this->pluginManagerAvailable ? 5 : 2));
+		$this->pgPlugins->setSize($this->sizeX, $this->sizeY - ($this->pluginManagerAvailable ? 12 : 2));
 	}
 	
 	function beforeDraw()

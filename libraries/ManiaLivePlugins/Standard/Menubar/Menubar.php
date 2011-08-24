@@ -32,7 +32,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 	{
 		$menu = Menu::Create($login);
 		$menu->set($this->buildMenu($login));
-		$menu->setPosition(50.5, 29);
+		$menu->setPosition(136, 45);
 		$menu->setScale(0.8);
 		$menu->show();
 	}
@@ -77,6 +77,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 		foreach ($this->menu as $plugin_id => $section)
 		{
 			$entry = new Item($section['name']);
+			$entry->setSize(30, 6);
 			$entry->setIcon($section['icon']);
 			
 			// build second level for buttons

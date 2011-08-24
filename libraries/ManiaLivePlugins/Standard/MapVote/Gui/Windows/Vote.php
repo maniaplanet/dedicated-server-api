@@ -40,20 +40,20 @@ class Vote extends \ManiaLive\Gui\Windowing\Window
 	{
 		self::$mapVote = $mapVote;
 		
-		self::$quaBg = new BgsPlayerCard(21, 7.5);
+		self::$quaBg = new BgsPlayerCard(53, 15);
 		self::$quaBg->setSubStyle(BgsPlayerCard::BgPlayerCardBig);
 		
-		self::$lblTitle = new Label(15, 3);
+		self::$lblTitle = new Label(48, 3);
 		self::$lblTitle->setPosition(2, 0.5);
-		self::$lblTitle->setTextSize(2.5);
+		self::$lblTitle->setTextSize(3.5);
 		self::$lblTitle->setText('Do you like this map?');
 		self::$lblTitle->setSubStyle(Label::TextCardRaceRank);
 		
-		self::$lblScoreDesc = new Label();
+		self::$lblScoreDesc = new Label(40);
 		self::$lblScoreDesc->setHalign('right');
-		self::$lblScoreDesc->setTextSize(2);
+		self::$lblScoreDesc->setTextSize(3.5);
 		self::$lblScoreDesc->setText('Track\'s Score');
-		self::$lblScoreDesc->setPosition(13, 7.8);
+		self::$lblScoreDesc->setPosition(38, 16);
 	}
 	
 	static function Unload()
@@ -66,29 +66,29 @@ class Vote extends \ManiaLive\Gui\Windowing\Window
 	
 	function initializeComponents()
 	{
-		$this->quaMark = new BgsPlayerCard(3.8, 3.8);
+		$this->quaMark = new BgsPlayerCard(8, 8);
 		$this->quaMark->setAlign('center', 'center');
-		$this->quaMark->setPositionY(5);
+		$this->quaMark->setPositionY(10);
 		$this->quaMark->setSubStyle(BgsPlayerCard::BgActivePlayerScore);
 		
-		$this->quaScore = new Quad(4.5, 4.5);		
+		$this->quaScore = new Quad(9, 9);		
 		$this->quaScore->setAlign('center', 'center');
-		$this->quaScore->setPosition(16, 10);
+		$this->quaScore->setPosition(43, 21);
 		
-		$this->quaGood = new Quad(2.7, 2.7);
+		$this->quaGood = new Quad(7, 7);
 		$this->quaGood->setImage($this->calculateScoreImage(1, 0), true);
-		$this->quaGood->setPosition(4.8, 3.6);
+		$this->quaGood->setPosition(15, 6.5);
 		$this->quaGood->setAction($this->callback(array(self::$mapVote, 'voteGood'), true));
 		
-		$this->quaBad = new Quad(2.7, 2.7);
+		$this->quaBad = new Quad(7, 7);
 		$this->quaBad->setImage($this->calculateScoreImage(0, 1), true);
-		$this->quaBad->setPosition(11.3, 3.6);
+		$this->quaBad->setPosition(28, 6.5);
 		$this->quaBad->setAction($this->callback(array(self::$mapVote, 'voteBad'), true));
 		
 		$this->lblScore = new Label();
 		$this->lblScore->setHalign('right');
-		$this->lblScore->setTextSize(3.7);
-		$this->lblScore->setPosition(13, 9.65);
+		$this->lblScore->setTextSize(3.5);
+		$this->lblScore->setPosition(38, 21);
 		
 		$this->addComponent(self::$quaBg);
 		$this->addComponent(self::$lblTitle);
@@ -115,12 +115,12 @@ class Vote extends \ManiaLive\Gui\Windowing\Window
 		if ($this->currentVote == MapVote::VOTE_GOOD)
 		{
 			$this->quaMark->setVisibility(true);
-			$this->quaMark->setPositionX(6.05);
+			$this->quaMark->setPositionX(18.5);
 		}
 		elseif ($this->currentVote == MapVote::VOTE_BAD)
 		{
 			$this->quaMark->setVisibility(true);
-			$this->quaMark->setPositionX(12.55);
+			$this->quaMark->setPositionX(31.5);
 		}
 		else 
 		{

@@ -72,7 +72,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				$vote->currentVote = $votes[$login];
 			else
 				$vote->currentVote = null;
-			$vote->setPosition(49, -32.2);
+			$vote->setPosition(121, -75);
 			$vote->setScale(0.8);
 			$vote->show();
 		}
@@ -88,7 +88,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	{
 		$vote = Vote::Create($login);
 		$vote->currentVote = $this->getPlayerVote($login, $this->storage->currentChallenge->uId);
-		$vote->setPosition(49, -32.2);
+		$vote->setPosition(121, -75);
 		$vote->setScale(0.8);
 		$vote->show();
 	}

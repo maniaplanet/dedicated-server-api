@@ -51,7 +51,7 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 			self::YES => 'Yes'
 		); 
 		
-		$this->bg = new \ManiaLib\Gui\Elements\Quad(130, 98);
+		$this->bg = new \ManiaLib\Gui\Elements\Quad(325, 184);
 		$this->bg->setBgColor('234C');
 		$this->addComponent($this->bg);
 			
@@ -78,11 +78,11 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 		// create container for buttons ...
 		$this->container->setSizeX($this->getSizeX());
 		$this->container->setHalign('center');
-		$this->container->setPosition($this->getSizeX() / 2, $this->getSizeY() - 5);
+		$this->container->setPosition($this->getSizeX() / 2, $this->getSizeY() - 8);
 		$this->container->clearComponents();
 		
 		// position and resize text ...
-		$this->text->setPosition(2, 9);
+		$this->text->setPosition(2, 17);
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 		
 		// count buttons ...
@@ -104,8 +104,8 @@ class Dialog extends \ManiaLive\Gui\Windowing\Window
 		// add buttons to the window ...
 		foreach ($buttons as $button)
 		{
-			$ui = new ButtonResizeable($this->getSizeX() / $buttons_count - 1 / $buttons_count, 4);
-			$ui->setPositionX(0.5);
+			$ui = new ButtonResizeable($this->getSizeX() / $buttons_count - 2.5 / $buttons_count, 7);
+			$ui->setPositionX(1.25);
 			$ui->setText($this->labels[$button]);
 			$ui->setAction($this->callback('onButton', $button));
 			$this->container->addComponent($ui);

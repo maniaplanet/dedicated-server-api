@@ -90,6 +90,7 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 			 {
 				$group = GuiHandler::getInstance()->getGroup($player);
 				$group->displayableGroup->addDisplayable(new Blank($window->getId()));
+				$group->displayableGroup->showGlobalUi();
 				self::$playerHiddenWindows[$login][] = $window;
 			 }
 		  }
@@ -554,8 +555,8 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 
 	   // display the thumbnail of the old window
 	   $thumb->setCloseCallback(array(__NAMESPACE__.'\WindowHandler', 'onThumbClosed'));
-	   $thumb->setSize(20, 14);
-	   $thumb->setPosition(22 - 21 * $i, -47);
+	   $thumb->setSize(30, 26);
+	   $thumb->setPosition(80 - 31 * $i, -85);
 	   $thumb->show();
 
 	   return true;

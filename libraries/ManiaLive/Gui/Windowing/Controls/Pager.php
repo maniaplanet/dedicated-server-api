@@ -43,12 +43,12 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 		$this->stretchContentX = false;
 		$this->direction = Column::DIRECTION_DOWN;
 		
-		$this->buttonNext = new Quad(5, 5);
+		$this->buttonNext = new Quad(9, 9);
 		$this->buttonNext->setStyle(Icons64x64_1::Icons64x64_1);
 		$this->buttonNext->setSubStyle(Icons64x64_1::ArrowNext);
 		$this->addComponent($this->buttonNext);
 		
-		$this->buttonPrev = new Quad(5, 5);
+		$this->buttonPrev = new Quad(9, 9);
 		$this->buttonPrev->setStyle(Icons64x64_1::Icons64x64_1);
 		$this->buttonPrev->setSubStyle(Icons64x64_1::ArrowPrev);
 		$this->addComponent($this->buttonPrev);
@@ -158,7 +158,7 @@ class Pager extends \ManiaLive\Gui\Windowing\Control
 			$this->buttonNext->setAction($this->callback('buttonNext'));
 			$this->buttonNext->setSubStyle(Icons64x64_1::ArrowNext);
 		}
-		$this->buttonNext->setPosition($this->sizeX - 5, $this->sizeY - 5);
+		$this->buttonNext->setPosition($this->sizeX - 10, $this->sizeY - 5);
 	}
 	
 	function afterDraw() {}

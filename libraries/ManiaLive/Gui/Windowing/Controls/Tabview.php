@@ -45,21 +45,21 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		$this->addComponent($this->tabFan);
 		
 		$this->content = new Frame();
-		$this->content->setPosition(0.5, 3.5);
+		$this->content->setPosition(0.5, 5);
 		$this->addComponent($this->content);
 	}
 	
 	function onResize()
 	{
 		$tab = $this->tabs[$this->activeId];
-		$tab->setSize($this->sizeX - 1, $this->sizeY - 4);
+		$tab->setSize($this->sizeX - 1, $this->sizeY - 5.5);
 	}
 	
 	function beforeDraw()
 	{
 		// draw content background
-		$this->background->setPosition(0, 3);
-		$this->background->setSize($this->getSizeX(), $this->getSizeY() - 3);
+		$this->background->setPosition(0, 5);
+		$this->background->setSize($this->getSizeX(), $this->getSizeY() - 5);
 		
 		$this->tabFan->clearComponents();
 		
@@ -68,9 +68,9 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 		{
 			// start building fan element for tab
 			$frame = new Frame();
-			$frame->setSize(14, 3);
+			$frame->setSize(25, 5);
 			{
-				$ui = new Bgs1(14, 3);
+				$ui = new Bgs1(25, 5);
 				if ($i == $this->activeId)
 				{
 					$ui->setSubStyle(Bgs1::NavButtonBlink);
@@ -82,7 +82,7 @@ class Tabview extends \ManiaLive\Gui\Windowing\Control
 				$ui->setAction($this->callback('clickOnTab', $i));
 				$frame->addComponent($ui);
 				
-				$ui = new Label(14, 3);
+				$ui = new Label(23, 5);
 				$ui->setPosition(1, 0.4);
 				$ui->setTextSize(2);
 				$ui->setTextColor('fff');

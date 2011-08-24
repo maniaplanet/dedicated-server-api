@@ -98,7 +98,7 @@ class Profiler extends \ManiaLive\PluginHandler\Plugin
 		if (!AdminGroup::contains($login))
 		{
 			$win = Info::Create($login);
-			$win->setSize(40, 15);
+			$win->setSize(100, 30);
 			$win->setTitle('No Permission');
 			$win->setText('The command you have been trying to use is preserved to Administrators!');
 			$win->centerOnScreen();
@@ -111,7 +111,7 @@ class Profiler extends \ManiaLive\PluginHandler\Plugin
 		$this->loopStart = time();
 		$stats = Stats::Create($login);
 		$stats->time_started = $this->timeStarted;
-		$stats->setSize(72, 51.5);
+		$stats->setSize(180, 97);
 		$stats->centerOnScreen();
 		$stats->show();
 		

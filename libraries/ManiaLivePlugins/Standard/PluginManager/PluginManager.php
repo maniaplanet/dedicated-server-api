@@ -81,7 +81,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 			$plugin->unloadCallBack = array($this, 'unloadPlugin');
 			$window->addPlugin($plugin);
 		}
-		$window->setSize(65, 40);
+		$window->setSize(162.5, 75);
 		$window->centerOnScreen();
 		$window->show();
 	}

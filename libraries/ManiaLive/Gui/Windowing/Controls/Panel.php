@@ -44,7 +44,7 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->titleBg = new Quad();
 		$this->titleBg->setStyle(Quad::Bgs1InRace);
 		$this->titleBg->setSubStyle(DefaultStyles::Panel_TitleBg_Substyle);
-		$this->titleBg->setSizeY(8);
+		$this->titleBg->setSizeY(14);
 		$this->titleBg->setHalign('center');
 		
 		// title label ...
@@ -52,7 +52,7 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->title->setStyle(Label::TextCardScores2);
 		$this->title->setTextColor('fff');
 		$this->title->setTextSize(2.5);
-		$this->title->setPositionY(4);
+		$this->title->setPositionY(7);
 		$this->title->setAlign('center', 'center2');
 		
 		// move title label and background together ...
@@ -62,7 +62,7 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 		$this->addComponent($this->header);
 		
 		// create close button ...
-		$this->btn_close = new Icons64x64_1(4);
+		$this->btn_close = new Icons64x64_1(8);
 		$this->btn_close->setSubStyle(Icons64x64_1::Close);
 		$this->addComponent($this->btn_close);
 		
@@ -72,11 +72,12 @@ class Panel extends \ManiaLive\Gui\Windowing\Control
 	function onResize()
 	{
 		// set action for close button ...
-		$this->btn_close->setPosition(0, 2);
+		$this->btn_close->setPosition(2.5, 7);
+		$this->btn_close->setValign('center');
 		
 		// set size of form ...
-		$this->main->setSize($this->sizeX, $this->sizeY - 8);
-		$this->main->setPosY(8);
+		$this->main->setSize($this->sizeX, $this->sizeY - 14);
+		$this->main->setPosY(14);
 		
 		// set width of title according to control size ...
 		$this->titleBg->setSizeX($this->getSizeX() + 2);

@@ -72,7 +72,7 @@ class SpeedGraphTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		$this->container_lines->clearComponents();
 		
 		// add bar for minimum response time ...
-		$txt = new Label(30, 3);
+		$txt = new Label(75, 3);
 		$txt->setTextColor('fff');
 		$txt->setText('Critical Response Time (1/' . self::RESPONSE_MINIMAL . ' Second)');
 		$txt->setPosition(3, $bar_min_posy - 2.5);
@@ -87,7 +87,7 @@ class SpeedGraphTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		$this->container_lines->addComponent($bar);
 		
 		// add bar for optimal response time ...
-		$txt = new Label(30, 3);
+		$txt = new Label(75, 3);
 		$txt->setTextColor('fff');
 		$txt->setText('Optimal Response Time (1/' . self::RESPONSE_OPTIMAL . ' Second)');
 		$txt->setPosition(3, $bar_opt_posy - 2.5);

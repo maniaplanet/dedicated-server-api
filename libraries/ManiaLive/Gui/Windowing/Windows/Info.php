@@ -29,7 +29,7 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 	protected function initializeComponents()
 	{	
 		$this->panel = new Panel();
-		$this->panel->setBackgroundStyle(Bgs1::BgWindow1);
+		$this->panel->setBackgroundStyle(Bgs1::BgWindow2);
 		$this->addComponent($this->panel);
 
 		$this->text = new Label();
@@ -45,7 +45,7 @@ class Info extends \ManiaLive\Gui\Windowing\Window
 		$this->panel->setSize($this->sizeX, $this->sizeY);
 		
 		// position and resize text ...
-		$this->text->setPosition(2, 6);
+		$this->text->setPosition(2, 17);
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 	}
 	
