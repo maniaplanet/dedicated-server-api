@@ -3501,7 +3501,6 @@ class Connection extends \ManiaLib\Utils\Singleton
 		}
 
 		$temp = $this->execute(ucfirst(__FUNCTION__),array($filename));
-		\ManiaLive\Utilities\Logger::getLog('info')->write(var_dump($temp));
 		return Structures\Challenge::fromArray($temp);
 	}
 
