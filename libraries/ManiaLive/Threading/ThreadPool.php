@@ -53,7 +53,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 		$this->database = null;
 		
 		// check if library's enabled ...
-		if (!extension_loaded('SQLite'))
+		if (! (extension_loaded('SQLite') || extension_loaded('SQLite3')) )
 		{
 			Console::println("Threading will be disabled, enable the 'SQLite' extension on your system!");
 			self::$threadingEnabled = false;

@@ -56,7 +56,7 @@ echo 'PHP 5.3.1 or newer    -> required  -> ' . ($php_ok ? (success() . ' ' . ph
 echo 'Standard PHP Library  -> required  -> ' . ($spl_ok ? success() : failure()) . PHP_EOL;
 echo 'JSON                  -> required  -> ' . ($json_ok ? success() : failure()) . PHP_EOL;
 echo 'cURL with SSL         -> required  -> ' . ($curl_ok ? (success() . ' ' . $curl_version['version'] . ' (' . $curl_version['ssl_version'] . ')' . (is_array($curl_version['protocols']) && in_array('https', $curl_version['protocols'], true) ? ' (with ' . $curl_version['ssl_version'] . ')' : ' (without SSL)')) : failure()) . PHP_EOL;
-echo 'SQLite                -> optionnal -> ' . ($sqlite_ok ? success() : failure()) . PHP_EOL;
+echo 'SQLite                -> optional  -> ' . ($sqlite_ok ? success() : failure()) . PHP_EOL;
 echo '-----------------------------------------------------' . PHP_EOL;
 
 
@@ -68,7 +68,7 @@ if(!$php_ok || !$curl_ok || !$spl_ok || !$json_ok)
 
 if(!$sqlite_ok)
 {
-    echo 'SQLite is disable, threading will not work. ManiaLive may encounter some perfomance trouble.';
+    echo 'SQLite is disabled, threading will not work. ManiaLive may encounter some perfomance trouble.'.PHP_EOL;
 }
 // enable error reporting
 ini_set('display_errors', 1);
