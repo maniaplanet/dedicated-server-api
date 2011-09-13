@@ -1373,12 +1373,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param Player|string $fromPlayer
 	 * @param int $amount
 	 * @param string $label
-	 * @param Player|string $toPlayer
+	 * @param Player|string|null $toPlayer
 	 * @param bool $multicall
 	 * @return int
 	 * @throws InvalidArgumentException
 	 */
-	function sendBill($fromPlayer, $amount, $label, Player $toPlayer = null, $multicall = false)
+	function sendBill($fromPlayer, $amount, $label, $toPlayer = null, $multicall = false)
 	{
 
 		if (!is_int($amount) || $amount < 1)

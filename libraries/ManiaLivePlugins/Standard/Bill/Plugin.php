@@ -4,9 +4,9 @@
  *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
- * @version     $Revision$:
- * @author      $Author$:
- * @date        $Date$:
+ * @version     $Revision: 265 $:
+ * @author      $Author: martin.gwendal $:
+ * @date        $Date: 2011-09-12 23:27:03 +0200 (lun., 12 sept. 2011) $:
  */
 
 namespace ManiaLivePlugins\Standard\Bill;
@@ -66,7 +66,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 			return;
 		}
 		$label = $label ? $label : $this->storage->serverLogin.'To'.$payee;
-		$billId = $this->connection->sendBill($this->storage->serverLogin, (int)$amount, $label, $payee);
+		$billId = $this->connection->pay($payee, (int)$amount, $label);
 		$this->connection->chatSendServerMessage('The bill has been created with the id '.$billId, $login, true);
 	}
 
