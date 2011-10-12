@@ -39,7 +39,7 @@ class OverviewTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		$this->addComponent($this->lbl_right);
 	}
 	
-	function onResize()
+	function onResize($oldX, $oldY, $oldZ)
 	{
 		$this->lbl_left->setSize($this->getSizeX() / 2 - 2, $this->getSizeY() - 2);
 		

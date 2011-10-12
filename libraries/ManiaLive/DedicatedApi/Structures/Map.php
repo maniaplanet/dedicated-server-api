@@ -1,6 +1,6 @@
 <?php
 /**
- * Represents a Dedicated TrackMania Server Challenge
+ * Represents a Dedicated TrackMania Server Map
  * ManiaLive - TrackMania dedicated server manager in PHP
  * 
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
@@ -11,6 +11,20 @@
  */
 namespace ManiaLive\DedicatedApi\Structures;
 
-class Map extends Challenge
+class Map extends AbstractStructure
 {
+	public $uId;
+	public $name;
+	public $fileName;
+	public $author;
+	public $environnement;
+	public $mood;
+	public $bronzeTime;
+	public $silverTime;
+	public $goldTime;
+	public $authorTime;
+	public $copperPrice;
+	public $lapRace;
+	public $nbLaps;
+	public $nbCheckpoints;
 }

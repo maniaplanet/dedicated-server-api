@@ -18,19 +18,19 @@ class WinnerLog extends \ManiaLive\PluginHandler\Plugin
 		$this->enableDedicatedEvents();
 	}
 	
-	function onEndRace($rankings, $challenge)
+	function onEndRace($rankings, $map)
 	{
 		$i = 0;
 		$ladderRank = 0;
 		$score = 0;
 		$log = Logger::getLog('Winners');
 		
-		$log->write("Rankings for '{$this->storage->currentChallenge->name}' ({$this->storage->currentChallenge->uId}):");
+		$log->write("Rankings for '{$this->storage->currentMap->name}' ({$this->storage->currentMap->uId}):");
 		
 		if ($this->storage->gameInfos->gameMode == 4)
-			$log->write("Bronze: {$this->storage->currentChallenge->bronzeTime}, Silver: {$this->storage->currentChallenge->silverTime}, Gold: {$this->storage->currentChallenge->goldTime}, Author: {$this->storage->currentChallenge->authorTime}");
+			$log->write("Bronze: {$this->storage->currentMap->bronzeTime}, Silver: {$this->storage->currentMap->silverTime}, Gold: {$this->storage->currentMap->goldTime}, Author: {$this->storage->currentMap->authorTime}");
 		else
-			$log->write("Bronze: ".Time::fromTM($this->storage->currentChallenge->bronzeTime).", Silver: ".Time::fromTM($this->storage->currentChallenge->silverTime).", Gold: ".Time::fromTM($this->storage->currentChallenge->goldTime).", Author: ".Time::fromTM($this->storage->currentChallenge->authorTime));
+			$log->write("Bronze: ".Time::fromTM($this->storage->currentMap->bronzeTime).", Silver: ".Time::fromTM($this->storage->currentMap->silverTime).", Gold: ".Time::fromTM($this->storage->currentMap->goldTime).", Author: ".Time::fromTM($this->storage->currentMap->authorTime));
 		
 		while (($rank = array_shift($rankings)) && $i++ < Config::getInstance()->maxRankingLogged)
 		{			

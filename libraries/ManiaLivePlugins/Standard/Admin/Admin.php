@@ -25,7 +25,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 		
 		$cmd = $this->registerChatCommand('restart', 'chatRestart', 0, true);
 		$cmd->isPublic = false;
-		$cmd->help = 'restarts the current challenge.';
+		$cmd->help = 'restarts the current map.';
 		
 		$cmd = $this->registerChatCommand('setmode', 'chatChooseMode', 0, true);
 		$cmd->isPublic = false;
@@ -67,13 +67,13 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 		
 		$this->callPublicMethod('Standard\Menubar',
 			'addButton',
-			'Next Challenge',
+			'Next Map',
 			array($this, 'chatNext'),
 			true);
 
 		$this->callPublicMethod('Standard\Menubar',
 			'addButton',
-			'Restart Challenge',
+			'Restart Map',
 			array($this, 'chatRestart'),
 			true);
 			
@@ -102,7 +102,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 			$this->displayWrongState($login);
 			return;
 		}
-		$this->connection->nextChallenge();
+		$this->connection->nextMap();
 	}
 	
 	function chatRestart($login)
@@ -113,7 +113,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 			$this->displayWrongState($login);
 			return;
 		}
-		$this->connection->restartChallenge();
+		$this->connection->restartMap();
 	}
 	
 	function chatChooseMode($login)

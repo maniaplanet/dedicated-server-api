@@ -313,7 +313,7 @@ class Client
 		// If the method is system.multicall, make two calls (possibly recursively)
 		if ($request->getLength() > 512*1024-8) 
 		{
-			if ($method = 'system.multicall' && isset($args[0])) 
+			if ($method == 'system.multicall' && isset($args[0])) 
 			{
 				$count = count($args[0]);
 				// If count is 1, query cannot be reduced

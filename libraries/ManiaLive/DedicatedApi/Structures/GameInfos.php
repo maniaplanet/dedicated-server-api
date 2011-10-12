@@ -25,7 +25,7 @@ class GameInfos extends AbstractStructure
 	const GAMEMODE_STUNTS = 6;
 	
 	public $gameMode;
-	public $nbChallenge;
+	public $nbMap;
 	public $chatTime;
 	public $finishTimeout;
 	public $allWarmUpDuration;
@@ -44,7 +44,7 @@ class GameInfos extends AbstractStructure
 	public $lapsNbLaps;
 	public $lapsTimeLimit; 
 	public $cupPointsLimit;
-	public $cupRoundsPerChallenge;
+	public $cupRoundsPerMap;
 	public $cupNbWinners;
 	public $cupWarmUpDuration;
 }

@@ -397,23 +397,23 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		
 	}
 
-	function onBeginRace($challenge)
+	function onBeginRace($map)
 	{
 		
 	}
 
-	function onEndRace($rankings, $challenge)
+	function onEndRace($rankings, $map)
 	{
 		
 	}
 
-	function onBeginChallenge($challenge, $warmUp, $matchContinuation)
+	function onBeginMap($map, $warmUp, $matchContinuation)
 	{
 		
 	}
 
-	function onEndChallenge($rankings, $challenge, $wasWarmUp,
-		$matchContinuesOnNextChallenge, $restartChallenge)
+	function onEndMap($rankings, $map, $wasWarmUp,
+		$matchContinuesOnNextMap, $restartMap)
 	{
 		
 	}
@@ -459,7 +459,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		
 	}
 
-	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex,
+	function onMapListModified($curMapIndex, $nextMapIndex,
 		$isListModified)
 	{
 		

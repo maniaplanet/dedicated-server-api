@@ -33,7 +33,7 @@ class ServerOptions extends AbstractStructure
 	public $currentCallVoteTimeOut;
 	public $nextCallVoteTimeOut;
 	public $callVoteRatio;
-	public $allowChallengeDownload;
+	public $allowMapDownload;
 	public $autoSaveReplays;
 	public $autoSaveValidationReplays;
 	public $refereePassword;

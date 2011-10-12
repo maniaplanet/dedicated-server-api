@@ -71,12 +71,12 @@ abstract class Validation
 		}
 	}
 
-	static function challengeUID($challengeUID)
+	static function mapUID($mapUID)
 	{
-		// FIXME Validate challenge uid
-		if(!$challengeUID || strlen($challengeUID) > 27)
+		// FIXME Validate map uid
+		if(!$mapUID || strlen($mapUID) > 27)
 		{
-			throw new \InvalidArgumentException(sprintf('Invalid challenge UID "%s"', $challengeUID));
+			throw new \InvalidArgumentException(sprintf('Invalid map UID "%s"', $mapUID));
 		}
 	}
 }

@@ -78,6 +78,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		$this->xmlrpcClient = new Xmlrpc\ClientMulticall(self::$hostname, self::$port);
 		Console::printlnFormatted('XML-RPC connection established');
 		$this->authenticate(self::$username, self::$password);
+		$this->setApiVersion('2011-10-06');
 		Console::printlnFormatted('Successfully authentified with XML-RPC server');
 	}
 
@@ -177,16 +178,25 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $enable
 	 * @param bool $multicall
 	 * @return bool
-	 * @throws InvalidArgumentException
-	 * @throws InvalidArgumentException
 	 */
 	function enableCallbacks($enable, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array((bool) $enable), $multicall);
 	}
+	
+	/**
+	 * Define the wanted api.
+	 * @param string $version
+	 * @param bool $multicall
+	 * @return bool 
+	 */
+	protected function setApiVersion($version, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array((string) $version), $multicall);
+	}
 
 	/**
-	 * Returns a struct with the Name, Version and Build of the application remotely controled.
+	 * Returns a struct with the Name, Version, Build and ApiVersion of the application remotely controled.
 	 * @return ManiaLive\DedicatedApi\Structures\Version
 	 * @throws InvalidArgumentException
 	 */
@@ -317,7 +327,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Call a vote to restart the current Challenge.
+	 * Call a vote to restart the current Map.
 	 * You can additionally specifiy specific parameters for this vote: a ratio, a time out
 	 * and who is voting. Special timeout values: a timeout of '0' means default, '1' means
 	 * indefinite; a ratio of '-1' means default; Voters values: '0' means only active players,
@@ -328,7 +338,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteRestartChallenge($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteRestartMap($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (!is_double($ratio))
 		{
@@ -343,13 +353,13 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('voters = '.print_r($voters,true));
 		}
 
-		$tmpCmd = new Xmlrpc\Request('ChallengeRestart', array());
+		$tmpCmd = new Xmlrpc\Request('MapRestart', array());
 
 		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
 	/**
-	 * Call a vote to go to the next Challenge.
+	 * Call a vote to go to the next Map.
 	 * You can additionally specifiy specific parameters for this vote: a ratio, a time out
 	 * and who is voting. Special timeout values: a timeout of '0' means default, '1' means
 	 * indefinite; a ratio of '-1' means default; Voters values: '0' means only active players,
@@ -360,7 +370,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteNextChallenge($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteNextMap($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
 		if (!is_double($ratio))
 		{
@@ -375,7 +385,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('voters = '.print_r($voters,true));
 		}
 
-		$tmpCmd = new Xmlrpc\Request('NextChallenge', array());
+		$tmpCmd = new Xmlrpc\Request('NextMap', array());
 
 		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
@@ -1750,14 +1760,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Allow clients to download challenges from the server.
+	 * Allow clients to download maps from the server.
 	 * @param bool $allow
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 * @deprecated
 	 */
-	function allowChallengeDownload($allow, $multicall = false)
+	function allowMapDownload($allow, $multicall = false)
 	{
 		if (!is_bool($allow))
 		{
@@ -1768,11 +1778,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Returns if clients can download challenges from the server.
+	 * Returns if clients can download maps from the server.
 	 * @return bool
 	 * @deprecated
 	 */
-	function isChallengeDownloadAllowed()
+	function isMapDownloadAllowed()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -1958,7 +1968,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Name, Comment, Password, PasswordForSpectator, NextMaxPlayers,
 	 * NextMaxSpectators, IsP2PUpload, IsP2PDownload, NextLadderMode,
 	 * NextVehicleNetQuality, NextCallVoteTimeOut, CallVoteRatio,
-	 * AllowChallengeDownload, AutoSaveReplays,
+	 * AllowMapDownload, AutoSaveReplays,
 	 *
 	 * optionally for forever:
 	 * RefereePassword, RefereeMode, AutoSaveValidationReplays,
@@ -1981,7 +1991,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		|| !array_key_exists('IsP2PUpload', $options) || !array_key_exists('IsP2PDownload', $options)
 		|| !array_key_exists('NextLadderMode', $options) || !array_key_exists('NextVehicleNetQuality', $options)
 		|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
-		|| !array_key_exists('AllowChallengeDownload', $options) || !array_key_exists('AutoSaveReplays', $options)
+		|| !array_key_exists('AllowMapDownload', $options) || !array_key_exists('AutoSaveReplays', $options)
 		)
 		{
 			throw  new InvalidArgumentException('options = '.print_r($options,true));
@@ -1996,7 +2006,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Name, Comment, Password, PasswordForSpectator, CurrentMaxPlayers, NextMaxPlayers,
 	 * CurrentMaxSpectators, NextMaxSpectators, IsP2PUpload, IsP2PDownload, CurrentLadderMode,
 	 * NextLadderMode, CurrentVehicleNetQuality, NextVehicleNetQuality, CurrentCallVoteTimeOut,
-	 * NextCallVoteTimeOut, CallVoteRatio, AllowChallengeDownload and AutoSaveReplays,
+	 * NextCallVoteTimeOut, CallVoteRatio, AllowMapDownload and AutoSaveReplays,
 	 *
 	 * and additionally for forever:
 	 * RefereePassword, RefereeMode, AutoSaveValidationReplays, HideServer,
@@ -2377,14 +2387,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Restarts the challenge, with an optional boolean parameter DontClearCupScores (only available in cup mode).
+	 * Restarts the map, with an optional boolean parameter DontClearCupScores (only available in cup mode).
 	 * @param bool $dontClearCupScores
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 * @deprecated
 	 */
-	function restartChallenge($dontClearCupScores = false, $multicall = false)
+	function restartMap($dontClearCupScores = false, $multicall = false)
 	{
 		if (!is_bool($dontClearCupScores))
 		{
@@ -2395,14 +2405,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Switch to next challenge, with an optional boolean parameter DontClearCupScores (only available in cup mode).
+	 * Switch to next map, with an optional boolean parameter DontClearCupScores (only available in cup mode).
 	 * @param bool $dontClearCupScores
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 * @deprecated
 	 */
-	function nextChallenge($dontClearCupScores = false, $multicall = false)
+	function nextMap($dontClearCupScores = false, $multicall = false)
 	{
 		if (!is_bool($dontClearCupScores))
 		{
@@ -2438,7 +2448,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * GameMode, ChatTime, RoundsPointsLimit, RoundsUseNewRules, RoundsForcedLaps, TimeAttackLimit,
 	 * TimeAttackSynchStartPeriod, TeamPointsLimit, TeamMaxPoints, TeamUseNewRules, LapsNbLaps, LapsTimeLimit,
 	 * FinishTimeout, and optionally: AllWarmUpDuration, DisableRespawn, ForceShowAllOpponents, RoundsPointsLimitNewRules,
-	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerChallenge, CupNbWinners, CupWarmUpDuration.
+	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerMap, CupNbWinners, CupWarmUpDuration.
 	 * Requires a map restart to be taken into account.
 	 * @param array $gameInfos
 	 * @param bool $multicall
@@ -2473,11 +2483,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Optional parameter for compatibility:
 	 * struct version (0 = united, 1 = forever).
 	 * Returns a struct containing the current game settings, ie:
-	 * GameMode, ChatTime, NbChallenge, RoundsPointsLimit, RoundsUseNewRules, RoundsForcedLaps,
+	 * GameMode, ChatTime, NbMap, RoundsPointsLimit, RoundsUseNewRules, RoundsForcedLaps,
 	 * TimeAttackLimit, TimeAttackSynchStartPeriod, TeamPointsLimit, TeamMaxPoints, TeamUseNewRules,
 	 * LapsNbLaps, LapsTimeLimit, FinishTimeout,
 	 * additionally for version 1: AllWarmUpDuration, DisableRespawn, ForceShowAllOpponents, RoundsPointsLimitNewRules,
-	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerChallenge, CupNbWinners, CupWarmUpDuration.
+	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerMap, CupNbWinners, CupWarmUpDuration.
 	 * @param int $compatibility
 	 * @return GameInfos
 	 * @throws InvalidArgumentException
@@ -2496,11 +2506,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Optional parameter for compatibility:
 	 * struct version (0 = united, 1 = forever).
 	 * Returns a struct containing the game settings for the next map, ie:
-	 * GameMode, ChatTime, NbChallenge, RoundsPointsLimit, RoundsUseNewRules, RoundsForcedLaps,
+	 * GameMode, ChatTime, NbMap, RoundsPointsLimit, RoundsUseNewRules, RoundsForcedLaps,
 	 * TimeAttackLimit, TimeAttackSynchStartPeriod, TeamPointsLimit, TeamMaxPoints, TeamUseNewRules,
 	 * LapsNbLaps, LapsTimeLimit, FinishTimeout,
 	 * additionally for version 1: AllWarmUpDuration, DisableRespawn, ForceShowAllOpponents, RoundsPointsLimitNewRules,
-	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerChallenge, CupNbWinners, CupWarmUpDuration.
+	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerMap, CupNbWinners, CupWarmUpDuration.
 	 * @param int $compatibility
 	 * @return GameInfos
 	 * @throws InvalidArgumentException
@@ -3054,7 +3064,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		if (!is_int($roundsPerMap))
 		{
-			throw new InvalidArgumentException('roundsPerChallenge = '.print_r($roundsPerMap,true));
+			throw new InvalidArgumentException('roundsPerMap = '.print_r($roundsPerMap,true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($roundsPerMap), $multicall);
@@ -3072,32 +3082,32 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Sets the number of rounds before going to next challenge in Cup mode.
-	 * Requires a challenge restart to be taken into account.
-	 * @param int $roundsPerChallenge
+	 * Sets the number of rounds before going to next map in Cup mode.
+	 * Requires a map restart to be taken into account.
+	 * @param int $roundsPerMap
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 * @deprecated
 	 */
-	function setCupRoundsPerChallenge($roundsPerChallenge, $multicall = false)
+	function setCupRoundsPerMap($roundsPerMap, $multicall = false)
 	{
-		if (!is_int($roundsPerChallenge))
+		if (!is_int($roundsPerMap))
 		{
-			throw new InvalidArgumentException('roundsPerChallenge = '.print_r($roundsPerChallenge,true));
+			throw new InvalidArgumentException('roundsPerMap = '.print_r($roundsPerMap,true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($roundsPerChallenge), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($roundsPerMap), $multicall);
 	}
 
 	/**
-	 * Get the number of rounds before going to next challenge in Cup mode.
+	 * Get the number of rounds before going to next map in Cup mode.
 	 * The struct returned contains two fields CurrentValue and NextValue.
 	 * @param bool $multicall
 	 * @return array
 	 * @deprecated
 	 */
-	function getCupRoundsPerChallenge($multicall = false)
+	function getCupRoundsPerMap($multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -3263,7 +3273,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * The list is an array of structures. Each structure contains the following fields : Name, UId, FileName, Environnement, Author, GoldTime and CopperPrice.
 	 * @param int $length specifies the maximum number of infos to be returned
 	 * @param int $offset specifies the starting index in the list
-	 * @return array[Map] The list is an array of Challenge
+	 * @return array[Map] The list is an array of Map
 	 * @throws InvalidArgumentException
 	 */
 	function getMapList($length, $offset)
@@ -3418,82 +3428,82 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Returns the current challenge index in the selection, or -1 if the challenge is no longer in the selection.
+	 * Returns the current map index in the selection, or -1 if the map is no longer in the selection.
 	 * @return int
 	 * @deprecated
 	 */
-	function getCurrentChallengeIndex()
+	function getCurrentMapIndex()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Returns the challenge index in the selection that will be played next (unless the current one is restarted...)
+	 * Returns the map index in the selection that will be played next (unless the current one is restarted...)
 	 * @return int
 	 * @deprecated
 	 */
-	function getNextChallengeIndex()
+	function getNextMapIndex()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Sets the challenge index in the selection that will be played next (unless the current one is restarted...)
-	 * @param int $nextChallengeIndex
+	 * Sets the map index in the selection that will be played next (unless the current one is restarted...)
+	 * @param int $nextMapIndex
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 * @deprecated
 	 */
-	function setNextChallengeIndex($nextChallengeIndex, $multicall = false)
+	function setNextMapIndex($nextMapIndex, $multicall = false)
 	{
-		if (!is_int($nextChallengeIndex))
+		if (!is_int($nextMapIndex))
 		{
-			throw new InvalidArgumentException('nextChallengeIndex = '.print_r($nextChallengeIndex,true));
+			throw new InvalidArgumentException('nextMapIndex = '.print_r($nextMapIndex,true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($nextChallengeIndex), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($nextMapIndex), $multicall);
 	}
 
 	/**
-	 * Returns a struct containing the infos for the current challenge.
+	 * Returns a struct containing the infos for the current map.
 	 * The struct contains the following fields : Name, UId, FileName,
 	 * Author, Environnement, Mood, BronzeTime, SilverTime, GoldTime,
 	 * AuthorTime, CopperPrice, LapRace, NbLaps and NbCheckpoints.
-	 * @return Challenge
+	 * @return Map
 	 * @deprecated
 	 */
-	function getCurrentChallengeInfo()
+	function getCurrentMapInfo()
 	{
-		return Structures\Challenge::fromArray($this->execute(ucfirst(__FUNCTION__)));
+		return Structures\Map::fromArray($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
-	 * Returns a struct containing the infos for the next challenge.
+	 * Returns a struct containing the infos for the next map.
 	 * The struct contains the following fields : Name, UId, FileName,
 	 * Author, Environnement, Mood, BronzeTime, SilverTime, GoldTime,
 	 * AuthorTime, CopperPrice, LapRace, NbLaps and NbCheckpoints.
 	 * (NbLaps and NbCheckpoints are also present but always set to -1)
-	 * @return Challenge
+	 * @return Map
 	 * @deprecated
 	 */
-	function getNextChallengeInfo()
+	function getNextMapInfo()
 	{
-		return Structures\Challenge::fromArray($this->execute(ucfirst(__FUNCTION__)));
+		return Structures\Map::fromArray($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
-	 * Returns a struct containing the infos for the challenge with the specified filename.
+	 * Returns a struct containing the infos for the map with the specified filename.
 	 * The struct contains the following fields : Name, UId, FileName,
 	 * Author, Environnement, Mood, BronzeTime, SilverTime, GoldTime,
 	 * AuthorTime, CopperPrice, LapRace, NbLaps and NbCheckpoints.
 	 * (NbLaps and NbCheckpoints are also present but always set to -1)
 	 * @param string $filename
-	 * @return Challenge
+	 * @return Map
 	 * @throws InvalidArgumentException
 	 * @deprecated
 	 */
-	function getChallengeInfo($filename)
+	function getMapInfo($filename)
 	{
 		if (!is_string($filename))
 		{
@@ -3501,16 +3511,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 		}
 
 		$temp = $this->execute(ucfirst(__FUNCTION__),array($filename));
-		return Structures\Challenge::fromArray($temp);
+		return Structures\Map::fromArray($temp);
 	}
 
 	/**
-	 * Returns a boolean if the challenge with the specified filename matches the current server settings.
+	 * Returns a boolean if the map with the specified filename matches the current server settings.
 	 * @param string $filename
 	 * @return bool
 	 * @deprecated
 	 */
-	function checkChallengeForCurrentServerParams($filename)
+	function checkMapForCurrentServerParams($filename)
 	{
 		if (!is_string($filename))
 		{
@@ -3521,18 +3531,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Returns a list of challenges among the current selection of the server.
+	 * Returns a list of maps among the current selection of the server.
 	 * This method take two parameters.
 	 * The first parameter specifies the maximum number of infos to be returned,
 	 * the second one the starting index in the selection.
 	 * The list is an array of structures. Each structure contains the following fields : Name, UId, FileName, Environnement, Author, GoldTime and CopperPrice.
 	 * @param int $length specifies the maximum number of infos to be returned
 	 * @param int $offset specifies the starting index in the list
-	 * @return array[Challenge] The list is an array of Challenge
+	 * @return array[Map] The list is an array of Map
 	 * @throws InvalidArgumentException
 	 * @deprecated
 	 */
-	function getChallengeList($length, $offset)
+	function getMapList($length, $offset)
 	{
 		if (!is_int($length))
 		{
@@ -3543,18 +3553,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('offset = '.print_r($offset,true));
 		}
 
-		return Structures\Challenge::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset)));
+		return Structures\Map::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset)));
 	}
 
 	/**
-	 * Add the challenge with the specified filename at the end of the current selection.
+	 * Add the map with the specified filename at the end of the current selection.
 	 * @param string $filename
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 * @deprecated
 	 */
-	function addChallenge($filename, $multicall = false)
+	function addMap($filename, $multicall = false)
 	{
 		if (!is_string($filename))
 		{
@@ -3565,14 +3575,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Add the list of challenges with the specified filename at the end of the current selection.
+	 * Add the list of maps with the specified filename at the end of the current selection.
 	 * @param array $filenames
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return int
 	 * @deprecated
 	 */
-	function addChallengeList(array $filenames, $multicall = false)
+	function addMapList(array $filenames, $multicall = false)
 	{
 		if (!is_array($filenames))
 		{
@@ -3583,14 +3593,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Remove the challenge with the specified filename from the current selection.
+	 * Remove the map with the specified filename from the current selection.
 	 * @param string $filename
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 * @deprecated
 	 */
-	function removeChallenge($filename, $multicall = false)
+	function removeMap($filename, $multicall = false)
 	{
 		if (!is_string($filename))
 		{
@@ -3601,15 +3611,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Remove the list of challenges with the specified filenames from the current selection.
-	 * The list of challenges to remove is an array of strings.
+	 * Remove the list of maps with the specified filenames from the current selection.
+	 * The list of maps to remove is an array of strings.
 	 * @param array $filenames
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return int
 	 * @deprecated
 	 */
-	function removeChallengeList(array $filenames, $multicall = false)
+	function removeMapList(array $filenames, $multicall = false)
 	{
 		if (!is_array($filenames))
 		{
@@ -3620,13 +3630,13 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Insert the challenge with the specified filename after the current challenge.
+	 * Insert the map with the specified filename after the current map.
 	 * @param string $filename
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 * @deprecated
 	 */
-	function insertChallenge($filename, $multicall = false)
+	function insertMap($filename, $multicall = false)
 	{
 		if (!is_string($filename))
 		{
@@ -3637,14 +3647,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Insert the list of challenges with the specified filenames after the current challenge.
-	 * The list of challenges to remove is an array of strings.
+	 * Insert the list of maps with the specified filenames after the current map.
+	 * The list of maps to remove is an array of strings.
 	 * @param array $filenames
 	 * @throws InvalidArgumentException
 	 * @return int
 	 * @deprecated
 	 */
-	function insertChallengeList(array $filenames, $multicall = false)
+	function insertMapList(array $filenames, $multicall = false)
 	{
 		if (!is_array($filenames))
 		{
@@ -3655,14 +3665,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Set as next challenge the one with the specified filename, if it is present in the selection.
+	 * Set as next map the one with the specified filename, if it is present in the selection.
 	 * @param string $filename
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 * @deprecated
 	 */
-	function chooseNextChallenge($filename, $multicall = false)
+	function chooseNextMap($filename, $multicall = false)
 	{
 		if (!is_string($filename))
 		{
@@ -3673,15 +3683,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Set as next challenges the list of challenges with the specified filenames, if they are present in the selection.
-	 * The list of challenges to remove is an array of strings.
+	 * Set as next maps the list of maps with the specified filenames, if they are present in the selection.
+	 * The list of maps to remove is an array of strings.
 	 * @param array $filenames
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 * @return int
 	 * @deprecated
 	 */
-	function chooseNextChallengeList(array $filenames, $multicall = false)
+	function chooseNextMapList(array $filenames, $multicall = false)
 	{
 		if (!is_array($filenames))
 		{

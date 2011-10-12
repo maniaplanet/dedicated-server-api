@@ -16,7 +16,7 @@ use ManiaLive\DedicatedApi\Structures\Vote;
 use ManiaLib\Utils\TMStrings as String;
 use ManiaLive\Application\SilentCriticalEventException;
 use ManiaLive\Application\CriticalEventException;
-use ManiaLive\DedicatedApi\Structures\Challenge;
+use ManiaLive\DedicatedApi\Structures\Map;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Utilities\Console;
 use ManiaLive\DedicatedApi\Structures\Player;
@@ -49,20 +49,20 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	*/
     public $ranking = array();
     /**
-	* Contains Challenge objects. It represents the current challenges available on the server
-	* @var \ManiaLive\DedicatedApi\Structures\Challenge[]
+	* Contains Map objects. It represents the current maps available on the server
+	* @var \ManiaLive\DedicatedApi\Structures\Map[]
 	*/
-    public $challenges;
+    public $maps;
     /**
-	* Represents the current Challenge object
-	* @var \ManiaLive\DedicatedApi\Structures\Challenge
+	* Represents the current Map object
+	* @var \ManiaLive\DedicatedApi\Structures\Map
 	*/
-    public $currentChallenge;
+    public $currentMap;
     /**
-	* Represents the next Challenge object
-	* @var \ManiaLive\DedicatedApi\Structures\Challenge
+	* Represents the next Map object
+	* @var \ManiaLive\DedicatedApi\Structures\Map
 	*/
-    public $nextChallenge;
+    public $nextMap;
     /**
 	* Represents the Current Server Options
 	* @var \ManiaLive\DedicatedApi\Structures\ServerOptions
@@ -142,17 +142,17 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 		  }
 	   }
 
-	   $this->challenges = $connection->getChallengeList(-1, 0);
-	   $currentIndex = $connection->getCurrentChallengeIndex();
-	   $nextIndex = $connection->getNextChallengeIndex();
-	   $this->nextChallenge = $this->challenges[$nextIndex];
-	   $this->currentChallenge = $connection->getCurrentChallengeInfo();
+	   $this->maps = $connection->getMapList(-1, 0);
+	   $currentIndex = $connection->getCurrentMapIndex();
+	   $nextIndex = $connection->getNextMapIndex();
+	   $this->nextMap = $this->maps[$nextIndex];
+	   $this->currentMap = $connection->getCurrentMapInfo();
 
 	   $this->server = $connection->getServerOptions();
 	   $this->gameInfos = $connection->getCurrentGameInfo();
 	   $this->serverLogin = $connection->getMainServerPlayerInfo()->login;
 
-	   Console::printlnFormatted('Current map: '.String::stripAllTmStyle($this->currentChallenge->name));
+	   Console::printlnFormatted('Current map: '.String::stripAllTmStyle($this->currentMap->name));
     }
 
     function onRun()
@@ -283,12 +283,12 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     }
 
-    function onBeginRace($challenge)
+    function onBeginRace($map)
     {
 
     }
 
-    function onEndRace($rankings, $challenge)
+    function onEndRace($rankings, $map)
     {
 	   if($this->isWarmUp && $this->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 	   {
@@ -302,13 +302,13 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   }
     }
 
-    function onBeginChallenge($challenge, $warmUp, $matchContinuation)
+    function onBeginMap($map, $warmUp, $matchContinuation)
     {
 	   $this->checkpoints = array();
 
-	   $oldChallenge = $this->currentChallenge;
-	   $this->currentChallenge = Challenge::fromArray($challenge);
-	   Console::printlnFormatted('Map change: '.String::stripAllTmStyle($oldChallenge->name).' -> '.String::stripAllTmStyle($this->currentChallenge->name));
+	   $oldMap = $this->currentMap;
+	   $this->currentMap = Map::fromArray($map);
+	   Console::printlnFormatted('Map change: '.String::stripAllTmStyle($oldMap->name).' -> '.String::stripAllTmStyle($this->currentMap->name));
 
 	   $this->resetScores();
 
@@ -336,7 +336,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   }
     }
 
-    function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge)
+    function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap)
     {
 	   if(!$wasWarmUp)
 	   {
@@ -384,10 +384,10 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 	   if(isset($this->checkpoints[$login]))
 	   {
 		  $checkCount = count($this->checkpoints[$login]) - 1;
-		  $offset = ($checkCount % $this->currentChallenge->nbCheckpoints) + 1;
+		  $offset = ($checkCount % $this->currentMap->nbCheckpoints) + 1;
 		  $checks = array_slice($this->checkpoints[$login], -$offset);
 
-		  if($checkCount >= $this->currentChallenge->nbCheckpoints)
+		  if($checkCount >= $this->currentMap->nbCheckpoints)
 		  {
 			 $timeOffset = $this->checkpoints[$login][$checkCount - $offset];
 
@@ -408,11 +408,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
     function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex)
     {
 	   // reset all checkpoints on first checkpoint
-	   if(!isset($this->checkpoints[$login]))
-	   {
-		  $this->checkpoints[$login] = array();
-	   }
-	   elseif($checkpointIndex == 0)
+	   if(!isset($this->checkpoints[$login]) || $checkpointIndex == 0)
 	   {
 		  $this->checkpoints[$login] = array();
 	   }
@@ -438,21 +434,21 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
 	   //print_r($this->checkpoints[$login]);
 	   // if player has finished a complete round
-	   $modulo = ($this->currentChallenge->nbCheckpoints ? ($checkpointIndex + 1) % $this->currentChallenge->nbCheckpoints : 1);
+	   $modulo = ($this->currentMap->nbCheckpoints ? ($checkpointIndex + 1) % $this->currentMap->nbCheckpoints : 1);
 	   if($modulo == 0)
 	   {
 		  $player = $this->getPlayerObject($login);
 		  if($player)
 		  {
 			 // get the checkpoints for current lap
-			 $checkpoints = array_slice($this->checkpoints[$login], -$this->currentChallenge->nbCheckpoints);
+			 $checkpoints = array_slice($this->checkpoints[$login], -$this->currentMap->nbCheckpoints);
 
 			 // if we're at least in second lap we need to
 			 // strip times from previous laps
-			 if($checkpointIndex >= $this->currentChallenge->nbCheckpoints)
+			 if($checkpointIndex >= $this->currentMap->nbCheckpoints)
 			 {
 				// calculate checkpoint scores for current lap
-				$offset = $this->checkpoints[$login][($checkpointIndex - $this->currentChallenge->nbCheckpoints)];
+				$offset = $this->checkpoints[$login][($checkpointIndex - $this->currentMap->nbCheckpoints)];
 				for($i = 0; $i < count($checkpoints); $i++)
 				{
 				    $checkpoints[$i] -= $offset;
@@ -497,7 +493,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 				if($player->score == $timeOrScore)
 				{
 				    // sanity checks
-				    if(count($player->bestCheckpoints) != $this->currentChallenge->nbCheckpoints)
+				    if(count($player->bestCheckpoints) != $this->currentMap->nbCheckpoints)
 				    {
 					   Console::println('Best score\'s checkpoint count does not match and was ignored!');
 					   Console::printPlayerScore($player);
@@ -543,25 +539,25 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 				    switch($this->gameInfos->gameMode)
 				    {
 					   case GameInfos::GAMEMODE_LAPS:
-						  $totalChecks = $this->currentChallenge->nbCheckpoints * $this->gameInfos->lapsNbLaps;
+						  $totalChecks = $this->currentMap->nbCheckpoints * $this->gameInfos->lapsNbLaps;
 						  break;
 
 					   case GameInfos::GAMEMODE_TEAM:
 					   case GameInfos::GAMEMODE_ROUNDS:
 					   case GameInfos::GAMEMODE_CUP:
-						  if($this->currentChallenge->nbLaps > 0)
+						  if($this->currentMap->nbLaps > 0)
 						  {
-							 $lap = ($this->gameInfos->roundsForcedLaps) ? $this->gameInfos->roundsForcedLaps : $this->currentChallenge->nbLaps;
-							 $totalChecks = $this->currentChallenge->nbCheckpoints * $lap;
+							 $lap = ($this->gameInfos->roundsForcedLaps) ? $this->gameInfos->roundsForcedLaps : $this->currentMap->nbLaps;
+							 $totalChecks = $this->currentMap->nbCheckpoints * $lap;
 						  }
 						  else
 						  {
-							 $totalChecks = $this->currentChallenge->nbCheckpoints;
+							 $totalChecks = $this->currentMap->nbCheckpoints;
 						  }
 						  break;
 
 					   default:
-						  $totalChecks = $this->currentChallenge->nbCheckpoints;
+						  $totalChecks = $this->currentMap->nbCheckpoints;
 						  break;
 				    }
 
@@ -595,27 +591,27 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     }
 
-    function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified)
+    function onMapListModified($curMapIndex, $nextMapIndex, $isListModified)
     {
 	   if($isListModified)
 	   {
-		  $challenges = Connection::getInstance()->getChallengeList(-1, 0);
+		  $maps = Connection::getInstance()->getMapList(-1, 0);
 
-		  foreach($challenges as $key => $challenge)
+		  foreach($maps as $key => $map)
 		  {
-			 $storageKey = array_search($challenge, $this->challenges);
-			 if(in_array($challenge, $this->challenges))
+			 $storageKey = array_search($map, $this->maps);
+			 if(in_array($map, $this->maps))
 			 {
-				$challenges[$key] = $this->challenges[$storageKey];
+				$maps[$key] = $this->maps[$storageKey];
 			 }
 			 else
 			 {
-				$this->challenges[$storageKey] = null;
+				$this->maps[$storageKey] = null;
 			 }
 		  }
-		  $this->challenges = $challenges;
+		  $this->maps = $maps;
 	   }
-	   $this->nextChallenge = (array_key_exists($nextChallengeIndex, $this->challenges) ? $this->challenges[$nextChallengeIndex] : null);
+	   $this->nextMap = (array_key_exists($nextMapIndex, $this->maps) ? $this->maps[$nextMapIndex] : null);
     }
 
     function onPlayerInfoChanged($playerInfo)

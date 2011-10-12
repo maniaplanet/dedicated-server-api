@@ -61,7 +61,7 @@ class Manager extends \ManiaLive\Gui\Windowing\ManagedWindow
 		$this->label->setText('');
 	}
 	
-	function onResize()
+	function onResize($oldX, $oldY, $oldZ)
 	{
 		$this->label->setSizeX($this->sizeX - 6);
 		$this->pager->setSize($this->sizeX - 4, $this->sizeY - 20);

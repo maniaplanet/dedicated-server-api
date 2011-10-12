@@ -40,13 +40,13 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 			$this->db->execute(
 				'CREATE TABLE IF NOT EXISTS `Votes` ('.
 				'`login` VARCHAR(25) NOT NULL,'.
-				'`challengeUid` VARCHAR(27) NOT NULL,'.
+				'`mapUid` VARCHAR(27) NOT NULL,'.
 				'`vote` TINYINT(1) NOT NULL,'.
 				'`serverLogin` VARCHAR(25) NOT NULL,'.
 				'`date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,'.
-				'PRIMARY KEY (`serverLogin`, `challengeUid`, `login`)'.
+				'PRIMARY KEY (`serverLogin`, `mapUid`, `login`)'.
 				') '.
-				'COMMENT=\'Used to rate challenges by players.\' '.
+				'COMMENT=\'Used to rate maps by players.\' '.
 				'COLLATE=\'utf8_general_ci\' '.
 				'ENGINE=InnoDB '.
 				'ROW_FORMAT=DEFAULT;');
@@ -55,15 +55,15 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		Vote::Initialize($this);
 	}
 
-	function onBeginChallenge($challenge, $warmUp, $matchContinuation)
+	function onBeginMap($map, $warmUp, $matchContinuation)
 	{
-		$challengeUid = $this->storage->currentChallenge->uId;
-		$this->score = $this->getChallengeScore($challengeUid);
+		$mapUid = $this->storage->currentMap->uId;
+		$this->score = $this->getMapScore($mapUid);
 		
 		if(!count($this->storage->players))
 			return;
 		
-		$votes = $this->getPlayerVotes(array_keys($this->storage->players), $challengeUid);
+		$votes = $this->getPlayerVotes(array_keys($this->storage->players), $mapUid);
 		
 		foreach ($this->storage->players as $login => $player)
 		{
@@ -78,7 +78,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		}
 	}
 
-	function onEndRace($rankings, $challenge)
+	function onEndRace($rankings, $map)
 	{
 		// refresh votes for every player ...
 		Vote::Redraw();
@@ -87,7 +87,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	function onPlayerConnect($login, $isSpectator)
 	{
 		$vote = Vote::Create($login);
-		$vote->currentVote = $this->getPlayerVote($login, $this->storage->currentChallenge->uId);
+		$vote->currentVote = $this->getPlayerVote($login, $this->storage->currentMap->uId);
 		$vote->setPosition(121, -75);
 		$vote->setScale(0.8);
 		$vote->show();
@@ -100,7 +100,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	
 	function onReady()
 	{
-		$this->onBeginChallenge(null, null, null);
+		$this->onBeginMap(null, null, null);
 	}
 
 	function voteGood($login, $window = false)
@@ -161,13 +161,13 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 			\ManiaLive\DedicatedApi\Connection::getInstance()->chatSendServerMessage('$c00Your vote has not been changed!', $player);
 	}
 
-	function getPlayerVotes($logins, $challengeUid)
+	function getPlayerVotes($logins, $mapUid)
 	{
 		$votes = array();
 		$recordset = $this->db->query(
-				'SELECT `login`, `vote` FROM `Votes` WHERE `login` IN (%s) AND `challengeUid`=%s AND `serverLogin`=%s',
+				'SELECT `login`, `vote` FROM `Votes` WHERE `login` IN (%s) AND `mapUid`=%s AND `serverLogin`=%s',
 				implode(',', array_map(array($this->db, 'quote'), $logins)),
-				$this->db->quote($challengeUid),
+				$this->db->quote($mapUid),
 				$this->db->quote($this->storage->serverLogin)
 		);
 
@@ -179,12 +179,12 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		return $votes;
 	}
 
-	function getPlayerVote($login, $challengeUid)
+	function getPlayerVote($login, $mapUid)
 	{
 		$recordset = $this->db->query(
-				'SELECT `vote` FROM `Votes` WHERE `login`=%s AND `challengeUid`=%s AND `serverLogin`=%s',
+				'SELECT `vote` FROM `Votes` WHERE `login`=%s AND `mapUid`=%s AND `serverLogin`=%s',
 				$this->db->quote($login),
-				$this->db->quote($challengeUid),
+				$this->db->quote($mapUid),
 				$this->db->quote($this->storage->serverLogin));
 		return $recordset->fetchScalar();
 	}
@@ -192,22 +192,22 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	function doVote($login, $vote)
 	{
 		$this->db->execute(
-				'INSERT INTO `Votes` (`login`, `challengeUid`, `vote`, `serverLogin`) ' .
+				'INSERT INTO `Votes` (`login`, `mapUid`, `vote`, `serverLogin`) ' .
 				'VALUES (%s, %s, %d, %s) ' .
 				'ON DUPLICATE KEY UPDATE vote=VALUES(vote)',
 				$this->db->quote($login),
-				$this->db->quote($this->storage->currentChallenge->uId),
+				$this->db->quote($this->storage->currentMap->uId),
 				$vote,
 				$this->db->quote($this->storage->serverLogin));
 		
 		return ($this->db->affectedRows() > 0);
 	}
 
-	function getChallengeScore($challengeUid)
+	function getMapScore($mapUid)
 	{
 		$recordset = $this->db->query(
-				'SELECT COUNT(*), SUM(vote) FROM `Votes` WHERE `challengeUid`=%s AND `serverLogin`=%s',
-				$this->db->quote($challengeUid),
+				'SELECT COUNT(*), SUM(vote) FROM `Votes` WHERE `mapUid`=%s AND `serverLogin`=%s',
+				$this->db->quote($mapUid),
 				$this->db->quote($this->storage->serverLogin));
 		$row = $recordset->fetchRow();
 

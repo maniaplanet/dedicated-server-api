@@ -20,10 +20,10 @@ abstract class Adapter implements Listener
 	function onEcho($internal, $public) {}
 	function onServerStart() {}
 	function onServerStop() {}
-	function onBeginRace($challenge) {}
-	function onEndRace($rankings, $challenge) {}
-	function onBeginChallenge($challenge, $warmUp, $matchContinuation) {}
-	function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge) {}
+	function onBeginRace($map) {}
+	function onEndRace($rankings, $map) {}
+	function onBeginMap($map, $warmUp, $matchContinuation) {}
+	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
 	function onBeginRound() {}
 	function onEndRound() {}
 	function onStatusChanged($statusCode, $statusName) {}
@@ -32,7 +32,7 @@ abstract class Adapter implements Listener
 	function onPlayerIncoherence($playerUid, $login) {} 
 	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
 	function onTunnelDataReceived($playerUid, $login, $data) {} 
-	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified) {} 
+	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {} 
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}

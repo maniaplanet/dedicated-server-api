@@ -56,8 +56,8 @@ interface Listener extends  \ManiaLive\Event\Listener
 	function onServerStop();
 	/**
 	 * Method called when the Race Begin
-	 * struct SChallengeInfo is like the object Challenge
-	 * struct SChallengeInfo
+	 * struct SMapInfo is like the object Map
+	 * struct SMapInfo
 	 * {
 	 *	string Uid;
 	 *	string Name;
@@ -74,13 +74,13 @@ interface Listener extends  \ManiaLive\Event\Listener
 	 *	int NbLaps;
 	 *	int NbCheckpoints;
 	 * } 
-	 * @param array[ChallengeInfo] $challenge
+	 * @param array[MapInfo] $map
 	 */
-	function onBeginRace($challenge);
+	function onBeginRace($map);
 	/**
 	 * Method called when the Race Ended
 	 * struct of SPlayerRanking is a part of the structure of DedicatedApi\Structures\Player object
-	 * struct ChallengeInfo is like the object Challenge
+	 * struct MapInfo is like the object Map
 	 * struct SPlayerRanking
 	 * {
 	 *	string Login;
@@ -94,25 +94,25 @@ interface Listener extends  \ManiaLive\Event\Listener
 	 *	double LadderScore;
 	 * } 
 	 * @param array[SPlayerRanking] $rankings
-	 * @param SChallengeInfo $challenge
+	 * @param SMapInfo $map
 	 */
-	function onEndRace($rankings, $challenge);
+	function onEndRace($rankings, $map);
 	/**
-	 * Method called when a challenge begin
-	 * @param SChallengeInfo $challenge
+	 * Method called when a map begin
+	 * @param SMapInfo $map
 	 * @param bool $warmUp
 	 * @param bool $matchContinuation
 	 */
-	function onBeginChallenge($challenge, $warmUp, $matchContinuation);
+	function onBeginMap($map, $warmUp, $matchContinuation);
 	/**
-	 * Method called when a challenge end
+	 * Method called when a map end
 	 * @param array[SPlayerRanking] $rankings
-	 * @param SChallengeInfo $challenge
+	 * @param SMapInfo $map
 	 * @param bool $wasWarmUp
-	 * @param bool $matchContinuesOnNextChallenge
-	 * @param bool $restartChallenge
+	 * @param bool $matchContinuesOnNextMap
+	 * @param bool $restartMap
 	 */
-	function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge);
+	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap);
 	/**
 	 * Method called on Round beginning
 	 */
@@ -166,12 +166,12 @@ interface Listener extends  \ManiaLive\Event\Listener
 	*/
 	function onTunnelDataReceived($playerUid, $login, $data); 
 	/**
-	 * Method called when the challenge list is modified
-	 * @param int $curChallengeIndex
-	 * @param int $nextChallengeIndex
+	 * Method called when the map list is modified
+	 * @param int $curMapIndex
+	 * @param int $nextMapIndex
 	 * @param bool $isListModified
 	*/
-	function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified); 
+	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified); 
 	/**
 	 * Method called when player info changed
 	 * @param SPlayerInfo $playerInfo
