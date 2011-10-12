@@ -18,7 +18,7 @@ class WinnerLog extends \ManiaLive\PluginHandler\Plugin
 		$this->enableDedicatedEvents();
 	}
 	
-	function onEndRace($rankings, $map)
+	function onEndMatch($rankings, $map)
 	{
 		$i = 0;
 		$ladderRank = 0;

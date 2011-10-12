@@ -397,12 +397,12 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		
 	}
 
-	function onBeginRace($map)
+	function onBeginMatch($map)
 	{
 		
 	}
 
-	function onEndRace($rankings, $map)
+	function onEndMatch($rankings, $map)
 	{
 		
 	}

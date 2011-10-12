@@ -104,7 +104,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			foreach ($calls as $call)
 			{
-				$method = substr($call[0], 12); // remove trailing "TrackMania."
+				$method = preg_replace('/^[[:alpha:]]+\./', '', $call[0]); // remove trailing "Whatever."
 				$params = (array) $call[1];
 				Dispatcher::dispatch(new Callback\Event($this, $method, $params));
 			}

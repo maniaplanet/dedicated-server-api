@@ -76,7 +76,7 @@ interface Listener extends  \ManiaLive\Event\Listener
 	 * } 
 	 * @param array[MapInfo] $map
 	 */
-	function onBeginRace($map);
+	function onBeginMatch($map);
 	/**
 	 * Method called when the Race Ended
 	 * struct of SPlayerRanking is a part of the structure of DedicatedApi\Structures\Player object
@@ -96,7 +96,7 @@ interface Listener extends  \ManiaLive\Event\Listener
 	 * @param array[SPlayerRanking] $rankings
 	 * @param SMapInfo $map
 	 */
-	function onEndRace($rankings, $map);
+	function onEndMatch($rankings, $map);
 	/**
 	 * Method called when a map begin
 	 * @param SMapInfo $map

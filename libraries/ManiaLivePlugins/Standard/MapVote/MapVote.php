@@ -78,7 +78,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		}
 	}
 
-	function onEndRace($rankings, $map)
+	function onEndMatch($rankings, $map)
 	{
 		// refresh votes for every player ...
 		Vote::Redraw();

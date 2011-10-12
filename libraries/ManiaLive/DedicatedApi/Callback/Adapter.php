@@ -20,8 +20,8 @@ abstract class Adapter implements Listener
 	function onEcho($internal, $public) {}
 	function onServerStart() {}
 	function onServerStop() {}
-	function onBeginRace($map) {}
-	function onEndRace($rankings, $map) {}
+	function onBeginMatch($map) {}
+	function onEndMatch($rankings, $map) {}
 	function onBeginMap($map, $warmUp, $matchContinuation) {}
 	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
 	function onBeginRound() {}

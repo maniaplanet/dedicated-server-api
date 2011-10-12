@@ -772,7 +772,7 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 
     }
 
-    function onBeginRace($map)
+    function onBeginMatch($map)
     {
 
     }
@@ -802,7 +802,7 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 
     }
 
-    function onEndRace($rankings, $map)
+    function onEndMatch($rankings, $map)
     {
 
     }

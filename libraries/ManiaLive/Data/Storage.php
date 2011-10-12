@@ -283,12 +283,12 @@ class Storage extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedA
 
     }
 
-    function onBeginRace($map)
+    function onBeginMatch($map)
     {
 
     }
 
-    function onEndRace($rankings, $map)
+    function onEndMatch($rankings, $map)
     {
 	   if($this->isWarmUp && $this->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 	   {

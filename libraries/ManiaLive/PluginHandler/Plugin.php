@@ -863,12 +863,12 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 		
 	}
 
-	function onBeginRace($map)
+	function onBeginMatch($map)
 	{
 		
 	}
 
-	function onEndRace($rankings, $map)
+	function onEndMatch($rankings, $map)
 	{
 		
 	}
