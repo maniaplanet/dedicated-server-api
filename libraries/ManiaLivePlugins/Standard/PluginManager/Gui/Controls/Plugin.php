@@ -80,7 +80,7 @@ class Plugin extends \ManiaLive\Gui\Windowing\Control
 		$this->buttonLoad->setVisibility($this->name != 'Standard\PluginManager');
 	}
 	
-	function onResize($oldX, $oldY, $oldZ)
+	function onResize()
 	{
 		$this->labelName->setPosition(1, $this->sizeY / 2);
 		$this->labelName->setValign('center2');

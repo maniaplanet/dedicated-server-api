@@ -43,7 +43,6 @@ class ChooseMode extends \ManiaLive\Gui\Windowing\ManagedWindow
 		$this->addComponent($this->btn_container);
 		
 		$this->setSize(count($this->modes) * 20 + 2, 40);
-		$this->setSize(count($this->modes) * 20 + 2, 40);
 	}
 	
 	function onDraw()

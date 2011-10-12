@@ -36,7 +36,7 @@ class ListItem extends \ManiaLive\Gui\Windowing\Control
 		$this->addComponent($this->label);
 	}
 	
-	function onResize($oldX, $oldY, $oldZ)
+	function onResize()
 	{
 		$this->background->setSizeX($this->sizeX);
 		$this->label->setSizeX($this->sizeX - 2);

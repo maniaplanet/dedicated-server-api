@@ -65,7 +65,7 @@ class PluginsTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		}
 	}
 	
-	function onResize($oldX, $oldY, $oldZ)
+	function onResize()
 	{
 		$this->btnPluginManger->setPosition($this->sizeX / 2, 1);
 		$this->pgPlugins->setSize($this->sizeX, $this->sizeY - ($this->pluginManagerAvailable ? 12 : 2));
