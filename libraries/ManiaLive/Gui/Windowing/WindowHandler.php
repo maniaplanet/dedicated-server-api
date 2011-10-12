@@ -728,7 +728,7 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	   $group->displayableGroup->showCustomUi = true;
 	   $group->displayableGroup->chat = $customUI->chat;
 	   $group->displayableGroup->checkpointList = $customUI->checkpointList;
-	   $group->displayableGroup->challengeInfo = $customUI->challengeInfo;
+	   $group->displayableGroup->mapInfo = $customUI->mapInfo;
 	   $group->displayableGroup->global = $customUI->global;
 	   $group->displayableGroup->notice = $customUI->notice;
 	   $group->displayableGroup->scoretable = $customUI->scoretable;
@@ -767,12 +767,12 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 
     }
 
-    function onBeginChallenge($challenge, $warmUp, $matchContinuation)
+    function onBeginMap($map, $warmUp, $matchContinuation)
     {
 
     }
 
-    function onBeginRace($challenge)
+    function onBeginRace($map)
     {
 
     }
@@ -787,7 +787,7 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 
     }
 
-    function onChallengeListModified($curChallengeIndex, $nextChallengeIndex, $isListModified)
+    function onMapListModified($curMapIndex, $nextMapIndex, $isListModified)
     {
 
     }
@@ -797,12 +797,12 @@ class WindowHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 
     }
 
-    function onEndChallenge($rankings, $challenge, $wasWarmUp, $matchContinuesOnNextChallenge, $restartChallenge)
+    function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap)
     {
 
     }
 
-    function onEndRace($rankings, $challenge)
+    function onEndRace($rankings, $map)
     {
 
     }
