@@ -1,14 +1,21 @@
 <?php
+/**
+ * Admin Plugin - Allow admins to configure server on the fly
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Admin;
 
-use ManiaLivePlugins\Standard\Version;
-use ManiaLive\Gui\Windowing\WindowHandler;
-use ManiaLive\Gui\Windowing\Windows\Info;
-use ManiaLive\Features\Admin\AdminGroup;
-use ManiaLivePlugins\Standard\Admin\Gui\Windows\ChooseMode;
 use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLive\DedicatedApi\Connection;
+use ManiaLive\Features\Admin\AdminGroup;
+use ManiaLive\Gui\Windows\Info;
+
+use ManiaLivePlugins\Standard\Admin\Gui\Windows\ChooseMode;
 
 class Admin extends \ManiaLive\PluginHandler\Plugin
 {
@@ -19,44 +26,42 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	
 	function onLoad()
 	{
-		$cmd = $this->registerChatCommand('next', 'chatNext', 0, true);
+		$admins = AdminGroup::get();
+		
+		$cmd = $this->registerChatCommand('next', 'chatNext', 0, true, $admins);
 		$cmd->isPublic = false;
 		$cmd->help = 'skips current track.';
 		
-		$cmd = $this->registerChatCommand('restart', 'chatRestart', 0, true);
+		$cmd = $this->registerChatCommand('restart', 'chatRestart', 0, true, $admins);
 		$cmd->isPublic = false;
 		$cmd->help = 'restarts the current map.';
 		
-		$cmd = $this->registerChatCommand('setmode', 'chatChooseMode', 0, true);
+		$cmd = $this->registerChatCommand('setmode', 'chatChooseMode', 0, true, $admins);
 		$cmd->isPublic = false;
 		$cmd->help = 'sets new gamemode on the fly, will open a window to make choice.';
 		
-		$cmd = $this->registerChatCommand('setname', 'chatSetName', 1, true);
+		$cmd = $this->registerChatCommand('setname', 'chatSetName', 1, true, $admins);
 		$cmd->isPublic = false;
 		$cmd->help = 'sets new server name.';
 		
-		$cmd = $this->registerChatCommand('setbandwidth', 'chatSetBandwidth', 1, true);
+		$cmd = $this->registerChatCommand('setbandwidth', 'chatSetBandwidth', 1, true, $admins);
 		$cmd->isPublic = false;
 		$cmd->help = 'set connection upload and download speed in kbps.';
 		
-		$cmd = $this->registerChatCommand('setpassword', 'chatSetPassword', 1, true);
+		$cmd = $this->registerChatCommand('setpassword', 'chatSetPassword', 1, true, $admins);
 		$cmd->isPublic = false;
 		$cmd->help = 'Sets the password which will be required to connect and play on the server.';
 		
-		if ($this->isPluginLoaded('Standard\Menubar'))
-		{
+		if($this->isPluginLoaded('Standard\Menubar'))
 			$this->buildMenu();
-		}
 			
 		$this->enablePluginEvents();
 	}
 	
 	function onPluginLoaded($pluginId)
 	{
-		if ($pluginId == 'Standard\Menubar')
-		{
+		if($pluginId == 'Standard\Menubar')
 			$this->buildMenu();
-		}
 	}
 	
 	function buildMenu()
@@ -96,8 +101,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	
 	function chatNext($login)
 	{
-		if (!AdminGroup::contains($login)) return;
-		if ($this->storage->serverStatus->code != 4)
+		if($this->storage->serverStatus->code != 4)
 		{
 			$this->displayWrongState($login);
 			return;
@@ -107,8 +111,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	
 	function chatRestart($login)
 	{
-		if (!AdminGroup::contains($login)) return;
-		if ($this->storage->serverStatus->code != 4)
+		if($this->storage->serverStatus->code != 4)
 		{
 			$this->displayWrongState($login);
 			return;
@@ -118,7 +121,6 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	
 	function chatChooseMode($login)
 	{
-		if (!AdminGroup::contains($login)) return;
 		$win = ChooseMode::Create($login);
 		$win->centerOnScreen();
 		$win->show();
@@ -126,19 +128,16 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	
 	function chatSetName($login, $name)
 	{
-		if (!AdminGroup::contains($login)) return;
 		$this->connection->setServerName($name);
 	}
 	
 	function chatSetBandwidth($login, $speed)
 	{
-		if (!AdminGroup::contains($login)) return;
 		$this->connection->setConnectionRates(intval($speed));
 	}
 	
 	function chatSetPassword($login, $password)
 	{
-		if (!AdminGroup::contains($login)) return;
 		$this->connection->setServerPassword($password);
 	}
 	

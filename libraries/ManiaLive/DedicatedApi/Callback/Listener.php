@@ -11,7 +11,7 @@
 
 namespace ManiaLive\DedicatedApi\Callback;
 
-interface Listener extends  \ManiaLive\Event\Listener
+interface Listener extends \ManiaLive\Event\Listener
 {
 	/**
 	 * Method called when a Player join the server

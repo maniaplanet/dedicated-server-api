@@ -13,9 +13,9 @@ namespace ManiaLiveApplication;
 
 use ManiaLive\Features\Updater;
 
-const Version = 260;
+const Version = 274;
 
-if (extension_loaded('pcntl'))
+if(extension_loaded('pcntl'))
 	declare(ticks = 1); 
 
 class Application extends \ManiaLive\Application\AbstractApplication

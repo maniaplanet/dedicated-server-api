@@ -11,28 +11,26 @@
 
 namespace ManiaLive\Features\ChatCommand;
 
-use ManiaLive\Utilities\Logger;
-use ManiaLive\Data\Storage;
-use ManiaLive\DedicatedApi\Connection;
-use ManiaLive\Utilities\Console;
 use ManiaLive\Event\Dispatcher;
+use ManiaLive\DedicatedApi\Callback\Listener as ServerListener;
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
+use ManiaLive\DedicatedApi\Connection;
+use ManiaLive\Data\Storage;
+use ManiaLive\Utilities\Console;
+use ManiaLive\Utilities\Logger;
 
-class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\DedicatedApi\Callback\Listener
+final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListener
 {
-
-	protected $registeredCommands = array();
-
-	/**
-	 * @return \ManiaLive\Features\ChatCommand\Interpreter
-	 */
-	static function getInstance()
-	{
-		return parent::getInstance();
-	}
+	const NOT_REGISTERED_AT_ALL     = 0;
+	const REGISTERED_DIFFERENTLY    = 1;
+	const REGISTERED_AS_POLYMORPHIC = 2;
+	const REGISTERED_EXACTLY        = 3;
+	
+	private $registeredCommands = array();
 
 	protected function __construct()
 	{
-		Dispatcher::register(\ManiaLive\DedicatedApi\Callback\Event::getClass(), $this);
+		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_PLAYER_CHAT);
 
 		$command = new Command('help', 0);
 		$command->addLoginAsFirstParameter = true;
@@ -44,8 +42,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 
 		$command = new Command('man', 1);
 		$command->addLoginAsFirstParameter = true;
-		$command->help = 'Display help for every commands you give as parameter'."\n".
-			'exemple of usage: /man man';
+		$command->help = 'Display help for every commands you give as parameter'."\n".'exemple of usage: /man man';
 		$command->isPublic = true;
 		$command->log = false;
 		$command->callback = array($this, 'man');
@@ -54,8 +51,7 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 
 		$command = new Command('man', 2);
 		$command->addLoginAsFirstParameter = true;
-		$command->help = 'Display help for the command with the corresponding parameters'."\n".
-			'exemple of usage: /man man 2';
+		$command->help = 'Display help for the command with the corresponding parameters'."\n".'exemple of usage: /man man 2';
 		$command->isPublic = true;
 		$command->log = false;
 		$command->callback = array($this, 'man');
@@ -70,32 +66,25 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 	 */
 	function register(Command $command)
 	{
-		//Get the number of parameters
-		list($requiredParametersCount, $parametersCount) = $this->getCommandParametersCount($command);
-		//Now we can register the command for each count of parameters
-		$increment = $requiredParametersCount;
+		list($requiredCount, $totalCount) = $this->getCommandParametersCount($command);
+		$commandName = strtolower($command->name);
+		$count = $requiredCount;
 		try
 		{
+			if($command->parametersCount == -1 && isset($this->registeredCommands[$commandName]))
+				throw new CommandAlreadyRegisteredException($command->name.'|'.$command->parametersCount);
 			do
 			{
-				$isRegitered = $this->isRegistered($command->name, $command->parametersCount);
-				if($isRegitered >= 2)
-				{
+				if($this->isRegistered($commandName, $count) > self::REGISTERED_DIFFERENTLY)
 					throw new CommandAlreadyRegisteredException($command->name.'|'.$command->parametersCount);
-				}
-				$this->registeredCommands[strtolower($command->name)][$increment] = $command;
+				$this->registeredCommands[$commandName][$count] = $command;
 			}
-			while($increment++ < $parametersCount);
+			while($count++ < $totalCount);
 		}
 		catch(\Exception $e)
 		{
-			for($i = $increment; $i >= $requiredParametersCount; $i--)
-			{
-				if(isset($this->registeredCommands[strtolower($command->name)][$i]) && $this->registeredCommands[strtolower($command->name)][$i] === $command)
-				{
-					unset($this->registeredCommands[strtolower($command->name)][$i]);
-				}
-			}
+			while(--$count >= $requiredCount)
+				unset($this->registeredCommands[$commandName][$count]);
 			throw $e;
 		}
 	}
@@ -104,26 +93,21 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 	 * Check if the given command with the number of argument given exists
 	 * @param string $commandName the name of the command
 	 * @param int $parametersCount the number of argument
-	 * @return bool
+	 * @return integer
 	 */
-	function isRegistered($commandName, $parametersCount)
+	function isRegistered($commandName, $parametersCount = -2)
 	{
-		if(isset($this->registeredCommands[strtolower($commandName)]))
+		$commandName = strtolower($commandName);
+		if(isset($this->registeredCommands[$commandName]))
 		{
-			if(isset($this->registeredCommands[strtolower($commandName)][-1]))
-			{
-				return 3;
-			}
-			elseif(isset($this->registeredCommands[strtolower($commandName)][$parametersCount]))
-			{
-				return 2;
-			}
+			if(isset($this->registeredCommands[$commandName][$parametersCount]))
+				return self::REGISTERED_EXACTLY;
+			else if(isset($this->registeredCommands[$commandName][-1]))
+				return self::REGISTERED_AS_POLYMORPHIC;
 			else
-			{
-				return 1;
-			}
+				return self::REGISTERED_DIFFERENTLY;
 		}
-		return 0;
+		return self::NOT_REGISTERED_AT_ALL;
 	}
 
 	/**
@@ -137,358 +121,194 @@ class Interpreter extends \ManiaLib\Utils\Singleton implements \ManiaLive\Dedica
 		{
 			$commands[$commandName] = array();
 			foreach($value as $parametersCount => $command)
-			{
 				$commands[$commandName][$parametersCount] = clone $command;
-			}
 		}
 		return $commands;
 	}
 
 	/**
-	 * Unregister the giver Command
+	 * Unregister the given Command
 	 * Once unregistered a command is no more available
 	 * @param Command $command
 	 */
 	function unregister(Command $command)
 	{
-		list($requiredParametersCount, $parametersCount) = $this->getCommandParametersCount($command);
-		$increment = $requiredParametersCount;
+		list($requiredCount, $totalCount) = $this->getCommandParametersCount($command);
+		$commandName = strtolower($command->name);
+		$count = $requiredCount;
 		do
 		{
-			if($this->isRegistered($command->name, $increment) == 2
-				&& $this->registeredCommands[$command->name][$increment] === $command)
-			{
-				unset($this->registeredCommands[$command->name][$increment]);
-				if(!$this->registeredCommands[$command->name])
-				{
-					unset($this->registeredCommands[$command->name]);
-				}
-				unset($command);
-			}
+			if($this->isRegistered($commandName, $count) == self::REGISTERED_EXACTLY
+					&& $this->registeredCommands[$commandName][$count] === $command)
+				unset($this->registeredCommands[$commandName][$count]);
 		}
-		while($increment++ < $parametersCount);
+		while($count++ < $totalCount);
+		if(!$this->registeredCommands[$commandName])
+			unset($this->registeredCommands[$commandName]);
 	}
 
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
 	{
-		// TODO Handle params such as "a string with spaces"
-		if($isRegistredCmd)
+		if(!$isRegistredCmd)
+			return;
+		
+		$cmdAndArgs = explode(' ', $text, 2);
+		$command = substr($cmdAndArgs[0], 1);
+		$parameters = count($cmdAndArgs) > 1 ? $cmdAndArgs[1] : null;
+		
+		if($command === 'version')
+			return;
+		
+		$isRegistered = $this->isRegistered($command);
+		if($isRegistered == self::REGISTERED_AS_POLYMORPHIC)
+			$this->callCommand($login, $text, $command, $parameters, true);
+		else if($isRegistered == self::NOT_REGISTERED_AT_ALL)
+			Connection::getInstance()->chatSendServerMessage(
+					'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.',
+					$login, true);
+		else
 		{
-			$tmpResult = explode('"', $text);
-			$parameters = array();
-			for($i = 0; $i < count($tmpResult); $i += 2)
-			{
-				$tmp = explode(' ', $tmpResult[$i]);
-				foreach($tmp as $temp)
-				{
-					if($temp !== '' && $temp !== ' ')
-					{
-						$parameters[] = $temp;
-					}
-				}
-				if($i + 1 < count($tmpResult))
-				{
-					$parameters[] = $tmpResult[$i + 1];
-				}
-			}
-
 			if($parameters)
 			{
-				$command = substr(array_shift($parameters), 1);
-				$isRegistered = $this->isRegistered($command, count($parameters));
-				if($isRegistered == 2)
-				{
-					$this->callCommand($login, $text, $command, $parameters);
-				}
-				elseif($isRegistered == 1)
-				{
-					$message = 'The command you entered exists but has not the correct number of parameters, use $<$o$FC4/man '.$command.'$> for more details';
-					Connection::getInstance()->chatSendServerMessage($message,
-						Storage::getInstance()->getPlayerObject($login), true);
-					$this->man($login, $command, -1);
-				}
-				elseif($isRegistered == 3)
-				{
-					$this->callCommand($login, $text, $command, $parameters, true);
-				}
-				elseif($command !== 'version')
-				{
-					$player = Storage::getInstance()->getPlayerObject($login);
-					if($player)
-					{
-						Connection::getInstance()->chatSendServerMessage(
-							'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.',
-							Storage::getInstance()->getPlayerObject($login), true);
-					}
-				}
+				$matches = array();
+				preg_match_all('/"([^"]+)"|([^\s]+)/', $parameters, $matches);
+				$parameters = array_map(
+						function($str, $word) { return $str != '' ? $str : $word; },
+						$matches[1], $matches[2]);
+			}
+			else
+				$parameters = array();
+			
+			$isRegistered = $this->isRegistered($command, count($parameters));
+			if($isRegistered == self::REGISTERED_EXACTLY)
+				$this->callCommand($login, $text, $command, $parameters);
+			else
+			{
+				Connection::getInstance()->chatSendServerMessage(
+						'The command you entered exists but has not the correct number of parameters, use $<$o$FC4/man '.$command.'$> for more details',
+						$login, true);
+				$this->man($login, $command);
 			}
 		}
 	}
 
-	protected function callCommand($login, $text, $command, $parameters = array(),
-		$polymorphicCommand = false)
+	private function callCommand($login, $text, $commandName, $parameters = array(), $polymorphicCommand = false)
 	{
-		if(!$polymorphicCommand)
-		{
-			$commandObject = $this->registeredCommands[strtolower($command)][count($parameters)];
-		}
-		else
-		{
-			$commandObject = $this->registeredCommands[strtolower($command)][-1];
-		}
+		$command = $this->registeredCommands[strtolower($commandName)][$polymorphicCommand ? -1 : count($parameters)];
 
-		if((!count($commandObject->authorizedLogin) || in_array($login,
-				$commandObject->authorizedLogin)))
+		if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
 		{
-			if($commandObject->log)
-			{
+			if($command->log)
 				Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text);
-			}
 
-			if($commandObject->addLoginAsFirstParameter)
-			{
+			if($command->addLoginAsFirstParameter)
 				array_unshift($parameters, $login);
-			}
-			call_user_func_array($commandObject->callback, $parameters);
+			
+			call_user_func_array($command->callback, $parameters);
 		}
 		else
-		{
-			Connection::getInstance()->chatSendServerMessage('$f00You are not authorized to use this command!',
-				Storage::getInstance()->getPlayerObject($login), true);
-		}
+			Connection::getInstance()->chatSendServerMessage(
+					'$f00You are not authorized to use this command!', $login, true);
 	}
 
 	function help($login)
 	{
-		$connection = Connection::getInstance();
-
-		$commandeAvalaible = array();
+		$availableCommands = array();
 		foreach($this->registeredCommands as $commands)
-		{
-			foreach($commands as $argumentCount => $command)
-			{
-				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login,
-						$command->authorizedLogin)))
+			foreach($commands as $command)
+				if($command->isPublic && (!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin)))
 				{
-					if(!in_array($command->name, $commandeAvalaible))
-					{
-						$commandeAvalaible[] = $command->name;
-					}
+					$availableCommands[] = $command->name;
+					continue 2;
 				}
-			}
-		}
 
-		$receiver = Storage::getInstance()->getPlayerObject($login);
-		if(count($commandeAvalaible))
-		{
-			$connection->chatSendServerMessage('Available commands are: '.implode(', ',
-					$commandeAvalaible), $receiver, true);
-		}
+		if(count($availableCommands))
+			Connection::getInstance()->chatSendServerMessage(
+					'Available commands are: '.implode(', ', $availableCommands), $login, true);
 		else
-		{
-			$connection->chatSendServerMessage('There is no command available',
-				$receiver, true);
-		}
+			Connection::getInstance()->chatSendServerMessage(
+					'There is no command available', $login, true);
 	}
 
-	function man($login, $commandName, $parametersCount = -1)
+	function man($login, $commandName, $parametersCount = -2)
 	{
 		$commandName = strtolower($commandName);
-		$receiver = Storage::getInstance()->getPlayerObject($login);
-		if($parametersCount == -1 && isset($this->registeredCommands[$commandName]))
+		if($parametersCount == -2 && isset($this->registeredCommands[$commandName]))
 		{
 			$help = array();
 			$help[] = 'Available $<$o$FC4'.$commandName.'$> commands:';
 			foreach($this->registeredCommands[$commandName] as $command)
 			{
-				if(!count($command->authorizedLogin) || in_array($login,
-						$command->authorizedLogin))
+				if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
 				{
-					$help[] = '$<$o$FC4'.$command->name.' ('.$command->parametersCount.')$>'.($command->help
-								? ':'.$command->help : '');
+					$help[] = '$<$o$FC4'.$command->name.' ('.$command->parametersCount.')$>'.
+							($command->help ? ':'.$command->help : '');
 				}
 			}
 			$text = implode("\n", $help);
 		}
-		elseif(isset($this->registeredCommands[$commandName][$parametersCount]))
+		else if(isset($this->registeredCommands[$commandName][$parametersCount]))
 		{
 			$command = $this->registeredCommands[$commandName][$parametersCount];
-			if(!count($command->authorizedLogin) || in_array($login,
-					$command->authorizedLogin))
-			{
-				$text = 'man page for command $<$o$FC4'.$command->name.' ('.$parametersCount.')$>'.($command->help
-							? "\n".$command->help : '');
-			}
+			if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
+				$text = '$<$o$FC4'.$command->name.' ('.$command->parametersCount.')$>'.
+						($command->help ? ':'.$command->help : '');
 			else
-			{
 				$text = 'This command does not exists use help to see available commands';
-			}
 		}
 		else
-		{
 			$text = 'This command does not exists use help to see available commands';
-		}
 
-		Connection::getInstance()->chatSendServerMessage($text, $receiver, true);
+		Connection::getInstance()->chatSendServerMessage($text, $login, true);
 	}
 
-	protected function getCommandParametersCount(Command $command)
+	private function getCommandParametersCount(Command $command)
 	{
 		if($command->parametersCount !== null)
-		{
 			return array($command->parametersCount, $command->parametersCount);
-		}
 		else
 		{
 			if(is_array($command->callback))
-			{
-				$className = $command->callback[0];
-				$method = $command->callback[1];
-			}
+				list($class, $method) = $command->callback;
 			else
-			{
-				$callback = explode('::', $command->callback);
-				$className = $callback[0];
-				$method = $callback[1];
-			}
-			if($className != '')
-			{
-				$reflection = new \ReflectionMethod($className, $method);
-			}
-			else
-			{
-				$reflection = new \ReflectionFunction($method);
-			}
-			$requiredParametersCount = ($command->addLoginAsFirstParameter ? $reflection->getNumberOfRequiredParameters() - 1
-						: $reflection->getNumberOfRequiredParameters());
-			$parametersCount = ($command->addLoginAsFirstParameter ? $reflection->getNumberOfParameters() - 1
-						: $reflection->getNumberOfParameters());
-			return array($requiredParametersCount, $parametersCount);
+				list($class, $method) = explode('::', $command->callback);
+			
+			$reflection = new \ReflectionMethod($class, $method);
+			
+			$requiredCount = $reflection->getNumberOfRequiredParameters();
+			$totalCount = $reflection->getNumberOfParameters();
+			
+			if($command->addLoginAsFirstParameter)
+				return array($requiredCount-1, $totalCount-1);
+			return array($requiredCount, $totalCount);
 		}
 	}
 
-	function onPlayerConnect($login, $isSpectator)
-	{
-		
-	}
-
-	function onPlayerDisconnect($login)
-	{
-		
-	}
-
-	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries)
-	{
-		
-	}
-
-	function onEcho($internal, $public)
-	{
-		
-	}
-
-	function onServerStart()
-	{
-		
-	}
-
-	function onServerStop()
-	{
-		
-	}
-
-	function onBeginMatch($map)
-	{
-		
-	}
-
-	function onEndMatch($rankings, $map)
-	{
-		
-	}
-
-	function onBeginMap($map, $warmUp, $matchContinuation)
-	{
-		
-	}
-
-	function onEndMap($rankings, $map, $wasWarmUp,
-		$matchContinuesOnNextMap, $restartMap)
-	{
-		
-	}
-
-	function onBeginRound()
-	{
-		
-	}
-
-	function onEndRound()
-	{
-		
-	}
-
-	function onStatusChanged($statusCode, $statusName)
-	{
-		
-	}
-
-	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap,
-		$checkpointIndex)
-	{
-		
-	}
-
-	function onPlayerFinish($playerUid, $login, $timeOrScore)
-	{
-		
-	}
-
-	function onPlayerIncoherence($playerUid, $login)
-	{
-		
-	}
-
-	function onBillUpdated($billId, $state, $stateName, $transactionId)
-	{
-		
-	}
-
-	function onTunnelDataReceived($playerUid, $login, $data)
-	{
-		
-	}
-
-	function onMapListModified($curMapIndex, $nextMapIndex,
-		$isListModified)
-	{
-		
-	}
-
-	function onPlayerInfoChanged($playerInfo)
-	{
-		
-	}
-
-	function onManualFlowControlTransition($transition)
-	{
-		
-	}
-
-	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam)
-	{
-		
-	}
-	
-	function onRulesScriptCallback($param1, $param2)
-	{
-		
-	}
+	function onPlayerConnect($login, $isSpectator) {}
+	function onPlayerDisconnect($login) {}
+	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
+	function onEcho($internal, $public) {}
+	function onServerStart() {}
+	function onServerStop() {}
+	function onBeginMatch($map) {}
+	function onEndMatch($rankings, $map) {}
+	function onBeginMap($map, $warmUp, $matchContinuation) {}
+	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
+	function onBeginRound() {}
+	function onEndRound() {}
+	function onStatusChanged($statusCode, $statusName) {}
+	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
+	function onPlayerFinish($playerUid, $login, $timeOrScore) {}
+	function onPlayerIncoherence($playerUid, $login) {}
+	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
+	function onTunnelDataReceived($playerUid, $login, $data) {}
+	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {}
+	function onPlayerInfoChanged($playerInfo) {}
+	function onManualFlowControlTransition($transition) {}
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
+	function onRulesScriptCallback($param1, $param2) {}
 }
 
-class CommandAlreadyRegisteredException extends \Exception
-{
-	
-}
+class CommandAlreadyRegisteredException extends \Exception {}
 
 ?>

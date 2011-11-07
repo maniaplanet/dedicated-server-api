@@ -16,11 +16,22 @@ namespace ManiaLive\Threading;
  */
 class Config extends \ManiaLib\Utils\Singleton
 {
+	public $phpPath;
 	public $enabled = false;
 	public $busyTimeout = 20;
 	public $pingTimeout = 2;
 	public $sequentialTimeout = 1;
 	public $chunkSize = 10;
+
+	function __construct()
+	{
+		if(APP_OS == 'WIN')
+			$this->phpPath = 'php.exe';
+		else
+			$this->phpPath = '`which php`';
+		
+		$this->logsPath = APP_ROOT.'logs';
+	}
 }
 
 ?>

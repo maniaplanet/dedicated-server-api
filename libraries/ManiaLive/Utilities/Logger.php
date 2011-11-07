@@ -11,8 +11,6 @@
 
 namespace ManiaLive\Utilities;
 
-use ManiaLive\Config\Loader;
-
 class Logger
 {
 	private static $logs = array();
@@ -27,37 +25,25 @@ class Logger
 	static function getLog($name, $subfolder = '')
 	{
 		$id = $subfolder.'_'.$name;
-		if (isset(self::$logs[$id]))
-		{
+		if(isset(self::$logs[$id]))
 			return self::$logs[$id];
-		}
 		
 		$log = new Logger($name, $subfolder);
 		self::$logs[$id] = $log;
 		return $log;
 	}
 	
-	function __construct($name, $subfolder = '')
+	private function __construct($name, $subfolder = '')
 	{
 		// if path does not exist ...
 		$config = \ManiaLive\Config\Config::getInstance();
 		if(!is_dir($config->logsPath))
-		{
-			mkdir($config->logsPath, "0777", true);
-		}
-			
-		// build path ...
+			mkdir($config->logsPath, '0777', true);
+		
 		if ($subfolder != '') 
-		{
-			$subfolder = $subfolder . '_';
-		}
+			$subfolder = $subfolder.'_';
 		
-		// append filename to path ...
-		$this->path = $config->logsPath . '/';
-		$this->path .= $config->logsPrefix;
-		$this->path .= $subfolder;
-		$this->path .= 'log_' . $name . '.txt';
-		
+		$this->path = $config->logsPath.'/'.$config->logsPrefix.$subfolder.'log_'.$name.'.txt';
 		$this->enabled = true;
 	}
 	
@@ -73,10 +59,8 @@ class Logger
 	
 	function write($text)
 	{		
-		if ($this->enabled)
-		{
-			error_log(date("Y.m.d_H:i ") . $text . APP_NL, 3, $this->path);
-		}
+		if($this->enabled)
+			error_log(date('Y.m.d_H:i ').$text.APP_NL, 3, $this->path);
 	}
 }
 ?>

@@ -25,7 +25,7 @@ class GameInfos extends AbstractStructure
 	const GAMEMODE_STUNTS = 6;
 	
 	public $gameMode;
-	public $nbMap;
+	public $nbMaps;
 	public $chatTime;
 	public $finishTimeout;
 	public $allWarmUpDuration;

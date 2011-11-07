@@ -48,6 +48,14 @@ abstract class AbstractStructure
 		
 		return $element->$property;
 	}
+	
+	function toArray()
+	{
+		$out = array();
+		foreach(get_object_vars($this) as $key => $value)
+			$out[ucfirst($key)] = $value;
+		return $out;
+	}
 }
 
 ?>

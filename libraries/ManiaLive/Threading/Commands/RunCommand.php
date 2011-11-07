@@ -13,8 +13,6 @@ namespace ManiaLive\Threading\Commands;
 
 use ManiaLive\Threading\Runnable;
 
-use ManiaLive\Threading\WrongTypeException;
-
 class RunCommand extends Command
 {
 	function __construct(Runnable $runnable, $callback = null)

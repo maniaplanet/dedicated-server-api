@@ -13,21 +13,23 @@ namespace ManiaLive\Event;
 
 abstract class Event
 {
-	protected $source;
+	const ALL = 0xFFFFFFFF;
+	
+	protected $onWhat;
 	
 	final static function getClass()
 	{
 		return get_called_class();
 	}
 	
-	function __construct($source)
+	function __construct($onWhat)
 	{
-		$this->source = $source;
+		$this->onWhat = $onWhat;
 	}
 	
-	function getSource()
+	final function getMethod()
 	{
-		return $this->source;
+		return $this->onWhat;
 	}
 	
 	abstract function fireDo($listener);

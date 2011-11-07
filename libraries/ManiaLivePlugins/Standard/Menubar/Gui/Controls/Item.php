@@ -1,124 +1,61 @@
 <?php
+/**
+ * Menubar Plugin - Handle dynamically a menu
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Menubar\Gui\Controls;
 
-use ManiaLive\Gui\Windowing\Controls\Frame;
 use ManiaLib\Gui\Layouts\Column;
 use ManiaLib\Gui\Elements\Bgs1;
 use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Label;
+use ManiaLive\Gui\Controls\Frame;
+use ManiaLive\Gui\ActionHandler;
 
-class Item extends \ManiaLive\Gui\Windowing\Control
+class Item extends \ManiaLive\Gui\Control
 {
-	private $label;
 	private $background;
-	private $container;
-	private $subitems;
-	private $name;
 	private $icon;
-	private $action;
+	private $container;
+	private $subitems = array();
 	
-	function initializeComponents()
+	function __construct($name = '', $sizeX = 30, $sizeY = 6)
 	{
-		$this->name = $this->getParam(0, '');
-		$this->sizeX = $this->getParam(1, 30);
-		$this->sizeY = $this->getParam(2, 6);
-		$this->action = null;
-		
-		$this->subitems = array();
+		$this->sizeX = $sizeX;
+		$this->sizeY = $sizeY;
 
-		$this->container = new Frame(0, 0, new Column(0, 0, Column::DIRECTION_UP));
+		$this->container = new Frame(-$sizeX, 0, new Column(0, 0, Column::DIRECTION_DOWN));
+		$this->container->setVisibility(false);
 		$this->addComponent($this->container);
 		
 		$this->background = new Bgs1();
-		$this->background->setSize($this->getSizeX(), $this->getSizeY());
+		$this->background->setSize($sizeX, $sizeY);
 		$this->background->setSubStyle(Bgs1::NavButton);
 		$this->addComponent($this->background);
 		
 		$this->icon = new Icons128x128_1();
 		$this->icon->setVisibility(false);
 		$this->icon->setValign('center');
+		$this->icon->setPosition(0.3, -$sizeY / 2);
 		$this->addComponent($this->icon);
 		
-		$this->label = new Label();
-		$this->label->setText($this->name);
-		$this->label->setHalign('right');
-		$this->label->setValign('center');
-		$this->label->setStyle(Label::TextCardSmallScores2Rank);
-		$this->addComponent($this->label);
+		$label = new Label();
+		$label->setStyle(Label::TextCardSmallScores2Rank);
+		$label->setAlign('right', 'center2');
+		$label->setPosition($sizeX - 2, -$sizeY / 2);
+		$label->setText($name);
+		$this->addComponent($label);
 	}
-	
-	function hasAction()
-	{
-		return ($this->action !== null);
-	}
-	
-	function beforeDraw()
-	{
-		if ($this->action !== null)
-		{
-			$this->label->setText('$i'.$this->name);
-		}
-		else
-		{
-			$this->label->setText($this->name);
-		}
-		
-		$this->label->setPositionY($this->getSizeY() / 2 - 0.2);
-		$this->label->setPositionX($this->getSizeX() - 2);
-		
-		$this->background->setAction($this->callback('doAction'));
-		
-		if ($this == $this->getPlayerValue('active'))
-		{
-			$this->background->setSubStyle(Bgs1::NavButtonBlink);
-			$this->icon->setPosition(-3.5);
-			$this->icon->setSize(9, 9);
-		}
-		else
-		{
-			$this->background->setSubStyle(Bgs1::BgListLine);
-			$this->icon->setSize(7, 7);
-			$this->icon->setPosition(0.3, $this->getSizeY() / 2);
-		}
-		
-		$this->container->setPosition(-$this->getSizeX(), $this->getSizeY());
-		$this->container->clearComponents();
-		
-		foreach ($this->subitems as $item)
-		{
-			$this->container->addComponent($item);
-		}
-	}
-	
-	function doAction($login)
-	{
-		if ($this->action == null)
-		{
-			$this->toggleSubitems($login);
-		}
-		else
-		{
-			call_user_func($this->action, $login);
-		}
-	}
-	
-	function afterDraw() {}
 	
 	function setAction($action)
 	{
-		$this->action = $action;
-	}
-	
-	function setName($name)
-	{
-		$this->name = $name;
-	}
-	
-	function getName()
-	{
-		return $this->name;
+		$this->background->setAction($action);
 	}
 	
 	function setIcon($icon)
@@ -127,71 +64,54 @@ class Item extends \ManiaLive\Gui\Windowing\Control
 		$this->icon->setSubstyle($icon);
 	}
 	
-	function getIcon()
+	function addSubitem($name, $callback)
 	{
-		return $this->icon;
-	}
-	
-	function toggleSubitems($login)
-	{
-		if ($this->getPlayerValue('active') == $this)
-		{
-			$this->setPlayerValue('active', null);
-			$this->hideSubitems();
-		}
-		else
-		{
-			if ($this->getPlayerValue('active') != null)
-				$this->getPlayerValue('active')->hideSubitems();
-			$this->setPlayerValue('active', $this);
-			$this->showSubitems();
-		}
+		if(!is_callable($callback))
+			return;
 		
-		$this->getWindow()->show();
-	}
-	
-	function hideSubitems()
-	{
-		foreach ($this->subitems as $item)
-		{
-			$item->setVisibility(false);
-		}
-	}
-	
-	function showSubitems()
-	{
-		foreach ($this->subitems as $item)
-		{
-			$item->setVisibility(true);
-		}
-	}
-	
-	function getItem($name)
-	{
-		if (isset($this->subitems[$name]))
-		{
-			return $this->subitems[$name];
-		}
-		else
-		{
-			return null;
-		}
+		$action = ActionHandler::getInstance()->createAction($callback);
+		$this->actions[] = $action;
+		$item = new Subitem($name);
+		$item->setAction($action);
+		$this->container->addComponent($item);
+		$this->subitems[] = $item;
 	}
 	
 	function hasSubitems()
 	{
-		return (!empty($this->subitems));
+		return !empty($this->subitems);
 	}
 	
-	function addSubitem(Subitem $item)
+	function showSubitems()
 	{
-		$item->setVisibility(false);
-		$this->subitems[$item->getName()] = $item;
+		$this->container->setVisibility(true);
+		$this->background->setSubStyle(Bgs1::NavButtonBlink);
+		$this->icon->setPosX(-3.5);
+		$this->icon->setSize(9, 9);
+		$this->redraw();
+	}
+	
+	function hideSubitems()
+	{
+		$this->container->setVisibility(false);
+		$this->background->setSubStyle(Bgs1::BgListLine);
+		$this->icon->setPosX(.3);
+		$this->icon->setSize(7, 7);
+		$this->redraw();
+	}
+	
+	function toggleSubitems()
+	{
+		if($this->container->isVisible())
+			$this->hideSubitems();
+		else
+			$this->showSubitems();
 	}
 	
 	function destroy()
 	{
 		$this->subitems = array();
+		$this->container->destroy();
 		parent::destroy();
 	}
 }

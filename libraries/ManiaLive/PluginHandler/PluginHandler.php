@@ -11,62 +11,76 @@
 
 namespace ManiaLive\PluginHandler;
 
-use ManiaLive\Application\ErrorHandling;
-use ManiaLive\Cache\Cache;
-use ManiaLive\Config\Loader;
-use ManiaLive\Utilities\Console;
-use ManiaLive\PluginHandler\Plugin;
-use ManiaLive\Utilities\XmlParser;
 use ManiaLive\Event\Dispatcher;
-use ManiaLive\Utilities;
+use ManiaLive\Application\Listener as AppListener;
+use ManiaLive\Application\Event as AppEvent;
+use ManiaLive\Application\ErrorHandling;
+use ManiaLive\Utilities\Console;
 
 /**
- * Scans the pluginhandler.xml for Plugins to load.
- * Manages dependencies and provides an interface to Plugins to communicate between
- * each other.
+ * Load the plugins.
+ * Manages dependencies and provides an interface to Plugins to communicate between each other.
  *
  * @author Florian Schnell
  */
-class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Application\Listener
+class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListener
 {
-
 	/**
 	 * @var array[Plugins]
 	 */
 	protected $plugins;
-	protected $settings;
-
-	/**
-	 * @return \ManiaLive\PluginHandler\PluginHandler
-	 */
-	static function getInstance()
-	{
-		return parent::getInstance();
-	}
 
 	static function getClassFromPluginId($pluginId)
 	{
 		$parts = explode('\\', $pluginId);
-		$class = end($parts);
-		return '\ManiaLivePlugins\\'.$pluginId.'\\'.$class;
+		return '\\ManiaLivePlugins\\'.$pluginId.'\\'.end($parts);
 	}
 
 	static function getPluginIdFromClass($class)
 	{
-		$class = explode('\\', $class);
-		array_shift($class);
-		array_shift($class);
-		array_pop($class);
-		return implode('\\', $class);
+		return implode('\\', array_slice(explode('\\', $class), -3, 2));
 	}
 
-	/**
-	 * @param string $config_file
-	 */
 	final function __construct()
 	{
 		$this->plugins = array();
-		Dispatcher::register(\ManiaLive\Application\Event::getClass(), $this);
+		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT | AppEvent::ON_TERMINATE);
+	}
+
+	final function addPlugin($classname)
+	{
+		$plugin = $this->loadPlugin($classname);
+
+		try
+		{
+			$this->checkPluginDependency($plugin);
+			$plugin->onLoad();
+			Dispatcher::dispatch(new Event(Event::ON_PLUGIN_LOADED, $plugin->getId()));
+		}
+		catch(\Exception $e)
+		{
+			$this->unloadPlugin($classname);
+			ErrorHandling::processRuntimeException($e);
+			return false;
+		}
+
+		$plugin->onReady();
+		return true;
+	}
+	
+	final function deletePlugin($className)
+	{
+		$this->unloadPlugin($className);
+	}
+
+	/**
+	 * Retrieves a Plugin from the intern maintained list.
+	 * @param string $name
+	 * @return \ManiaLive\PluginHandler\Plugin
+	 */
+	final private function getPlugin($pluginId)
+	{
+		return (isset($this->plugins[$pluginId]) ? $this->plugins[$pluginId] : null);
 	}
 
 	/**
@@ -75,15 +89,11 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	 * @param \ManiaLive\Application\Plugin $plugin
 	 * @return bool
 	 */
-	final protected function registerPlugin(Plugin $plugin)
+	final private function registerPlugin(Plugin $plugin)
 	{
-		$name = null;
-
-		// check for naming conflict
 		$id = $plugin->getId();
 		if(!isset($this->plugins[$id]))
 		{
-			// register plugin
 			$this->plugins[$id] = $plugin;
 			return true;
 		}
@@ -96,73 +106,53 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	 * and initializing the plugins.
 	 * @throws Exception
 	 */
-	final protected function loadPlugins()
+	final private function loadPlugins()
 	{
 		Console::println('[PluginHandler] Start plugin load process:');
 
-		foreach(\ManiaLive\Application\Config::getInstance()->plugins as $path)
+		foreach(\ManiaLive\Application\Config::getInstance()->plugins as $pluginId)
 		{
-			$plugin = null;
-
-			// load plugin class ...
-			$items = explode('\\', $path);
-			$className = '\\ManiaLivePlugins\\'.$path.'\\'.end($items);
+			$className = self::getClassFromPluginId($pluginId);
 
 			if(!class_exists($className))
-			{
-				$className = '\\ManiaLivePlugins\\'.$path.'\\Plugin';
-			}
+				$className = '\\ManiaLivePlugins\\'.$pluginId.'\\Plugin';
 
 			$this->loadPlugin($className);
 		}
 
 		foreach($this->plugins as $id => $plugin)
 		{
-			if($this->checkPluginDependency($plugin))
+			try
 			{
-				// this plugin is accepted
-				try
-				{
-					$plugin->onLoad();
-				}
-				catch(\Exception $e)
-				{
-					$this->unLoadPlugin(self::getClassFromPluginId($id));
-					ErrorHandling::processRuntimeException($e);
-					continue;
-				}
-
-				// plugin loaded!
-				Dispatcher::dispatch(new Event($id, Event::ON_PLUGIN_LOADED));
+				$this->checkPluginDependency($plugin);
+				$plugin->onLoad();
+				Dispatcher::dispatch(new Event(Event::ON_PLUGIN_LOADED, $id));
+			}
+			catch(\Exception $e)
+			{
+				$this->unloadPlugin(self::getClassFromPluginId($id));
+				ErrorHandling::processRuntimeException($e);
 			}
 		}
 
-		// everything's up and ready to go!
 		foreach($this->plugins as $plugin)
-		{
 			$plugin->onReady();
-		}
 
 		Console::println('[PluginHandler] All registered plugins have been loaded');
 	}
 
-	protected function loadPlugin($className)
+	final private function loadPlugin($className)
 	{
 		// check whether plugin could be loaded ...
 		if(class_exists($className))
 		{
-			$plugin = new $className(self::getPluginIdFromClass($className));
-
+			$plugin = new $className();
+			
 			Console::println('[PluginHandler] is loading '.$plugin->getId().' ...');
-
-			// init plugin ...
 			$plugin->onInit();
 
-			// register plugin ...
 			if(!$this->registerPlugin($plugin))
-			{
 				throw new Exception("The plugin '{$plugin->getId()}' could not be registered, maybe there is a naming conflict!");
-			}
 
 			return $plugin;
 		}
@@ -172,10 +162,10 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 		}
 	}
 
-	protected function unLoadPlugin($className)
+	final private function unloadPlugin($className)
 	{
 		$pluginId = self::getPluginIdFromClass($className);
-		if(array_key_exists($pluginId, $this->plugins))
+		if(isset($this->plugins[$pluginId]))
 		{
 			foreach($this->plugins as $plugin)
 			{
@@ -186,10 +176,9 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 				}
 			}
 			$this->plugins[$pluginId]->onUnload();
-
-			$this->plugins[$pluginId] = null;
 			unset($this->plugins[$pluginId]);
-			Dispatcher::dispatch(new Event($pluginId, Event::ON_PLUGIN_UNLOADED));
+			
+			Dispatcher::dispatch(new Event(Event::ON_PLUGIN_UNLOADED, $pluginId));
 		}
 	}
 
@@ -202,11 +191,7 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	 */
 	final private function checkPluginDependency(Plugin $plugin)
 	{
-		$dependencies = $plugin->getDependencies();
-		$depPluginName = null;
-		$dependentPlugin = null;
-
-		foreach($dependencies as $dependency)
+		foreach($plugin->getDependencies() as $dependency)
 		{
 			// look whether dependent plugin exists at all
 			$depPluginName = $dependency->getPluginId();
@@ -214,49 +199,25 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 			{
 				$dependentPlugin = $this->plugins[$depPluginName];
 
-				// check min version number ...
-				if($dependency->getMinVersion() != Dependency::NO_LIMIT
-					&& version_compare($dependentPlugin->getVersion(),
-						$dependency->getMinVersion()) >= 0)
-				{
+				if($dependency->getMinVersion() != Dependency::NO_LIMIT && version_compare($dependentPlugin->getVersion(), $dependency->getMinVersion()) < 0)
 					throw new DependencyTooOldException($plugin, $dependency);
-				}
-
-				// check max version number ...
-				if($dependency->getMaxVersion() != Dependency::NO_LIMIT
-					&& version_compare($dependentPlugin->getVersion(),
-						$dependency->getMaxVersion()) <= 0)
-				{
+				if($dependency->getMaxVersion() != Dependency::NO_LIMIT && version_compare($dependentPlugin->getVersion(), $dependency->getMaxVersion()) > 0)
 					throw new DependencyTooNewException($plugin, $dependency);
-				}
 			}
 
 			// special case, check for core.
 			elseif($depPluginName == 'ManiaLive')
 			{
-				if(\ManiaLiveApplication\Version < $dependency->getMinVersion()
-					&& $dependency->getMinVersion() != Dependency::NO_LIMIT)
-				{
+				if($dependency->getMinVersion() != Dependency::NO_LIMIT && version_compare(\ManiaLiveApplication\Version, $dependency->getMinVersion()) < 0)
 					throw new DependencyTooOldException($plugin, $dependency);
-				}
-
-				if(\ManiaLiveApplication\Version > $dependency->getMaxVersion()
-					&& $dependency->getMaxVersion() != Dependency::NO_LIMIT)
-				{
+				if($dependency->getMaxVersion() != Dependency::NO_LIMIT && version_compare(\ManiaLiveApplication\Version, $dependency->getMaxVersion()) > 0)
 					throw new DependencyTooNewException($plugin, $dependency);
-				}
 			}
 
 			// dependent plugin is not loaded!
 			else
-			{
-				// dependent plugin has not been found!
 				throw new DependencyNotFoundException($plugin, $dependency);
-
-				return false;
-			}
 		}
-		return true;
 	}
 
 	/**
@@ -283,9 +244,7 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 		$plugin = $this->getPlugin($pluginId);
 
 		if($plugin == null)
-		{
 			throw new Exception("The plugin '$pluginId' which you want to call a method from, does not exist!");
-		}
 
 		// add calling plugin as first parameter ...
 		array_push($methodArgs, $pluginCalling->getId());
@@ -297,65 +256,16 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 		return $method->invokeArgs($plugin, $methodArgs);
 	}
 
-	final public function addPlugin($classname)
-	{
-		//Load Plugins
-		$plugin = $this->loadPlugin($classname);
-
-		if($this->checkPluginDependency($plugin))
-		{
-			// this plugin is accepted
-			try
-			{
-				$plugin->onLoad();
-			}
-			catch(\Exception $e)
-			{
-				$this->unLoadPlugin($classname);
-				ErrorHandling::processRuntimeException($e);
-				return false;
-			}
-
-			// plugin loaded!
-			Dispatcher::dispatch(new Event($plugin->getId(), Event::ON_PLUGIN_LOADED));
-		}
-
-		// everything's up and ready to go!
-		$plugin->onReady();
-
-		return true;
-	}
-
-	final public function deletePlugin($classname)
-	{
-		//Unload Plugins
-		$this->unLoadPlugin($classname);
-
-		// clean last parts from memory
-		gc_collect_cycles();
-	}
-
-	/**
-	 * Retrieves a Plugin from the intern maintained list.
-	 * @param string $name
-	 * @return \ManiaLive\PluginHandler\Plugin
-	 */
-	final protected function getPlugin($pluginId)
-	{
-		return (isset($this->plugins[$pluginId]) ? $this->plugins[$pluginId] : null);
-	}
-
 	/**
 	 * Checks whether a specific Plugin has been loaded.
 	 * @param int $pluginId
 	 * @return bool Whether the Plugin is loaded or not.
 	 */
-	final public function isPluginLoaded($pluginId, $min = Dependency::NO_LIMIT,
-		$max = Dependency::NO_LIMIT)
+	final public function isPluginLoaded($pluginId, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
 	{
-		return (isset($this->plugins[$pluginId])
-		&& (version_compare($this->plugins[$pluginId]->getVersion(), $min) >= 0 || $min == Dependency::NO_LIMIT)
-		&& (version_compare($this->plugins[$pluginId]->getVersion(), $max) <= 0 || $max == Dependency::NO_LIMIT));
+		return isset($this->plugins[$pluginId])
+			&& ($min == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $min) >= 0)
+			&& ($max == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $max) <= 0);
 	}
 
 	/**
@@ -363,50 +273,12 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 	 */
 	final public function getLoadedPluginsList()
 	{
-		$list = array();
-		foreach($this->plugins as $id => $plugin)
-		{
-			$list[$id] = $plugin->getId();
-		}
-		return $list;
+		return array_keys($this->plugins);
 	}
-
-	final public function fetchPluginCacheEntry($pluginId, $key)
-	{
-		if(isset($this->plugins[$pluginId]))
-		{
-			return Cache::fetchFromModuleCache($this->plugins[$pluginId], $key);
-		}
-	}
-
-	final public function existsPluginCacheEntry($pluginId, $key)
-	{
-		if(isset($this->plugins[$pluginId]))
-		{
-			return Cache::existsInModuleCache($this->plugins[$pluginId], $key);
-		}
-	}
-
-	// implement the listener interface ...
 
 	function onInit()
 	{
 		$this->loadPlugins();
-	}
-
-	function onRun()
-	{
-		
-	}
-
-	function onPreLoop()
-	{
-		
-	}
-
-	function onPostLoop()
-	{
-		
 	}
 
 	function onTerminate()
@@ -414,9 +286,9 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements \ManiaLive\Appl
 		unset($this->plugins);
 	}
 
+	function onRun() {}
+	function onPreLoop() {}
+	function onPostLoop() {}
 }
 
-class Exception extends \Exception
-{
-	
-}
+class Exception extends \Exception {}

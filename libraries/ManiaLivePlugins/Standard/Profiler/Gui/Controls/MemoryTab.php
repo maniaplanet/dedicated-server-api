@@ -1,119 +1,141 @@
 <?php
+/**
+ * Profiler Plugin - Show statistics about ManiaLive
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Profiler\Gui\Controls;
 
-use ManiaLib\Gui\Elements\BgRaceScore2;
-use ManiaLib\Gui\Elements\BgsPlayerCard;
-use ManiaLib\Gui\Elements\Quad;
 use ManiaLib\Gui\Layouts\Line;
+use ManiaLib\Gui\Elements\Quad;
 use ManiaLib\Gui\Elements\Label;
+use ManiaLive\Gui\Controls\Frame;
+use ManiaLive\Event\Dispatcher;
+use ManiaLivePlugins\Standard\Profiler\Listener as MonitorListener;
+use ManiaLivePlugins\Standard\Profiler\Event as MonitorEvent;
 use ManiaLivePlugins\Standard\Profiler\Profiler;
-use ManiaLive\Gui\Windowing\Controls\Frame;
 
-class MemoryTab extends \ManiaLive\Gui\Windowing\Controls\Tab
+class MemoryTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorListener
 {
-	public $stats;
-	protected $cnt_bars;
-	protected $cnt_lines;
-	protected $memory_limit;
-	protected $diffs;
-	protected $stat_last;
-	protected $stat_removed;
+	private $bars = array();
+	private $lines = array();
+	private $memoryStats = array();
+	private $memoryLimit;
 	
-	function initializeComponents()
-	{
-		$this->diffs = array();
-		$this->memory_limit = intval(str_replace('M', 1024*1024, ini_get('memory_limit')));
-		if ($this->memory_limit == -1) $this->memory_limit = Profiler::MEM_DEFAULT;
-		
-		$this->cnt_bars = new Frame();
-		$this->cnt_bars->applyLayout(new Line());
-		$this->addComponent($this->cnt_bars);
-		
-		$this->cnt_lines = new Frame();
-		$this->addComponent($this->cnt_lines);
-	}
+	private $barsFrame;
+	private $linesFrame;
 	
-	function beforeDraw()
+	function __construct()
 	{
-		$this->cnt_bars->clearComponents();
-		$this->cnt_bars->setPosition(1, $this->getSizeY() - 1);
+		$this->setTitle('Memory Graph');
 		
-		$this->cnt_lines->clearComponents();
-		$this->cnt_lines->setPosition(1, $this->getSizeY() - 1);
+		$this->memoryLimit = intval(str_replace('M', 1024*1024, ini_get('memory_limit')));
+		if($this->memoryLimit == -1)
+			$this->memoryLimit = Profiler::MEM_DEFAULT;
 		
-		if (empty($this->stats)) return;
+		$this->barsFrame = new Frame();
+		$this->barsFrame->setLayout(new Line());
+		$this->addComponent($this->barsFrame);
 		
-		$max_height = $this->getSizeY() - 6;
-		$max_mem = max($this->stats);
-		$max_width = $this->getSizeX() - 2;
+		$this->linesFrame = new Frame();
+		$this->addComponent($this->linesFrame);
 		
-		$percent = ceil(100 / $this->memory_limit * $max_mem);
-		$max_percent = ceil($percent * 1.5);
-		$step = $max_percent / 4;
-
-		// draw bars
-		foreach ($this->stats as $i => $stat)
+		$heightStep = ($this->sizeY - 6) / 4;
+		for($i = 1; $i <= 4; ++$i)
 		{
-			$frame = new Frame();
-			$frame->setSizeX($max_width / 10);
+			$ui = new Frame();
+			$ui->setPosition(0, $i * $heightStep);
 			
-			// show in comparison to maximal allowed
-			$ui = new Quad();
-			$ui->setSizeX($frame->getSizeX());
-			$ui->setSizeY(($max_height / $max_percent) * (100 / $this->memory_limit * $stat));
-			$ui->setStyle(null);
+			$line = new Quad();
+			$line->setBgcolor('fff');
+			$line->setSize($this->sizeX - 2, 0.2);
+			$ui->addComponent($line);
 			
-			// calculate delta to last usage
-			if ($i == 0)
-				$diff = $stat - $this->stat_removed;
-			else
-				$diff = $stat - $this->stat_last;
+			$text = new Label();
+			$text->setText('$fff0% of total');
+			$text->setPosition(3, 3.5);
+			$ui->addComponent($text);
 			
-			// display different colors for freeing or reserving of memory
-			if ($diff == 0 || abs($diff) == $stat)
-			{
-				$ui->setBgcolor('999');
-			}
-			elseif ($diff > 0)
-			{
-				$ui->setBgcolor('a00');
-			}
-
-			else 
-			{
-				$ui->setBgcolor('0a0');
-			}
-			
-			$ui->setValign('bottom');
-			$frame->addComponent($ui);
-			
-			$this->stat_last = $stat;
-			if ($i == 0) $this->stat_removed = $stat;
-			
-			$this->cnt_bars->addComponent($frame);
+			$this->linesFrame->addComponent($ui);
+			$this->lines[] = array($line, $text, $ui);
 		}
 		
-		// draw lines
-		for ($i = 1; $i <= 4; $i++)
-		{
-			$ui = new Quad();
-			$ui->setStyle(null);
-			$ui->setBgcolor('fff');
-			$ui->setSize($this->getSizeX() - 2, 0.1);
-			$ui->setPosition(0, -$max_height / 4 * $i);
-			$this->cnt_lines->addComponent($ui);
-			
-			$ui = new Label();
-			$ui->setText(($step * $i) . '% of total');
-			$ui->setPosition(3, -$max_height / 4 * $i - 2.5);
-			$this->cnt_lines->addComponent($ui);
-		}
+		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_MEMORY_VALUE);
 	}
+	
+	function onResize($oldX, $oldY)
+	{
+		$this->barsFrame->setPosition(1, 1 - $this->sizeY);
+		$this->linesFrame->setPosition(1, 1 - $this->sizeY);
+		
+		$i = 1;
+		$heightStep = ($this->sizeY - 6) / 4;
+		foreach($this->lines as $line)
+		{
+			$line[0]->setSizeX($this->sizeX - 2);
+			$line[2]->setPosY($i++ * $heightStep);
+		}
+		$width = ($this->sizeX - 2) / 10;
+		$heightFactor = 2 * ($this->sizeY - 6) / ceil(3 * max($this->memoryStats));
+		foreach($this->bars as $i => $bar)
+			$bar->setSize($width, $heightFactor * $this->memoryStats[$i]);
+	}
+	
+	function onNewMemoryValue($newValue)
+	{
+		$lastValue = end($this->memoryStats);
+		$this->memoryStats[] = $newValue;
+		if(count($this->memoryStats) > 10)
+		{
+			array_shift($this->memoryStats);
+			$bar = array_shift($this->bars);
+			$this->barsFrame->removeComponent($bar);
+		}
+		else
+		{
+			$bar = new Quad();
+			$bar->setSizeX(($this->sizeX - 2) / 10);
+			$bar->setValign('bottom');
+		}
+		
+		if($lastValue === false || $lastValue == $newValue)
+			$bar->setBgcolor('999');
+		else if($lastValue < $newValue)
+			$bar->setBgcolor('a00');
+		else
+			$bar->setBgcolor('0a0');
+		
+		$this->barsFrame->addComponent($bar);
+		$this->bars[] = $bar;
+		
+		$heightFactor = 2 * ($this->sizeY - 6) / ceil(3 * max($this->memoryStats));
+		foreach($this->bars as $i => $bar)
+			$bar->setSizeY($this->memoryStats[$i] * $heightFactor);
+		
+		$i = 1;
+		$step = round(37.5 * max($this->memoryStats) / $this->memoryLimit, 2);
+		foreach($this->lines as $line)
+			$line[1]->setText('$fff'.($i++*$step).'% of total');
+		
+		$this->redraw();
+	}
+	
+	function onNewCpuValue($newValue) {}
+	function onNewNetworkValue($newValue) {}
 	
 	function destroy()
 	{
-		unset($this->stats);
+		Dispatcher::unregister(MonitorEvent::getClass(), $this);
+		$this->barsFrame->destroy();
+		$this->linesFrame->destroy();
+		$this->bars = array();
+		$this->lines = array();
+		$this->memoryStats = array();
 		parent::destroy();
 	}
 }

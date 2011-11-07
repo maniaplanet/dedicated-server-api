@@ -11,15 +11,13 @@
 
 namespace ManiaLive\Threading;
 
-use ManiaLive\Config\Loader;
+use ManiaLive\Event\Dispatcher;
+use ManiaLive\Features\Tick\Listener as TickListener;
+use ManiaLive\Features\Tick\Event as TickEvent;
 use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Threading\Commands\QuitCommand;
 use ManiaLive\Utilities\Console;
-use ManiaLive\Event\Dispatcher;
-use ManiaLive\Threading\Tools;
-use ManiaLive\Threading\Thread;
 use ManiaLive\Utilities\Logger;
-use ManiaLive\Database\SQLite\Connection;
 
 /**
  * Thread-Management is done here.
@@ -30,7 +28,7 @@ use ManiaLive\Database\SQLite\Connection;
  * 
  * @author Florian Schnell
  */
-class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Features\Tick\Listener
+class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 {
 	private $running;
 	private $threads;
@@ -101,7 +99,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements \ManiaLive\Feature
 		}
 		
 		// register me ...
-		Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		Dispatcher::register(TickEvent::getClass(), $this);
 	}
 	
 	/**

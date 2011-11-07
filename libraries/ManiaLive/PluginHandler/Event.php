@@ -11,34 +11,26 @@
 
 namespace ManiaLive\PluginHandler;
 
-/**
- * @author Florian Schnell
- */
 class Event extends \ManiaLive\Event\Event
 {
-	const ON_PLUGIN_LOADED = 1;
+	const ON_PLUGIN_LOADED   = 1;
 	const ON_PLUGIN_UNLOADED = 2;
 	
-	protected $onWhat;
+	protected $pluginId;
 	
-	function __construct($source, $onWhat)
+	function __construct($onWhat, $pluginId)
 	{
-		parent::__construct($source);
-		$this->onWhat = $onWhat;
+		parent::__construct($onWhat);
+		$this->pluginId = $pluginId;
 	}
 	
 	function fireDo($listener)
 	{
-		$method = null;
-		
 		switch($this->onWhat)
 		{
-			case self::ON_PLUGIN_LOADED: $method = 'onPluginLoaded'; break;
-			case self::ON_PLUGIN_UNLOADED: $method = 'onPluginUnloaded'; break;
+			case self::ON_PLUGIN_LOADED: $listener->onPluginLoaded($this->pluginId); break;
+			case self::ON_PLUGIN_UNLOADED: $listener->onPluginUnloaded($this->pluginId); break;
 		}
-		
-		if ($method != null)
-			call_user_func_array(array($listener, $method), array($this->source));
 	}
 }
 ?>

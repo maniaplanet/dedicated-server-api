@@ -1,19 +1,23 @@
 <?php
+/**
+ * Menubar Plugin - Handle dynamically a menu
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Menubar;
 
-use ManiaLivePlugins\Standard\Version;
 use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLivePlugins\Standard\Menubar\Gui\Controls\Subitem;
-use ManiaLive\Gui\Windowing\CustomUI;
-use ManiaLive\Gui\Windowing\WindowHandler;
 use ManiaLive\Features\Admin\AdminGroup;
-use ManiaLive\Config\Loader;
-use ManiaLive\Gui\Windowing\Window;
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
+use ManiaLive\PluginHandler\Event as PluginEvent;
+use ManiaLivePlugins\Standard\Menubar\Gui\Controls\Subitem;
 use ManiaLivePlugins\Standard\Menubar\Gui\Controls\Item;
 use ManiaLivePlugins\Standard\Menubar\Gui\Windows\Menu;
-use ManiaLive\PluginHandler\Plugin;
-use ManiaLivePlugins\Standard\TestPlugin;
 
 class Menubar extends \ManiaLive\PluginHandler\Plugin
 {
@@ -28,150 +32,86 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 		$this->setPublicMethod('initMenu');
 	}
 	
-	protected function createMenu($login)
-	{
-		$menu = Menu::Create($login);
-		$menu->set($this->buildMenu($login));
-		$menu->setPosition(136, 45);
-		$menu->setScale(0.8);
-		$menu->show();
-	}
-	
-	public function refreshMenubar()
-	{
-		// create menu for players
-		foreach ($this->storage->players as $login => $player)
-			$this->createMenu($login);
-		
-		// create menu for spectators
-		foreach ($this->storage->spectators as $login => $player)
-			$this->createMenu($login);
-	}
-	
 	public function onReady()
 	{
-		$this->enableStorageEvents();
-		
 		$this->refreshMenubar();
 		
-		// display menu if player connects
-		$this->enableDedicatedEvents();
-		
-		// enable events for plugins
-		$this->enablePluginEvents();
+		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT);
+		$this->enablePluginEvents(PluginEvent::ON_PLUGIN_UNLOADED);
 		
 		$this->loaded = true;
 	}
 	
-	public function onPlayerConnect($login, $isSpectator)
+	public function refreshMenubar()
 	{
-		// create menu for the player that just joined
-		$this->createMenu($login);
+		foreach($this->storage->players as $login => $player)
+			$this->onPlayerConnect($login, true);
+		foreach($this->storage->spectators as $login => $player)
+			$this->onPlayerConnect($login, false);
 	}
 	
-	protected function buildMenu($login)
-	{	
-		$menu = array();
+	public function onPlayerConnect($login, $isSpectator)
+	{
+		$menu = Menu::Create($login);
+		$menu->setPosition(136, 45);
+		$menu->setScale(0.8);
+		$menu->clearItems();
 		
-		// build first menu level
-		foreach ($this->menu as $plugin_id => $section)
+		foreach($this->menu as $section)
 		{
-			$entry = new Item($section['name']);
-			$entry->setSize(30, 6);
-			$entry->setIcon($section['icon']);
-			
-			// build second level for buttons
-			foreach ($section['buttons'] as $button)
+			switch(count($section['buttons']))
 			{
-				if (count($section['buttons']) == 1)
-				{
-					// if this is admin only, then check player belongs to admin group
-					if (($button['admin'] && AdminGroup::contains($login))
-						|| $button['admin'] === false)
-					{
-						$entry->setAction($button['action']);
-					}
-					else
-					{
-						$entry->setVisibility(false);
-					}
-				}
-				else 
-				{
-					// if this is admin only, then check player belongs to admin group
-					if (($button['admin'] && AdminGroup::contains($login))
-						|| $button['admin'] === false)
-					{
-						$sub = new Subitem($button['name']);
-						$sub->setAction($button['action']);
-						$entry->addSubitem($sub);
-					}
-				}
+				case 0: break;
+				case 1:
+					if(!$section['buttons'][0]['admin'] || AdminGroup::contains($login))
+						$menu->addFinalItem($section['name'], $section['icon'], $section['buttons'][0]['callback']);
+					break;
+				default:
+					$entry = $menu->addItem($section['name'], $section['icon']);
+					foreach($section['buttons'] as $button)
+						if(!$button['admin'] || AdminGroup::contains($login))
+							$entry->addSubitem($button['name'], $button['callback']);
 			}
-			
-			// if menu has any subitems, then show it
-			if ($entry->hasSubitems() || $entry->hasAction())
-				$menu[] = $entry;
 		}
 		
-		return $menu;
+		$menu->show();
 	}
 	
 	// initializes the menu for a specific plugin
-	function initMenu($icon, $plugin_id = null)
+	function initMenu($icon, $pluginId = null)
 	{
-		$id = explode('\\', $plugin_id);
+		$id = explode('\\', $pluginId);
 		
-		$entry = array(
-			'name' => end($id),
-			'icon' => $icon,
-			'buttons' => array()
-		);
+		$this->menu[$pluginId] = array('name' => end($id), 'icon' => $icon, 'buttons' => array());
 		
-		$this->menu[$plugin_id] = $entry;
-		
-		if ($this->loaded)
-		{
+		if($this->loaded)
 			$this->refreshMenubar();
-		}
 	}
 	
 	// adds button for the plugin.
-	function addButton($name, $action, $admin = false, $plugin_id = null)
+	function addButton($name, $callback, $admin = false, $pluginId = null)
 	{
-		if (!isset($this->menu[$plugin_id]))
-			$this->initMenu($plugin_id, Icons128x128_1::DefaultIcon);
+		if(!isset($this->menu[$pluginId]))
+			$this->initMenu(Icons128x128_1::DefaultIcon, $pluginId);
 		
-		$button = array(
-			'name' => $name,
-			'action' => $action,
-			'admin' => $admin
-		);
+		$this->menu[$pluginId]['buttons'][] = array('name' => $name, 'callback' => $callback, 'admin' => $admin);
 		
-		$this->menu[$plugin_id]['buttons'][] = $button;
-		
-		if ($this->loaded)
-		{
+		if($this->loaded)
 			$this->refreshMenubar();
-		}
 	}
 	
 	function onPluginUnloaded($pluginId)
 	{
 		// ignore own unloading
 		if ($pluginId == $this->getId())
-		{
 			return;
-		}
 		
 		// remove button from bar
-		if (isset($this->menu[$pluginId]))
+		if(isset($this->menu[$pluginId]))
 		{
 			unset($this->menu[$pluginId]);
+			$this->refreshMenubar();
 		}
-		
-		// and redraw
-		$this->refreshMenubar();
 	}
 	
 	function onUnload()

@@ -11,24 +11,31 @@
 
 namespace ManiaLive\PluginHandler;
 
+use ManiaLive\Event\Dispatcher;
+use ManiaLive\Application\Listener as AppListener;
+use ManiaLive\Application\Event as AppEvent;
+use ManiaLive\Cache\Listener as CacheListener;
+use ManiaLive\Cache\Event as CacheEvent;
+use ManiaLive\Data\Listener as PlayerListener;
+use ManiaLive\Data\Event as PlayerEvent;
+use ManiaLive\DedicatedApi\Callback\Adapter as ServerAdapter;
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
+use ManiaLive\Features\Tick\Listener as TickListener;
+use ManiaLive\Features\Tick\Event as TickEvent;
+use ManiaLive\PluginHandler\Listener as PluginListener;
+use ManiaLive\PluginHandler\Event as PluginEvent;
+use ManiaLive\Threading\Listener as ThreadListener;
+use ManiaLive\Threading\Event as ThreadEvent;
+
 use ManiaLive\Cache\Entry;
 use ManiaLive\Cache\Cache;
-use ManiaLive\Utilities\Logger;
-use ManiaLive\Application\FatalException;
-use ManiaLive\Config\Loader;
-use ManiaLive\Event\Dispatcher;
 use ManiaLive\Data\Storage;
+use ManiaLive\Database\Connection as DbConnection;
+use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Features\ChatCommand\Interpreter;
 use ManiaLive\Features\ChatCommand\Command;
-use ManiaLive\Gui\Toolkit\Cards\Dialog;
-use ManiaLive\Gui\Displayables\Blank;
-use ManiaLive\Gui\Toolkit\Elements\Bgs1;
-use ManiaLive\Gui\Displayables\Advanced;
-use ManiaLive\Gui\Handler\GuiHandler;
-use ManiaLive\Database\Connection as DbConnection;
-use ManiaLive\Utilities\Console as Console;
-use ManiaLive\GuiHandler\GuiToolkit;
-use ManiaLive\DedicatedApi\Connection;
+use ManiaLive\Utilities\Console;
+use ManiaLive\Utilities\Logger;
 
 /**
  * Extend this class to create a Plugin that can be used with the
@@ -40,10 +47,8 @@ use ManiaLive\DedicatedApi\Connection;
  * 
  * @author Florian Schnell
  */
-abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implements \ManiaLive\Threading\Listener, \ManiaLive\Gui\Windowing\Listener, \ManiaLive\Features\Tick\Listener, \ManiaLive\Application\Listener, \ManiaLive\Data\Listener, \ManiaLive\PluginHandler\Listener, \ManiaLive\Cache\Listener
+abstract class Plugin extends ServerAdapter implements ThreadListener, TickListener, AppListener, PlayerListener, PluginListener, CacheListener
 {
-
-	private $uid;
 	/**
 	 * @var string
 	 */
@@ -52,6 +57,10 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * @var string
 	 */
 	private $author;
+	/**
+	 * @var string
+	 */
+	private $id;
 	/**
 	 * @var integer
 	 */
@@ -63,14 +72,13 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	/**
 	 * Event subscriber swichtes
 	 */
-	private $eventsApplication;
-	private $eventsThreading;
-	private $eventsWindowing;
-	private $eventsTick;
-	private $eventsServer;
-	private $eventsStorage;
-	private $eventsPlugins;
-	private $eventsCaching;
+	private $eventsApplication = 0;
+	private $eventsThreading = 0;
+	private $eventsTick = false;
+	private $eventsServer = 0;
+	private $eventsStorage = 0;
+	private $eventsPlugins = 0;
+	private $eventsCaching = 0;
 	/**
 	 * @var ManiaLive\PluginHandler\PluginHandler
 	 */
@@ -79,10 +87,6 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * @var array[\ReflectionMethod]
 	 */
 	private $methods;
-	/**
-	 * @var array
-	 */
-	private $settings;
 	/**
 	 * @var \ManiaLive\Threading\ThreadPool
 	 */
@@ -108,63 +112,23 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 */
 	protected $db;
 
-	final function __construct($plugin_id)
+	final function __construct()
 	{
-		$this->settings = array();
-		$this->eventsApplication = false;
-		$this->eventsThreading = false;
-		$this->eventsTick = false;
-		$this->eventsWindowing = false;
-		$this->eventsPlugins = false;
-
 		$this->dependencies = array();
 		$this->methods = array();
 
-		$classPath = get_class($this);
-		$items = explode('\\', $classPath);
-
-		$this->uid = uniqid();
-
-		$this->id = $plugin_id;
-		array_shift($items);
-		array_pop($items);
-		$this->name = array_pop($items);
-		$this->author = array_shift($items);
+		$items = explode('\\', get_class($this));
+		$this->author = $items[1];
+		$this->name = $items[2];
+		$this->id = $this->author.'\\'.$this->name;
 		$this->setVersion(1);
 
 		$this->connection = Connection::getInstance();
-
-
-
 		$this->pluginHandler = PluginHandler::getInstance();
 		$this->storage = Storage::getInstance();
 		$this->threadPool = \ManiaLive\Threading\ThreadPool::getInstance();
 		$this->threadId = false;
 		$this->chatCommands = array();
-	}
-
-	final protected function getUid()
-	{
-		return $this->uid;
-	}
-
-	// TODO maybe tell the plugin handler here that the plugin did successfully unload?
-	function __destruct()
-	{
-//		echo "plugn " . get_called_class() . " successfully unloaded!\n";
-	}
-
-	/**
-	 * This will unregister all chat commands that have been
-	 * created using the plugins method registerChatCommand.
-	 * @see \ManiaLive\PluginHandler\Plugin::registerChatCommand
-	 */
-	final public function unregisterAllChatCommands()
-	{
-		while($command = array_pop($this->chatCommands))
-		{
-			Interpreter::getInstance()->unregister($command);
-		}
 	}
 
 	/**
@@ -197,21 +161,21 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	}
 
 	/**
-	 * Returns author\name combination for identification.
-	 * @return string
-	 */
-	final public function getId()
-	{
-		return $this->id;
-	}
-
-	/**
 	 * Returns the author of the Plugin.
 	 * @return string
 	 */
 	final public function getAuthor()
 	{
 		return $this->author;
+	}
+
+	/**
+	 * Returns author\name combination for identification.
+	 * @return string
+	 */
+	final public function getId()
+	{
+		return $this->id;
 	}
 
 	/**
@@ -244,12 +208,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 		try
 		{
 			$method = new \ReflectionMethod($this, $name);
-
 			if(!$method->isPublic())
-			{
 				throw new Exception('The method "'.$name.'" must be declared as public!');
-			}
-
 			$this->methods[$name] = $method;
 		}
 		catch(\ReflectionException $ex)
@@ -263,35 +223,28 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * The method has been marked as public by the owner.
 	 * The plugin has to be registered at the plugin handler.
 	 * @param string $plugin_name
-	 * @param string $method_name
+	 * @param string $method
 	 */
-	final protected function callPublicMethod($plugin_id, $method_name)
+	final protected function callPublicMethod($pluginId, $method)
 	{
 		$this->restrictIfUnloaded();
-		$args = func_get_args();
-		array_shift($args);
-		array_shift($args);
-		return $this->pluginHandler->callPublicMethod($this, $plugin_id,
-			$method_name, $args);
+		return $this->pluginHandler->callPublicMethod($this, $pluginId, $method, array_slice(func_get_args(), 2));
 	}
 
 	/**
 	 * Gets a method, that has been marked as public, from this Plugin.
 	 * This method will be invoked by the Plugin Handler.
 	 * If you want to call a method from another Plugin, then use the internal callPublicMethod function.
-	 * @param \ReflectionMethod $method_name
+	 * @param string $method
+	 * @return \ReflectionMethod
 	 * @throws Exception
 	 */
-	final public function getPublicMethod($method_name)
+	final public function getPublicMethod($method)
 	{
-		if(isset($this->methods[$method_name]))
-		{
-			return $this->methods[$method_name];
-		}
+		if(isset($this->methods[$method]))
+			return $this->methods[$method];
 		else
-		{
-			throw new Exception("The method '$method_name' does not exist or has not been set public for plugin '{$this->name}'!");
-		}
+			throw new Exception("The method '$method' does not exist or has not been set public for plugin '{$this->name}'!");
 	}
 
 	/**
@@ -356,27 +309,16 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * @param string $name
 	 * @return bool
 	 */
-	final public function isPluginLoaded($plugin_id, $min = Dependency::NO_LIMIT,
-		$max = Dependency::NO_LIMIT)
+	final public function isPluginLoaded($pluginId, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
 	{
-		return $this->pluginHandler->isPluginLoaded($plugin_id, $min, $max);
-	}
-
-	/**
-	 * Retrieve an array of all the public methods
-	 * of a specific plugin.
-	 * @param string $plugin_id
-	 */
-	final public function getPluginPublicMethods($plugin_id)
-	{
-		return $this->pluginHandler->getPublicMethods($plugin_id);
+		return $this->pluginHandler->isPluginLoaded($pluginId, $min, $max);
 	}
 
 	// Helpers
-	final function enableDatabase()
+	final protected function enableDatabase()
 	{
 		$config = \ManiaLive\Database\Config::getInstance();
-		$this->db = \ManiaLive\Database\Connection::getConnection(
+		$this->db = DbConnection::getConnection(
 				$config->host,
 				$config->username,
 				$config->password,
@@ -386,7 +328,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 		);
 	}
 	
-	final function disableDatabase()
+	final protected function disableDatabase()
 	{
 		$this->db = null;
 	}
@@ -395,46 +337,44 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * Start invoking methods for application intern events which are
 	 * onInit, onRun, onPreLoop, onPostLoop, onTerminate
 	 */
-	final function enableApplicationEvents()
+	final protected function enableApplicationEvents($events = AppEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsApplication)
-		{
-			Dispatcher::register(\ManiaLive\Application\Event::getClass(), $this);
-		}
-		$this->eventsApplication = true;
+		
+		Dispatcher::register(AppEvent::getClass(), $this, $events & ~$this->eventsApplication);
+		$this->eventsApplication |= $events;
 	}
 
 	/**
 	 * Stop listening for application events.
 	 */
-	final function disableApplicationEvents()
+	final protected function disableApplicationEvents($events = AppEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\Application\Event::getClass(), $this);
-		$this->eventsApplication = false;
+		
+		Dispatcher::unregister(AppEvent::getClass(), $this, $events & $this->eventsApplication);
+		$this->eventsApplication &= ~$events;
 	}
 
 	/**
 	 * Start invoking the ticker method (onTick) every second.
 	 */
-	final function enableTickerEvent()
+	final protected function enableTickerEvent()
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsTick)
-		{
-			Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
-		}
+		
+		Dispatcher::register(TickEvent::getClass(), $this);
 		$this->eventsTick = true;
 	}
 
 	/**
 	 * Stop listening for the ticker event.
 	 */
-	final function disableTickerEvent()
+	final protected function disableTickerEvent()
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		
+		Dispatcher::unregister(TickEvent::getClass(), $this);
 		$this->eventsTick = false;
 	}
 
@@ -444,146 +384,115 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * dedicated server.
 	 * Otherwise you can find an online copy here http://server.xaseco.org/callbacks.php
 	 */
-	final function enableDedicatedEvents()
+	final protected function enableDedicatedEvents($events = ServerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsServer)
-		{
-			Dispatcher::register(\ManiaLive\DedicatedApi\Callback\Event::getClass(),
-				$this);
-		}
-		$this->eventsServer = true;
+		
+		Dispatcher::register(ServerEvent::getClass(), $this, $events & ~$this->eventsServer);
+		$this->eventsServer |= $events;
 	}
 
 	/**
 	 * Stop listening for dedicated server events.
 	 */
-	final function disableDedicatedEvents()
+	final protected function disableDedicatedEvents($events = ServerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\DedicatedApi\Callback\Event::getClass(),
-			$this);
-		$this->eventsServer = false;
+		
+		Dispatcher::unregister(ServerEvent::getClass(), $this, $events & $this->eventsServer);
+		$this->eventsServer &= ~$events;
 	}
 
 	/**
 	 * Start listening for Storage events:
 	 * onPlayerNewBestTime, onPlayerNewRank, onPlayerNewBestScore.
 	 */
-	final function enableStorageEvents()
+	final protected function enableStorageEvents($events = PlayerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsStorage)
-		{
-			Dispatcher::register(\ManiaLive\Data\Event::getClass(), $this);
-		}
-		$this->eventsStorage = true;
+		
+		Dispatcher::register(PlayerEvent::getClass(), $this, $events & ~$this->eventsStorage);
+		$this->eventsStorage |= $events;
 	}
 
 	/**
 	 * Stop listening for Storage Events.
 	 */
-	final function disableStorageEvents()
+	final protected function disableStorageEvents($events = PlayerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\Data\Event::getClass(), $this);
-		$this->eventsStorage = false;
-	}
-
-	/**
-	 * Starts to listen for Window events like:
-	 * onWindowClose
-	 */
-	final function enableWindowingEvents()
-	{
-		$this->restrictIfUnloaded();
-		if(!$this->eventsWindowing)
-		{
-			Dispatcher::register(\ManiaLive\Gui\Windowing\Event::getClass(), $this);
-		}
-		$this->eventsWindowing = true;
-	}
-
-	/**
-	 * Stop listening for Window events.
-	 */
-	final function disableWindowingEvents()
-	{
-		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\Gui\Windowing\Event::getClass(), $this);
-		$this->eventsWindowing = false;
+		
+		Dispatcher::unregister(PlayerEvent::getClass(), $this, $events & $this->eventsStorage);
+		$this->eventsStorage &= ~$events;
 	}
 
 	/**
 	 * Starts listening for threading events like:
 	 * onThreadStart, onThreadRestart, onThreadDies, onThreadTimeOut
 	 */
-	final function enableThreadingEvents()
+	final protected function enableThreadingEvents($events = ThreadEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsThreading)
-		{
-			Dispatcher::register(\ManiaLive\Threading\Event::getClass(), $this);
-		}
-		$this->eventsThreading = true;
+		
+		Dispatcher::register(ThreadEvent::getClass(), $this, $events & ~$this->eventsThreading);
+		$this->eventsThreading |= $events;
 	}
 
 	/**
 	 * Stop listening for threading events.
 	 */
-	final function disableThreadingEvents()
+	final protected function disableThreadingEvents($events = ThreadEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\Threading\Event::getClass(), $this);
-		$this->eventsThreading = false;
+		
+		Dispatcher::unregister(ThreadEvent::getClass(), $this, $events & $this->eventsThreading);
+		$this->eventsThreading &= ~$events;
 	}
 
 	/**
 	 * Start listen for plugin events like
 	 * onPluginLoaded and onPluginUnloaded
 	 */
-	final function enablePluginEvents()
+	final protected function enablePluginEvents($events = PluginEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsPlugins)
-		{
-			Dispatcher::register(\ManiaLive\PluginHandler\Event::getClass(), $this);
-		}
-		$this->eventsPlugins = true;
+		
+		Dispatcher::register(PluginEvent::getClass(), $this, $events & ~$this->eventsPlugins);
+		$this->eventsPlugins |= $events;
 	}
 
 	/**
 	 * stop to listen for plugin events.
 	 */
-	final function disablePluginEvents()
+	final protected function disablePluginEvents($events = PluginEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\PluginHandler\Event::getClass(), $this);
-		$this->eventsPlugins = false;
+		
+		Dispatcher::unregister(PluginEvent::getClass(), $this, $events & $this->eventsPlugins);
+		$this->eventsPlugins &= ~$events;
 	}
 
 	/**
 	 * Start listen for cache events like
 	 * onStore, onModify and onDestroy
 	 */
-	final function enableCachingEvents()
+	final protected function enableCachingEvents($events = CacheEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		if(!$this->eventsCaching)
-		{
-			Dispatcher::register(\ManiaLive\Cache\Event::getClass(), $this);
-		}
-		$this->eventsCaching = true;
+		
+		Dispatcher::register(CacheEvent::getClass(), $this, $events & ~$this->eventsCaching);
+		$this->eventsCaching |= $events;
 	}
 
 	/**
 	 * Stop listen for cache events.
 	 */
-	final function disableCachingEvents()
+	final protected function disableCachingEvents($events = CacheEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		Dispatcher::unregister(\ManiaLive\Cache\Event::getClass(), $this);
-		$this->eventsCaching = false;
+		
+		Dispatcher::unregister(CacheEvent::getClass(), $this, $events & $this->eventsCaching);
+		$this->eventsCaching &= ~$events;
 	}
 
 	/**
@@ -591,7 +500,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * @param mixed $value
 	 * @param integer $timeToLive
 	 */
-	final function store($key, $value, $timeToLive = null)
+	final protected function store($key, $value, $timeToLive = null)
 	{
 		return Cache::storeInModuleCache($this, $key, $value, $timeToLive);
 	}
@@ -600,9 +509,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * Fetches data from the cache.
 	 * @param string $key
 	 */
-	final function fetch($pluginId, $key)
+	final protected function fetch($key)
 	{
-		return $this->pluginHandler->fetchPluginCacheEntry($pluginId, $key);
+		return Cache::fetchFromModuleCache($this, $key);
 	}
 
 	/**
@@ -612,18 +521,9 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * @param string $key
 	 * @return bool If the plugin is not found it will return NULL
 	 */
-	final function exists($pluginId, $key)
+	final protected function exists($key)
 	{
-		return $this->pluginHandler->existsPluginCacheEntry($pluginId, $key);
-	}
-
-	/**
-	 * Fetch value from own cache.
-	 * @param string $key
-	 */
-	final function fetchOwn($key)
-	{
-		return Cache::fetchFromModuleCache($this, $key);
+		return Cache::existsInModuleCache($this, $key);
 	}
 
 	/**
@@ -633,13 +533,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	protected function createThread()
 	{
 		if($this->threadId === false)
-		{
 			$this->threadId = $this->threadPool->createThread();
-		}
-		else
-		{
-			return false;
-		}
 		return $this->threadId;
 	}
 
@@ -660,9 +554,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	function killThread()
 	{
 		if($this->threadId !== false)
-		{
 			return $this->threadPool->removeThread($this->threadId);
-		}
 		return false;
 	}
 
@@ -670,32 +562,23 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 * Assigns work only to the thread that has been created by this plugin.
 	 * @param \ManiaLive\Threading\Runnable $work
 	 */
-	protected function sendWorkToOwnThread(\ManiaLive\Threading\Runnable $work,
-		$callback = null)
+	protected function sendWorkToOwnThread(\ManiaLive\Threading\Runnable $work, $callback = null)
 	{
 		if($callback != null)
-		{
 			$callback = array($this, $callback);
-		}
 		if($this->threadId !== false)
-		{
-			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback),
-				$this->threadId);
-		}
+			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback), $this->threadId);
 	}
 
 	/**
 	 * Assign work to a thread.
 	 * @param \ManiaLive\Threading\Runnable $work
 	 */
-	protected function sendWorkToThread(\ManiaLive\Threading\Runnable $work,
-		$callback = null)
+	protected function sendWorkToThread(\ManiaLive\Threading\Runnable $work, $callback = null)
 	{
 		$command = null;
 		if($callback != null)
-		{
 			$callback = array($this, $callback);
-		}
 		if($this->threadPool->getThreadCount() > 0)
 		{
 			$command = new \ManiaLive\Threading\Commands\RunCommand($work, $callback);
@@ -706,28 +589,34 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 
 	/**
 	 * Registers a chatcommand at the Interpreter.
-	 * @param string $command_name
-	 * @param integer $parameter_count
-	 * @param string $callback_method
-	 * @param bool $add_login
+	 * @param string $name
+	 * @param integer $parameterCount
+	 * @param string $method
+	 * @param bool $addLogin
 	 * @param array[string] $authorizedLogin
 	 * @return \ManiaLive\Features\ChatCommand\Command
 	 */
-	final function registerChatCommand($command_name, $callback_method,
-		$parameter_count = 0, $add_login = false, $authorizedLogin = array())
+	final function registerChatCommand($name, $method, $parameterCount = 0, $addLogin = false, $authorizedLogin = array())
 	{
 		$this->restrictIfUnloaded();
-		$cmd = new Command($command_name, $parameter_count, $authorizedLogin);
-		$cmd->callback = array($this, $callback_method);
-		$cmd->addLoginAsFirstParameter = $add_login;
+		$cmd = new Command($name, $parameterCount, $authorizedLogin);
+		$cmd->callback = array($this, $method);
+		$cmd->addLoginAsFirstParameter = $addLogin;
 		$cmd->isPublic = true;
 		Interpreter::getInstance()->register($cmd);
 		$this->chatCommands[] = $cmd;
 
-		// this method will be accessible by other plugins
-		$this->setPublicMethod($callback_method);
-
 		return $cmd;
+	}
+
+	/**
+	 * This will unregister all chat commands that have been
+	 * created using the plugins method registerChatCommand.
+	 */
+	final public function unregisterAllChatCommands()
+	{
+		while($command = array_pop($this->chatCommands))
+			Interpreter::getInstance()->unregister($command);
 	}
 
 	/**
@@ -737,7 +626,7 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	 */
 	final protected function writeLog($text)
 	{
-		Logger::getLog($this->author.''.$this->name)->write($text);
+		Logger::getLog($this->author.'_'.$this->name)->write($text);
 	}
 
 	/**
@@ -751,22 +640,10 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 	}
 
 	// LISTENERS
-	// plugin events ...
-
-	function onInit()
-	{
-		
-	}
-
-	function onLoad()
-	{
-		
-	}
-
-	function onReady()
-	{
-		
-	}
+	// plugin events
+	function onInit() {}
+	function onLoad() {}
+	function onReady() {}
 
 	/**
 	 * If you override this method you might want to
@@ -785,8 +662,8 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 		$this->disableStorageEvents();
 		$this->disableThreadingEvents();
 		$this->disableTickerEvent();
-		$this->disableWindowingEvents();
 		$this->disablePluginEvents();
+		$this->disableCachingEvents();
 
 		// unregister chat commands
 		$this->unregisterAllChatCommands();
@@ -799,250 +676,65 @@ abstract class Plugin extends \ManiaLive\DedicatedApi\Callback\Adapter implement
 		$this->pluginHandler = null;
 		$this->connection = null;
 		$this->dependencies = null;
-		$this->settings = null;
 		$this->methods = null;
 		unset($this->chatCommands);
 	}
 
-	// application events ...
-
-	function onRun()
-	{
-		
-	}
-
-	function onPreLoop()
-	{
-		
-	}
-
-	function onPostLoop()
-	{
-		
-	}
-
-	function onTerminate()
-	{
-		
-	}
-
-	// dedicated callbacks
-
-	function onPlayerConnect($login, $isSpectator)
-	{
-		
-	}
-
-	function onPlayerDisconnect($login)
-	{
-		
-	}
-
-	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
-	{
-		
-	}
-
-	function onPlayerManialinkPageAnswer($playerUid, $login, $answer,array $entries)
-	{
-		
-	}
-
-	function onEcho($internal, $public)
-	{
-		
-	}
-
-	function onServerStart()
-	{
-		
-	}
-
-	function onServerStop()
-	{
-		
-	}
-
-	function onBeginMatch($map)
-	{
-		
-	}
-
-	function onEndMatch($rankings, $map)
-	{
-		
-	}
-
-	function onBeginMap($map, $warmUp, $matchContinuation)
-	{
-		
-	}
-
-	function onEndMap($rankings, $map, $wasWarmUp,
-		$matchContinuesOnNextMap, $restartMap)
-	{
-		
-	}
-
-	function onBeginRound()
-	{
-		
-	}
-
-	function onEndRound()
-	{
-		
-	}
-
-	function onStatusChanged($statusCode, $statusName)
-	{
-		
-	}
-
-	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap,
-		$checkpointIndex)
-	{
-		
-	}
-
-	function onPlayerFinish($playerUid, $login, $timeOrScore)
-	{
-		
-	}
-
-	function onPlayerIncoherence($playerUid, $login)
-	{
-		
-	}
-
-	function onBillUpdated($billId, $state, $stateName, $transactionId)
-	{
-		
-	}
-
-	function onTunnelDataReceived($playerUid, $login, $data)
-	{
-		
-	}
-
-	function onMapListModified($curMapIndex, $nextMapIndex,
-		$isListModified)
-	{
-		
-	}
-
-	function onPlayerInfoChanged($playerInfo)
-	{
-		
-	}
-
-	function onManualFlowControlTransition($transition)
-	{
-		
-	}
-
-	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam)
-	{
-		
-	}
+	// application events
+	function onRun() {}
+	function onPreLoop() {}
+	function onPostLoop() {}
+	function onTerminate() {}
 	
-	function onRulesScriptCallback($param1, $param2)
-	{
-		
-	}
-
-	// windowing events
-
-	function onWindowClose($login, $window)
-	{
-		
-	}
-
-	function onWindowRecover($login, $window)
-	{
-		
-	}
+	// dedicated callbacks
+	function onPlayerConnect($login, $isSpectator) {}
+	function onPlayerDisconnect($login) {}
+	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
+	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
+	function onEcho($internal, $public) {}
+	function onServerStart() {}
+	function onServerStop() {}
+	function onBeginMatch($map) {}
+	function onEndMatch($rankings, $map) {}
+	function onBeginMap($map, $warmUp, $matchContinuation) {}
+	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
+	function onBeginRound() {}
+	function onEndRound() {}
+	function onStatusChanged($statusCode, $statusName) {}
+	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
+	function onPlayerFinish($playerUid, $login, $timeOrScore) {}
+	function onPlayerIncoherence($playerUid, $login) {}
+	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
+	function onTunnelDataReceived($playerUid, $login, $data) {}
+	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {}
+	function onPlayerInfoChanged($playerInfo) {}
+	function onManualFlowControlTransition($transition) {}
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
+	function onRulesScriptCallback($param1, $param2) {}
 
 	// threading events
-
-	function onThreadDies($thread)
-	{
-		
-	}
-
-	function onThreadRestart($thread)
-	{
-		
-	}
-
-	function onThreadStart($thread)
-	{
-		
-	}
-
-	function onThreadTimesOut($thread)
-	{
-		
-	}
+	function onThreadDies($thread) {}
+	function onThreadRestart($thread) {}
+	function onThreadStart($thread) {}
+	function onThreadTimesOut($thread) {}
 
 	// ticker event
-
-	function onTick()
-	{
-		
-	}
+	function onTick() {}
 
 	// storage events
-
-	function onPlayerNewBestScore($player, $score_old, $score_new)
-	{
-		
-	}
-
-	function onPlayerNewBestTime($player, $best_old, $best_new)
-	{
-		
-	}
-
-	function onPlayerNewRank($player, $rank_old, $rank_new)
-	{
-		
-	}
-
-	function onPlayerChangeSide($player, $oldSide)
-	{
-		
-	}
-
-	function onPlayerFinishLap($player, $time, $checkpoints, $nbLap)
-	{
-		
-	}
+	function onPlayerNewBestScore($player, $oldScore, $newScore) {}
+	function onPlayerNewBestTime($player, $oldBest, $newBest) {}
+	function onPlayerNewRank($player, $oldRank, $newRank) {}
+	function onPlayerChangeSide($player, $oldSide) {}
+	function onPlayerFinishLap($player, $time, $checkpoints, $nbLap) {}
 
 	// plugin events
-
-	function onPluginLoaded($pluginId)
-	{
-		
-	}
-
-	function onPluginUnloaded($pluginId)
-	{
-		
-	}
-
+	function onPluginLoaded($pluginId) {}
+	function onPluginUnloaded($pluginId) {}
+	
 	// caching events
-
-	function onStore(Entry $entry)
-	{
-		
-	}
-
-	function onEvict(Entry $entry)
-	{
-		
-	}
-
+	function onStore(Entry $entry) {}
+	function onEvict(Entry $entry) {}
 }
 
 ?>

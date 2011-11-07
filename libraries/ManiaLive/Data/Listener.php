@@ -16,26 +16,26 @@ interface Listener extends \ManiaLive\Event\Listener
 	/**
 	 * Event lauch when a player beat his best Time
 	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
-	 * @param int $best_old
-	 * @param int $best_new
+	 * @param int $oldBest
+	 * @param int $newBest
 	 */
-	function onPlayerNewBestTime($player, $best_old, $best_new);
+	function onPlayerNewBestTime($player, $oldBest, $newBest);
 	
 	/**
 	 * Event lauch when player's rank change
 	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
-	 * @param int $rank_old
-	 * @param int $rank_new
+	 * @param int $oldRank
+	 * @param int $newRank
 	 */
-	function onPlayerNewRank($player, $rank_old, $rank_new);
+	function onPlayerNewRank($player, $oldRank, $newRank);
 	
 	/**
 	 * Event lauch when beat his best score
 	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
-	 * @param int $score_old
-	 * @param int $score_new
+	 * @param int $oldScore
+	 * @param int $newScore
 	 */
-	function onPlayerNewBestScore($player, $score_old, $score_new);
+	function onPlayerNewBestScore($player, $oldScore, $newScore);
 	
 	/**
 	 * Event lauch when the player change to spectator or to player

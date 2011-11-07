@@ -11,15 +11,15 @@
 
 namespace ManiaLive\Cache;
 
-use ManiaLive\Cache\Event;
 use ManiaLive\Event\Dispatcher;
+use ManiaLive\Features\Tick\Listener as TickListener;
+use ManiaLive\Features\Tick\Event as TickEvent;
 
 /**
  * Stores values from all parts of ManiaLive.
  * @author Florian Schnell
  */
-class Cache extends \ManiaLib\Utils\Singleton
-	implements \ManiaLive\Features\Tick\Listener
+class Cache extends \ManiaLib\Utils\Singleton implements TickListener
 {
 	protected static $instanceReturned = false;
 	protected static $storage = array();
@@ -30,13 +30,10 @@ class Cache extends \ManiaLib\Utils\Singleton
 	 */
 	static function getInstance()
 	{
-		if (self::$instanceReturned)
-		{
+		if(self::$instanceReturned)
 			return null;
-		}
 		
 		self::$instanceReturned = true;
-		
 		return parent::getInstance();
 	}
 	
@@ -46,7 +43,7 @@ class Cache extends \ManiaLib\Utils\Singleton
 	 */
 	protected function __construct()
 	{
-		Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		Dispatcher::register(TickEvent::getClass(), $this);
 	}
 	
 	/**
@@ -55,15 +52,13 @@ class Cache extends \ManiaLib\Utils\Singleton
 	 */
 	function onTick()
 	{
-		foreach (self::$storage as $key => $entry)
+		foreach(self::$storage as $key => $entry)
 		{
-			if (!$entry->isAlive())
+			if(!$entry->isAlive())
 			{
 				$entryOld = self::$storage[$key];
-				
 				unset(self::$storage[$key]);
-				
-				Dispatcher::dispatch(new Event(Event::ON_EVICT, array($entryOld)));
+				Dispatcher::dispatch(new Event(Event::ON_EVICT, $entryOld));
 			}
 		}
 	}
@@ -78,10 +73,8 @@ class Cache extends \ManiaLib\Utils\Singleton
 	function store($key, $value, $timeToLive = null)
 	{
 		$entry = new Entry($key, $value, $timeToLive);
-		
-		Dispatcher::dispatch(new Event(Event::ON_STORE, array($entry)));
-		
 		self::$storage[$key] = $entry;
+		Dispatcher::dispatch(new Event(Event::ON_STORE, $entry));
 		
 		return $entry;
 	}
@@ -164,8 +157,6 @@ class Cache extends \ManiaLib\Utils\Singleton
 	}
 }
 
-class Exception extends \Exception {}
-class LockedException extends Exception {}
-class NotFoundException extends Exception {}
+class NotFoundException extends \Exception {}
 
 ?>

@@ -1,83 +1,42 @@
 <?php
+/**
+ * Menubar Plugin - Handle dynamically a menu
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Menubar\Gui\Controls;
 
-use ManiaLive\Gui\Windowing\Container;
-use ManiaLib\Gui\Layouts\Column;
 use ManiaLib\Gui\Elements\Bgs1;
-use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Label;
 
-class Subitem extends \ManiaLive\Gui\Windowing\Control
+class Subitem extends \ManiaLive\Gui\Control
 {
-	private $name;
-	private $label;
 	private $background;
-	private $action;
 	
-	function initializeComponents()
+	function __construct($name = '', $sizeX = 30, $sizeY = 6)
 	{
-		$this->name = $this->getParam(0, '');
-		$this->sizeX = $this->getParam(1, 30);
-		$this->sizeY = $this->getParam(2, 6);
+		$this->sizeX = $sizeX;
+		$this->sizeY = $sizeY;
 		
-		$this->action = array();
-		
-		$this->background = new Bgs1();
-		$this->background->setSize($this->getSizeX(), $this->getSizeY());
-		$this->background->setSubStyle(Bgs1::BgListLine);
+		$this->background = new Bgs1($sizeX, $sizeY);
+		$this->background->setSubStyle(Bgs1::NavButtonBlink);
 		$this->addComponent($this->background);
 		
-		$this->label = new Label();
-		$this->label->setStyle(Label::TextCardSmallScores2Rank);
-		$this->addComponent($this->label);
-	}
-	
-	function beforeDraw()
-	{
-		$this->label->setValign('center2');
-		$this->label->setText('$i'.$this->name);
-		$this->label->setPositionY($this->getSizeY() / 2 + 0.5);
-		$this->label->setHalign('left');
-		$this->label->setPositionX(1);
-		
-		$this->background->setAction($this->callback('onClick'));
-		$this->background->setSubStyle(Bgs1::NavButtonBlink);
-	}
-	
-	function afterDraw() {}
-	
-	function setName($name)
-	{
-		$this->name = $name;
-	}
-	
-	function getName()
-	{
-		return $this->name;
+		$label = new Label();
+		$label->setStyle(Label::TextCardSmallScores2Rank);
+		$label->setAlign('left', 'center2');
+		$label->setPosition(1, -$sizeY / 2);
+		$label->setText('$i'.$name);
+		$this->addComponent($label);
 	}
 	
 	function setAction($action)
 	{
-		$this->action = $action;
-	}
-	
-	function onClick($login)
-	{
-		if (is_callable($this->action))
-		{
-			if ($this->getPlayerValue('active'))
-			{
-				$this->getPlayerValue('active')->toggleSubitems($login);
-				call_user_func_array($this->action, array($login));
-			}
-		}
-	}
-	
-	function destroy()
-	{
-		$this->action = null;
-		parent::destroy();
+		$this->background->setAction($action);
 	}
 }

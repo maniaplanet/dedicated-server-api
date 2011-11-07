@@ -18,8 +18,11 @@ use ManiaLive\Database\DisconnectionException;
 use ManiaLive\Database\NotConnectedException;
 use ManiaLive\Database\Exception;
 use ManiaLive\Database\ConnectionException;
+use ManiaLive\Event\Dispatcher;
+use ManiaLive\Features\Tick\Listener as TickListener;
+use ManiaLive\Features\Tick\Event as TickEvent;
 
-class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Features\Tick\Listener
+class Connection extends \ManiaLive\Database\Connection implements TickListener
 {
 	protected $connection;
 	protected $host;
@@ -76,7 +79,7 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 
 		// Default Charset : UTF8
 		self::setCharset('utf8');
-		\ManiaLive\Event\Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		Dispatcher::register(TickEvent::getClass(), $this);
 	}
 
 	/**
@@ -202,7 +205,7 @@ class Connection extends \ManiaLive\Database\Connection implements \ManiaLive\Fe
 			throw new DisconnectionException;
 		}
 		$this->connection = null;
-		\ManiaLive\Event\Dispatcher::unregister(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		Dispatcher::unregister(TickEvent::getClass(), $this);
 	}
 
 	function getDatabase()

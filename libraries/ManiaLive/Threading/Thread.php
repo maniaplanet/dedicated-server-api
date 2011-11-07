@@ -132,7 +132,7 @@ class Thread
 		}
 		
 		// dispatch event for starting thread ...
-		Dispatcher::dispatch(new Event($this, Event::ON_THREAD_START));
+		Dispatcher::dispatch(new Event(Event::ON_THREAD_START, $this));
 	}
 	
 	/**
@@ -262,7 +262,7 @@ class Thread
 			if (time() - $this->pingStarted > $config->pingTimeout)
 			{
 				$this->setState(4);
-				Dispatcher::dispatch(new Event($this, Event::ON_THREAD_DIES));
+				Dispatcher::dispatch(new Event(Event::ON_THREAD_DIES, $this));
 				throw new ThreadDiedException('Thread has timed out!');
 			}
 			return;
@@ -275,7 +275,7 @@ class Thread
 			if (time() - $this->busyStarted > $config->busyTimeout)
 			{
 				$this->setState(4);
-				Dispatcher::dispatch(new Event($this, Event::ON_THREAD_TIMES_OUT));
+				Dispatcher::dispatch(new Event(Event::ON_THREAD_TIMES_OUT, $this));
 				throw new ThreadTimedOutExcpetion('Thread is busy for too long!');
 			}
 			return;
@@ -415,7 +415,7 @@ class Thread
 		$this->ping();
 		
 		// dispatch restart event ...
-		Dispatcher::dispatch(new Event($this, Event::ON_THREAD_RESTART));
+		Dispatcher::dispatch(new Event(Event::ON_THREAD_RESTART, $this));
 		
 		return $this->pid;
 	}

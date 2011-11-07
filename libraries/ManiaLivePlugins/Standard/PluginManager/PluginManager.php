@@ -11,49 +11,49 @@
 
 namespace ManiaLivePlugins\Standard\PluginManager;
 
-use ManiaLivePlugins\Standard\Version;
-use ManiaLive\Gui\Windowing\WindowHandler;
-use ManiaLive\Gui\Windowing\Windows\Info;
-use ManiaLive\Utilities\Console;
-use ManiaLive\Threading\Commands\Command;
-use ManiaLive\Event\Dispatcher;
+use ManiaLib\Gui\Elements\Icons128x128_1;
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
+use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\PluginHandler\PluginHandler;
+use ManiaLive\Threading\Commands\Command;
 use ManiaLivePlugins\Standard\PluginManager\Gui\Controls\Plugin;
 use ManiaLivePlugins\Standard\PluginManager\Gui\Windows\Manager;
-use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLive\Features\Admin\AdminGroup;
 
 class PluginManager extends \ManiaLive\PluginHandler\Plugin
 {
-	protected $availablePlugins;
+	private $connectedAdmins = array();
 
 	function onInit()
 	{
 		$this->setVersion(0.1);
-		
-		$this->availablePlugins = array();
 	}
 
 	function onLoad()
 	{
 		$this->createThread();
 		$this->sendWorkToOwnThread(new PluginParser(), 'pluginsParsed');
+		
+		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
 	}
 
 	function onReady()
 	{
 		$this->enablePluginEvents();
+		
+		foreach($this->storage->players as $player)
+			$this->onPlayerConnect($player->login, false);
+		foreach($this->storage->spectators as $player)
+			$this->onPlayerConnect($player->login, true);
 	}
 
 	function pluginsParsed(Command $command)
 	{
-		$this->availablePlugins = $command->result;
+		foreach($command->result as $pluginClass)
+			Manager::AddPlugin($pluginClass, $this);
+		
 		$this->registerChatCommand('pluginManager', 'openWindow', 0, true, AdminGroup::get());
-
 		if($this->isPluginLoaded('Standard\Menubar', 1.0))
-		{
 			$this->buildMenu();
-		}
 	}
 
 	protected function buildMenu()
@@ -62,86 +62,70 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 		$this->callPublicMethod('Standard\Menubar', 'addButton', 'Manage', array($this, 'openWindow'), true);
 	}
 
-	protected function isPluginClassLoaded($class)
-	{
-		return $this->isPluginLoaded(PluginHandler::getPluginIdFromClass($class));
-	}
-
 	function openWindow($login)
 	{
-		$updates = array();
-		
 		$window = Manager::Create($login);
-		$window->clearPlugins();
-		foreach ($this->availablePlugins as $pluginClass)
-		{
-			$id = PluginHandler::getPluginIdFromClass($pluginClass);
-			$plugin = new Plugin($id, $this->isPluginClassLoaded($pluginClass), $pluginClass);
-			$plugin->loadCallBack = array($this, 'loadPlugin');
-			$plugin->unloadCallBack = array($this, 'unloadPlugin');
-			$window->addPlugin($plugin);
-		}
-		$window->setSize(162.5, 75);
+		$window->setSize(160, 100);
 		$window->centerOnScreen();
 		$window->show();
 	}
 
-	function loadPlugin($login, $classname)
+	function loadPlugin($login, $pluginClass)
 	{
-		$this->connection->chatSendServerMessage('Loading '.$classname, $this->storage->getPlayerObject($login));
-		if (!PluginHandler::getInstance()->addPlugin($classname))
-		{
-			$this->connection->chatSendServerMessage('$900failed to load '.$classname."\nSee logs for more details", $this->storage->getPlayerObject($login));
-		}
-		$this->openWindow($login);
+		$this->connection->chatSendServerMessage('Loading '.$pluginClass, $login);
+		if(!PluginHandler::getInstance()->addPlugin($pluginClass))
+			$this->connection->chatSendServerMessage('$900failed to load '.$pluginClass."\nSee logs for more details", $login);
 	}
 
 	function unloadPlugin($login, $classname)
 	{
-		$this->connection->chatSendServerMessage('Unloading '.$classname, $this->storage->getPlayerObject($login));
+		$this->connection->chatSendServerMessage('Unloading '.$classname, $login);
 		try
 		{
 			PluginHandler::getInstance()->deletePlugin($classname);
 		}
 		catch(\Exception $e)
 		{
-			$this->connection->chatSendServerMessage('$900failed to unload '.$classname."\nSee logs for more details", $this->storage->getPlayerObject($login));
+			$this->connection->chatSendServerMessage('$900failed to unload '.$classname."\nSee logs for more details", $login);
 			throw new \Exception($e->getMessage(), $e->getCode(), $e);
 		}
-		$this->openWindow($login);
 	}
 
 	function onPluginLoaded($pluginId)
 	{
-		$admins = array();
-		foreach (AdminGroup::get() as $adminLogin)
-		{
-			$player = $this->storage->getPlayerObject($adminLogin);
-			if($player)
-			{
-				$admins[] = $player;
-			}
-		}
-		$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully loaded', $admins);
+		$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully loaded', array_keys($this->connectedAdmins));
+		$plugin = Manager::GetPlugin($pluginId);
+		if($plugin)
+			$plugin->setIsLoaded(true);
 
 		if($pluginId == 'Standard\Menubar')
-		{
 			$this->buildMenu();
-		}
 	}
 
 	function onPluginUnloaded($pluginId)
 	{
-		$admins = array();
-		foreach (AdminGroup::get() as $adminLogin)
-		{
-			$player = $this->storage->getPlayerObject($adminLogin);
-			if ($player)
-			{
-				$admins[] = $player;
-			}
-		}
-		$this->connection->chatSendServerMessage('$0A0plugin ' . $pluginId . ' has been successfully unloaded', $admins);
+		$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully unloaded', array_keys($this->connectedAdmins));
+		$plugin = Manager::GetPlugin($pluginId);
+		if($plugin)
+			$plugin->setIsLoaded(false);
+	}
+	
+	function onPlayerConnect($login, $isSpectator)
+	{
+		if(AdminGroup::contains($login))
+			$this->connectedAdmins[$login] = true;
+	}
+	
+	function onPlayerDisconnect($login)
+	{
+		if(AdminGroup::contains($login))
+			unset($this->connectedAdmins[$login]);
+	}
+	
+	function onUnload()
+	{
+		parent::onUnload();
+		Manager::ErasePlugins();
 	}
 }
 

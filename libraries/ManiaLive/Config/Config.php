@@ -13,8 +13,6 @@ namespace ManiaLive\Config;
 
 class Config extends \ManiaLib\Utils\Singleton
 {
-	// depends on os
-	public $phpPath;
 	// base path for logging
 	public $logsPath;
 	public $logsPrefix = '';

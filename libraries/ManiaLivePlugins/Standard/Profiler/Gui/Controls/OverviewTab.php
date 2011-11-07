@@ -1,80 +1,88 @@
 <?php
+/**
+ * Profiler Plugin - Show statistics about ManiaLive
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Profiler\Gui\Controls;
 
-use ManiaLive\Gui\Windowing\Controls\Pager;
-
-use ManiaLive\PluginHandler\PluginHandler;
-
-use ManiaLivePlugins\Standard\Profiler\Profiler;
-use ManiaLive\Gui\Handler\GuiHandler;
-use ManiaLive\DedicatedApi\Xmlrpc\Client;
+use ManiaLib\Gui\Elements\Label;
 use ManiaLive\Database\Connection;
+use ManiaLive\DedicatedApi\Xmlrpc\Client;
+use ManiaLive\Gui\GuiHandler;
+use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Threading\ThreadPool;
-use ManiaLib\Gui\Elements\Label;
+use ManiaLive\Event\Dispatcher;
+use ManiaLivePlugins\Standard\Profiler\Listener as MonitorListener;
+use ManiaLivePlugins\Standard\Profiler\Event as MonitorEvent;
+use ManiaLivePlugins\Standard\Profiler\Profiler;
 
-class OverviewTab extends \ManiaLive\Gui\Windowing\Controls\Tab
+class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorListener
 {
-	protected $lbl_left;
-	protected $lbl_right;
+	private $leftLabel;
+	private $rightLabel;
 	
-	public $mem_stats;
-	public $cpu_stats;
-	public $time_started;
-	protected $php_limit;
+	private $memoryLimit;
+	private $cpuStats;
 	
-	function initializeComponents()
+	function __construct()
 	{
-		$this->php_limit = str_replace('M', 1024*1024, ini_get('memory_limit'));
-		if ($this->php_limit < 0) $this->php_limit = Profiler::MEM_DEFAULT;
+		$this->setTitle('Overview');
 		
-		$this->lbl_left = new Label();
-		$this->lbl_left->enableAutonewline();
-		$this->lbl_left->setPosition(1, 1);
-		$this->addComponent($this->lbl_left);
+		$this->memoryLimit = str_replace('M', 1024*1024, ini_get('memory_limit'));
+		if($this->memoryLimit < 0)
+			$this->memoryLimit = Profiler::MEM_DEFAULT;
 		
-		$this->lbl_right = new Label();
-		$this->lbl_right->enableAutonewline();
-		$this->addComponent($this->lbl_right);
+		$this->leftLabel = new Label();
+		$this->leftLabel->setStyle(Label::TextCardSmallScores2Rank);
+		$this->leftLabel->enableAutonewline();
+		$this->leftLabel->setPosition(1, -1);
+		$this->addComponent($this->leftLabel);
+		
+		$this->rightLabel = new Label();
+		$this->rightLabel->setStyle(Label::TextCardSmallScores2Rank);
+		$this->rightLabel->enableAutonewline();
+		$this->addComponent($this->rightLabel);
+		
+		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_CPU_VALUE);
 	}
 	
-	function onResize()
+	function onResize($oldX, $oldY)
 	{
-		$this->lbl_left->setSize($this->getSizeX() / 2 - 2, $this->getSizeY() - 2);
-		
-		$this->lbl_right->setPosition($this->getSizeX() / 2 + 1, 1);
-		$this->lbl_right->setSize($this->getSizeX() / 2 - 2, $this->getSizeY() - 2);	
+		$this->leftLabel->setSize($this->sizeX / 2 - 2, $this->sizeY - 2);
+		$this->rightLabel->setSize($this->sizeX / 2 - 2, $this->sizeY - 2);	
+		$this->rightLabel->setPosition($this->sizeX / 2 + 1, -1);
 	}
 	
-	function beforeDraw()
+	function onDraw()
 	{
-		// if there are not enough information yet, then wait for next redraw
-		if (empty($this->cpu_stats))
-		{
-			$this->lbl_left->setText('Retrieving information ...');
-			$this->lbl_left->setStyle(Label::TextCardSmallScores2Rank);
-			return;
-		}
-		
 		// statistics for memory usage
-		$mem = memory_get_usage();
-		$text = '$oPHP Memory$z'."\n";
-		$text .= 'Current Memory Usage: ' . round($mem / 1024) . ' kb' . "\n";
-		$text .= 'Total Peak Memory: ' . round(memory_get_peak_usage() / 1024) . ' kb' . "\n";
-		$text .= 'PHP Memory Limit: ' . $this->php_limit . " kb\n";
-		$text .= 'Amount Used: ' . round(100 / $this->php_limit * $mem, 2) . "%\n";
+		$memory = memory_get_usage();
+		$text = '$oPHP Memory$z'."\n"
+				.'Current Memory Usage: '.round($memory / 1024)." kb\n"
+				.'Total Peak Memory: '.round(memory_get_peak_usage() / 1024)." kb\n"
+				.'PHP Memory Limit: '.round($this->memoryLimit / 1024)." kb\n"
+				.'Amount Used: '.round(100 * $memory / $this->memoryLimit, 2)."%\n"
 		
 		// statistics for cpu usage (speed)
-		$text .= '$oPHP Speed$z'."\n";
-		$text .= 'Current Cycles per Second: ' . end($this->cpu_stats) . "\n";
-		$text .= 'Avg Reaction Time: ' . round((1 / (max(1, array_sum($this->cpu_stats)) / max(1, count($this->cpu_stats)))) * 1000) . ' msecs' . "\n";
+				.'$oPHP Speed$z'."\n";
+		if(empty($this->cpuStats))
+			$text .= '$iRetrieving information...$z'."\n";
+		else
+			$text .= 'Current Cycles per Second: '.end($this->cpuStats)."\n"
+					.'Avg Reaction Time: '.round(1000 * count($this->cpuStats) / array_sum($this->cpuStats))." msecs\n";
 		
 		// manialive specific stats
 		$text .= '$oManiaLive$z'."\n";
 		
 		// runtime
-		$diff = time() - $this->time_started;
+		$diff = time() - \ManiaLive\Application\AbstractApplication::$startTime;
 		$seconds = $diff % 60;
 		$minutes = floor($diff % 3600 / 60);
 		$hours = floor($diff % 86400 / 3600);
@@ -83,62 +91,62 @@ class OverviewTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		
 		// threading
 		$text .= '$oThreading$z'."\n";
-		if (ThreadPool::$threadingEnabled)
-		{
-			$text .= "Enabled; ";
-			$text .= 'Running:' . ThreadPool::getInstance()->getThreadCount().'; ';
-			$text .= 'Restarted:' . ThreadPool::$threadsDiedCount . "\n";
-			$text .= Command::getTotalCommands() . " commands finished at avg " . round(ThreadPool::$avgResponseTime, 3) . " sec";
-		}
+		if(ThreadPool::$threadingEnabled)
+			$text .= 'Enabled; '.'Running:'.ThreadPool::getInstance()->getThreadCount().'; Restarted:'.ThreadPool::$threadsDiedCount."\n"
+					.Command::getTotalCommands().' commands finished at avg '.round(ThreadPool::$avgResponseTime, 3).' sec';
 		else
-		{
-			$text .= "Threading: Disabled\n";
-		}
+			$text .= "Disabled\n";
 		
 		// update left side of the page
-		$this->lbl_left->setText($text);
-		$this->lbl_left->setStyle(Label::TextCardSmallScores2Rank);
+		$this->leftLabel->setText($text);
 		
 		// database
 		$text = '$oDatabase$z'."\n";
 		
 		$times = Connection::getMeasuredAvgTimes();
-		if (count($times) == 0)
+		if(count($times))
 		{
-			$text .= "No Database connections running.\n";
+			$i = 0;
+			foreach($times as $time)
+				$text .= 'Connection #'.++$i.":\n"
+						.'Avg Query Time: '.round($time, 4).' sec'."\n";
 		}
 		else
-		{
-			$i = 1;
-			foreach ($times as $time)
-			{
-				$text .= 'Connection #' . $i++ . ":\n";
-				$text .= 'Avg Query Time: ' . round($time, 4) . ' sec' . "\n";
-			}
-		}
+			$text .= "No Database connections running.\n";
 		
-		// database
-		$text .= '$oNetwork$z'."\n";
-		$text .= 'Total Bytes Sent: ' . round(Client::$sent/1024) . "kb\n";
-		$text .= 'Total Bytes Received: ' . round(Client::$received/1024) . "kb\n";
+		// network
+		$text .= '$oNetwork$z'."\n"
+				.'Total Bytes Sent: '.round(Client::$sent / 1024)."kb\n"
+				.'Total Bytes Received: '.round(Client::$received / 1024)."kb\n"
 		
 		// graphical user interface
-		$text .= '$oInterface Drawing$z'."\n";
-		$text .= 'Avg Drawing Time: ' . round(GuiHandler::$avgSendall * 1000) . " msec\n";
+				.'$oInterface Drawing$z'."\n"
+				.'Avg Drawing Time: ' . round(GuiHandler::getInstance()->getAverageSendingTimes() * 1000) . " msec\n"
 		
 		// plugin handler
-		$text .= '$oPlugins$z'."\n";
-		$text .= 'Currently loaded: '.count(PluginHandler::getInstance()->getLoadedPluginsList());
+				.'$oPlugins$z'."\n"
+				.'Currently loaded: '.count(PluginHandler::getInstance()->getLoadedPluginsList());
 		
 		// update right side of the page
-		$this->lbl_right->setText($text);
-		$this->lbl_right->setStyle(Label::TextCardSmallScores2Rank);
+		$this->rightLabel->setText($text);
 	}
+	
+	function onNewCpuValue($newValue)
+	{
+		$this->cpuStats[] = $newValue;
+		if(count($this->cpuStats) > 10)
+			array_shift($this->cpuStats);
+		
+		$this->redraw();
+	}
+	
+	function onNewMemoryValue($newValue) {}
+	function onNewNetworkValue($newValue) {}
 	
 	function destroy()
 	{
-		unset($this->mem_stats);
-		unset($this->cpu_stats);
+		Dispatcher::unregister(MonitorEvent::getClass(), $this);
+		unset($this->cpuStats);
 		parent::destroy();
 	}
 }

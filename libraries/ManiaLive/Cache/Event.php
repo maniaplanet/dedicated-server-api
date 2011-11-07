@@ -13,28 +13,23 @@ namespace ManiaLive\Cache;
 
 class Event extends \ManiaLive\Event\Event
 {
-	const ON_STORE = 0;
-	const ON_EVICT = 1;
+	const ON_STORE = 1;
+	const ON_EVICT = 2;
 	
-	protected $onWhat;
-	protected $params;
+	protected $entry;
 	
-	function __construct($onWhat, $params = array())
+	function __construct($onWhat, $entry)
 	{
-		$this->onWhat = $onWhat;
-		$this->params = $params;
+		parent::__construct($onWhat);
+		$this->entry = $entry;
 	}
 	
 	function fireDo($listener)
 	{
-		switch ($this->onWhat)
+		switch($this->onWhat)
 		{
-			case self::ON_STORE:
-				call_user_func_array(array($listener, 'onStore'), $this->params);
-				break;
-			case self::ON_EVICT:
-				call_user_func_array(array($listener, 'onEvict'), $this->params);
-				break;
+			case self::ON_STORE: $listener->onStore($this->entry); break;
+			case self::ON_EVICT: $listener->onEvict($this->entry); break;
 		}
 	}
 }

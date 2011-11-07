@@ -66,6 +66,12 @@ if(!$php_ok || !$curl_ok || !$spl_ok || !$json_ok)
     exit;
 }
 
+// better checking if timezone is set
+if(!ini_get('date.timezone')) {
+	echo 'Timezone is not set in php.ini. Please edit it and change/set "date.timezone" appropriately.';
+	date_default_timezone_set(date_default_timezone_get());
+}
+
 if(!$sqlite_ok)
 {
     echo 'SQLite is disabled, threading will not work. ManiaLive may encounter some perfomance trouble.'.PHP_EOL;

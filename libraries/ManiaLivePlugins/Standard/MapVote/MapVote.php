@@ -1,16 +1,25 @@
 <?php
+/**
+ * MapVote Plugin - Is the current liked by players?
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\MapVote;
 
-use ManiaLib\Gui\Cards\Dialogs\OneButton;
-use ManiaLive\DedicatedApi\Connection as DediApi;
 use ManiaLive\Database\MySQL\Connection;
-use ManiaLive\Data\Storage;
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 use ManiaLivePlugins\Standard\MapVote\Gui\Windows\Vote;
 
 class MapVote extends \ManiaLive\PluginHandler\Plugin
 {
 	public $score;
+	public $voteGoodAction;
+	public $voteBadAction;
 	
 	const VOTE_GOOD = 1;
 	const VOTE_BAD = -1;
@@ -22,10 +31,8 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 
 	function onLoad()
 	{
-		// establish database connection
 		$this->enableDatabase();
-		// enable dedicated server events
-		$this->enableDedicatedEvents();
+		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_BEGIN_MAP);
 
 		// register chat command to give a good rating
 		$cmd = $this->registerChatCommand('++', 'voteGood', 0, true);
@@ -54,62 +61,48 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		
 		Vote::Initialize($this);
 	}
-
-	function onBeginMap($map, $warmUp, $matchContinuation)
-	{
-		$mapUid = $this->storage->currentMap->uId;
-		$this->score = $this->getMapScore($mapUid);
-		
-		if(!count($this->storage->players))
-			return;
-		
-		$votes = $this->getPlayerVotes(array_keys($this->storage->players), $mapUid);
-		
-		foreach ($this->storage->players as $login => $player)
-		{
-			$vote = Vote::Create($login);
-			if (isset($votes[$login]))
-				$vote->currentVote = $votes[$login];
-			else
-				$vote->currentVote = null;
-			$vote->setPosition(121, -75);
-			$vote->setScale(0.8);
-			$vote->show();
-		}
-	}
-
-	function onEndMatch($rankings, $map)
-	{
-		// refresh votes for every player ...
-		Vote::Redraw();
-	}
-
-	function onPlayerConnect($login, $isSpectator)
-	{
-		$vote = Vote::Create($login);
-		$vote->currentVote = $this->getPlayerVote($login, $this->storage->currentMap->uId);
-		$vote->setPosition(121, -75);
-		$vote->setScale(0.8);
-		$vote->show();
-	}
-
-	function onPlayerDisconnect($login)
-	{
-		Vote::Erase($login);
-	}
 	
 	function onReady()
 	{
 		$this->onBeginMap(null, null, null);
 	}
 
+	function onPlayerConnect($login, $isSpectator)
+	{
+		$vote = Vote::Create($login);
+		$vote->currentVote = $this->getPlayerVote($login, $this->storage->currentMap->uId);
+		$vote->setPosition(121, 75);
+		$vote->setScale(0.8);
+		$vote->show();
+	}
+
+	function onBeginMap($map, $warmUp, $matchContinuation)
+	{
+		$mapUid = $this->storage->currentMap->uId;
+		$this->score = $this->getMapScore($mapUid);
+		Vote::Update();
+		
+		if(!count($this->storage->players))
+			return;
+		
+		$votes = $this->getPlayerVotes(array_keys($this->storage->players), $mapUid);
+		
+		foreach($this->storage->players as $login => $player)
+		{
+			$vote = Vote::Create($login);
+			if(isset($votes[$login]))
+				$vote->currentVote = $votes[$login];
+			else
+				$vote->currentVote = null;
+			$vote->setPosition(121, 75);
+			$vote->setScale(0.8);
+			$vote->show();
+		}
+	}
+
 	function voteGood($login, $window = false)
 	{
-		if(!isset($this->storage->players[$login]))
-			return;
-		$player = $this->storage->players[$login];
-		
-		if ($this->doVote($login, self::VOTE_GOOD))
+		if($this->doVote($login, self::VOTE_GOOD))
 		{
 			$vote = Vote::Create($login);
 			if($vote->currentVote == self::VOTE_BAD)
@@ -117,28 +110,21 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				$this->score['bad']--;
 				$this->score['good']++;
 			}
-			elseif(!$vote->currentVote)
-			{
+			else if(!$vote->currentVote)
 				$this->score['good']++;
-			}
 			$vote->currentVote = self::VOTE_GOOD;
-			$vote->show();
+			Vote::Update();
+			Vote::RedrawAll();
 
 			if(!$window)
-				\ManiaLive\DedicatedApi\Connection::getInstance()->chatSendServerMessage('$0c0Your vote has successfully been updated!', $player);
+				$this->connection->chatSendServerMessage('$0c0Your vote has successfully been updated!', $login);
 		}
 		else if (!$window)
-			\ManiaLive\DedicatedApi\Connection::getInstance()->chatSendServerMessage('$c00Your vote has not been changed!', $player);
+			$this->connection->chatSendServerMessage('$c00Your vote has not been changed!', $login);
 	}
 
 	function voteBad($login, $window = false)
 	{
-		$player = null;
-		if (isset($this->storage->players[$login]))
-			$player = $this->storage->players[$login];
-		else
-			return;
-
 		if($this->doVote($login, self::VOTE_BAD))
 		{
 			$vote = Vote::Create($login);
@@ -147,18 +133,17 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				$this->score['bad']++;
 				$this->score['good']--;
 			}
-			elseif(!$vote->currentVote)
-			{
+			else if(!$vote->currentVote)
 				$this->score['bad']++;
-			}
 			$vote->currentVote = self::VOTE_BAD;
-			$vote->show();
+			Vote::Update();
+			Vote::RedrawAll();
 
 			if(!$window)
-				\ManiaLive\DedicatedApi\Connection::getInstance()->chatSendServerMessage('$0c0Your vote has successfully been updated!', $player);
+				$this->connection->chatSendServerMessage('$0c0Your vote has successfully been updated!', $login);
 		}
 		else if(!$window)
-			\ManiaLive\DedicatedApi\Connection::getInstance()->chatSendServerMessage('$c00Your vote has not been changed!', $player);
+			$this->connection->chatSendServerMessage('$c00Your vote has not been changed!', $login);
 	}
 
 	function getPlayerVotes($logins, $mapUid)
@@ -172,9 +157,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		);
 
 		while($vote = $recordset->fetchRow())
-		{
 			$votes[$vote[0]] = intval($vote[1]);
-		}
 
 		return $votes;
 	}
@@ -200,7 +183,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				$vote,
 				$this->db->quote($this->storage->serverLogin));
 		
-		return ($this->db->affectedRows() > 0);
+		return $this->db->affectedRows() > 0;
 	}
 
 	function getMapScore($mapUid)
@@ -225,11 +208,10 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 
 	function onUnload()
 	{
-		Vote::EraseAll();
 		Vote::Unload();
+		Vote::EraseAll();
 		parent::onUnload();
 	}
-
 }
 
 ?>

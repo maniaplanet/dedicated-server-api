@@ -16,50 +16,51 @@ use ManiaLive\Application\ErrorHandling;
 abstract class Dispatcher
 {
 	static protected $listeners = array();
+	static protected $eventsByClass = array();
 	
-	public static function register($eventClass, Listener $listener)
+	public static function register($eventClass, Listener $listener, $events = Event::ALL)
 	{
-		self::$listeners[$eventClass][] = $listener;
+		$listenerId = spl_object_hash($listener);
+		
+		if(!isset(self::$eventsByClass[$eventClass]))
+		{
+			$rc = new \ReflectionClass($eventClass);
+			
+			self::$eventsByClass[$eventClass] = $rc->getConstants();
+			self::$listeners[$eventClass] = array();
+			foreach(self::$eventsByClass[$eventClass] as $event)
+				self::$listeners[$eventClass][$event] = array();
+		}
+		
+		foreach(self::$eventsByClass[$eventClass] as $event)
+			if($event & $events)
+				self::$listeners[$eventClass][$event][$listenerId] = $listener;
 	}
 	
-	public static function unregister($eventClass, Listener $listener)
+	public static function unregister($eventClass, Listener $listener, $events = Event::ALL)
 	{
-		if(array_key_exists($eventClass, self::$listeners) && is_array(self::$listeners[$eventClass]))
-		{
-			foreach(self::$listeners[$eventClass] as $key=>$value)
-			{
-				if($value === $listener)
-				{
-					unset(self::$listeners[$eventClass][$key]);
-				}
-			}			
-		}
+		$listenerId = spl_object_hash($listener);
+		
+		if(isset(self::$eventsByClass[$eventClass]))
+			foreach(self::$eventsByClass[$eventClass] as $event)
+				if($event & $events)
+					unset(self::$listeners[$eventClass][$event][$listenerId]);
 	}
 	
 	public static function dispatch(Event $event)
 	{
-		$class = get_class($event);
-		if(array_key_exists($class, self::$listeners) && is_array(self::$listeners[$class]))
-		{
-			try
-			{
-				foreach(self::$listeners[$class] as $listener)
+		$eventClass = get_class($event);
+		
+		if(isset(self::$listeners[$eventClass]) && isset(self::$listeners[$eventClass][$event->getMethod()]))
+			foreach(self::$listeners[$eventClass][$event->getMethod()] as $listener)
+				try
 				{
-					try
-					{
-						$event->fireDo($listener);
-					}
-					catch(\Exception $e)
-					{
-						ErrorHandling::processModuleException($e);
-					}
+					$event->fireDo($listener);
 				}
-			}
-			catch (\Exception $e)
-			{
-				ErrorHandling::processEventException($e);
-			}
-		}
+				catch(\Exception $e)
+				{
+					ErrorHandling::processModuleException($e);
+				}
 	}
 }
 

@@ -13,12 +13,11 @@ namespace ManiaLive\Features\Tick;
 
 class Event extends \ManiaLive\Event\Event
 {
-	protected $microtime;
+	const ON_TICK = 1;
 	
-	function __construct($source)
+	function __construct($onWhat = self::ON_TICK)
 	{
-		parent::__construct($source);
-		$this->microtime = microtime(true);		
+		parent::__construct($onWhat);		
 	}
 	
 	function fireDo($listener)

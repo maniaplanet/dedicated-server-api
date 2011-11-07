@@ -11,24 +11,24 @@
 
 namespace ManiaLive\Features;
 
-use ManiaLive\PluginHandler\PluginHandler;
-use ManiaLive\Utilities\Console;
 use ManiaLive\Event\Dispatcher;
+use ManiaLive\Features\Tick\Listener as TickListener;
+use ManiaLive\Features\Tick\Event as TickEvent;
+use ManiaLive\Utilities\Console;
 
 /**
  * Checks for updates periodically.
  *
  * @author Florian Schnell
  */
-class Updater extends \ManiaLib\Utils\Singleton
-implements \ManiaLive\Features\Tick\Listener
+class Updater extends \ManiaLib\Utils\Singleton implements TickListener
 {
 	protected $lastDisplayed;
 	
 	protected function __construct()
 	{
 		$this->lastDisplayed = 0;
-		Dispatcher::register(\ManiaLive\Features\Tick\Event::getClass(), $this);
+		Dispatcher::register(TickEvent::getClass(), $this);
 	}
 	
 	/**
@@ -50,39 +50,38 @@ implements \ManiaLive\Features\Tick\Listener
 	 */
 	function checkUpdate()
 	{
-		$version = 0;
-		
-		// check for manialive update
-		$newManiaLive = false;
 		try
 		{
-			$client = new \ManiaLib\Rest\Client();
-			$client->setAPIURL(APP_API);
-			$response = $client->execute('GET', '/manialive/version/check/' . \ManiaLiveApplication\Version . '/index.json');
-			$newManiaLive = $response->update;
+			$client = new UpdaterClient();
+			$response = $client->checkVersion(\ManiaLiveApplication\Version);
 		}
 		catch (\Exception $e)
 		{
 			Console::println('ERROR: Update service was unable to contact server ...');
+			return;
 		}
 		
 		// display message in console
-		if ($newManiaLive)
+		if ($response->update)
 		{
+			$days = ceil((time() - strtotime($response->version->date)) / 86400);
 			Console::println(str_repeat('#', 79));
-			
-			if ($newManiaLive)
-			{
-				$days = ceil((time() - strtotime($response->version->date)) / 86400);
-				
-				Console::println('#' . str_repeat(' ', 77) . '#');
-				Console::println(str_pad("#           A new version of ManiaLive is available since $days day(s)!", 78) . "#");
-				Console::println(str_pad("#                      An update is strongly recommended!", 78) . "#");
-			}
-			
+			Console::println('#' . str_repeat(' ', 77) . '#');
+			Console::println(str_pad("#           A new version of ManiaLive is available since $days day(s)!", 78) . "#");
+			Console::println(str_pad("#                      An update is strongly recommended!", 78) . "#");
 			Console::println('#' . str_repeat(' ', 77) . '#');
 			Console::println(str_repeat('#', 79));
 		}
+	}
+}
+
+class UpdaterClient extends \Maniaplanet\WebServices\HTTPClient
+{
+	protected $APIURL = APP_API;
+	
+	function checkVersion($version)
+	{
+		return $this->execute('GET', '/manialive/version/check/'.$version.'/index.json');
 	}
 }
 

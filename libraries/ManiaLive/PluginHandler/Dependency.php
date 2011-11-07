@@ -21,10 +21,11 @@ namespace ManiaLive\PluginHandler;
  */
 final class Dependency
 {
+	const NO_LIMIT = null;
+	
 	private $min;
 	private $max;
 	private $pluginId;
-	const NO_LIMIT = null;
 
 	/**
 	 * @param $plugin_name The name of the Plugin that is needed.
@@ -54,7 +55,9 @@ final class Dependency
 	}
 }
 
-class DependencyNotFoundException extends \Exception
+class DependencyException extends \Exception {}
+
+class DependencyNotFoundException extends DependencyException
 {
 	/**
 	 * @param Plugin $plugin
@@ -63,14 +66,14 @@ class DependencyNotFoundException extends \Exception
 	function __construct($plugin, $dependency)
 	{
 		// build message ...
-		$message = 'Plugin "' . $plugin->getId() . '" needs the plugin "' . $dependency->getPluginId();
+		$message = 'Plugin "' . $plugin->getId() . '" needs "' . $dependency->getPluginId();
 		$message .= '" to be installed!';
 		
 		parent::__construct($message);
 	}
 }
 
-class DependencyTooOldException extends \Exception
+class DependencyTooOldException extends DependencyException
 {
 	/**
 	 * @param Plugin $plugin
@@ -86,7 +89,7 @@ class DependencyTooOldException extends \Exception
 	}
 }
 
-class DependencyTooNewException extends \Exception
+class DependencyTooNewException extends DependencyException
 {
 	/**
 	 * @param Plugin $plugin

@@ -106,7 +106,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			{
 				$method = preg_replace('/^[[:alpha:]]+\./', '', $call[0]); // remove trailing "Whatever."
 				$params = (array) $call[1];
-				Dispatcher::dispatch(new Callback\Event($this, $method, $params));
+				Dispatcher::dispatch(new Callback\Event($method, $params));
 			}
 		}
 	}
@@ -802,7 +802,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			$method .= 'ToLogin';
 		}
 
-		return $this->execute($method, array(), $multicall);
+		return $this->execute($method, $params, $multicall);
 	}
 
 	/**
@@ -2376,33 +2376,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * FinishTimeout, and optionally: AllWarmUpDuration, DisableRespawn, ForceShowAllOpponents, RoundsPointsLimitNewRules,
 	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerMap, CupNbWinners, CupWarmUpDuration.
 	 * Requires a map restart to be taken into account.
-	 * @param array $gameInfos
+	 * @param Structures\GameInfos $gameInfos
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function setGameInfos(array $gameInfos, $multicall = false)
+	function setGameInfos(Structures\GameInfos $gameInfos, $multicall = false)
 	{
-		if (!is_array($gameInfos)
-		|| !array_key_exists('GameMode', $gameInfos)
-		|| !array_key_exists('ChatTime', $gameInfos)
-		|| !array_key_exists('RoundsPointsLimit', $gameInfos)
-		|| !array_key_exists('RoundsUseNewRules', $gameInfos)
-		|| !array_key_exists('RoundsForcedLaps', $gameInfos)
-		|| !array_key_exists('TimeAttackLimit', $gameInfos)
-		|| !array_key_exists('TimeAttackSynchStartPeriod', $gameInfos)
-		|| !array_key_exists('TeamPointsLimit', $gameInfos)
-		|| !array_key_exists('TeamMaxPoints', $gameInfos)
-		|| !array_key_exists('TeamUseNewRules', $gameInfos)
-		|| !array_key_exists('LapsNbLaps', $gameInfos)
-		|| !array_key_exists('LapsTimeLimit', $gameInfos)
-		|| !array_key_exists('FinishTimeout', $gameInfos)
-		)
-		{
-			throw new InvalidArgumentException('gameInfos = '.print_r($gameInfos,true));
-		}
-
-		return $this->execute(ucfirst(__FUNCTION__), array($gameInfos), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($gameInfos->toArray()), $multicall);
 	}
 
 	/**
@@ -2415,7 +2396,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * additionally for version 1: AllWarmUpDuration, DisableRespawn, ForceShowAllOpponents, RoundsPointsLimitNewRules,
 	 * TeamPointsLimitNewRules, CupPointsLimit, CupRoundsPerMap, CupNbWinners, CupWarmUpDuration.
 	 * @param int $compatibility
-	 * @return GameInfos
+	 * @return Structures\GameInfos
 	 * @throws InvalidArgumentException
 	 */
 	function getCurrentGameInfo($compatibility = 1)

@@ -11,107 +11,75 @@
 
 namespace ManiaLivePlugins\Standard\PluginManager\Gui\Controls;
 
-use ManiaLive\PluginHandler\RepositoryEntry;
-use ManiaLivePlugins\Standard\PluginManager\Gui\Windows\Update;
-use ManiaLive\Gui\Windowing\Windows\Info;
-use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Icons64x64_1;
-use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLib\Gui\Elements\Quad;
 use ManiaLib\Gui\Elements\Label;
+use ManiaLive\PluginHandler\PluginHandler;
 
-class Plugin extends \ManiaLive\Gui\Windowing\Control
+class Plugin extends \ManiaLive\Gui\Control
 {
-	public $loadCallBack;
-	public $unloadCallBack; 
+	private $background;
+	private $pluginName;
+	private $loadState;
+	private $loadButton;
 	
-	protected $labelName;
-	protected $labelLoaded;
-	protected $buttonLoad;
-	protected $background;
+	private $loadAction;
+	private $unloadAction;
 	
-	protected $name;
-	protected $loaded;
-	protected $class;
-	
-	function initializeComponents()
+	function __construct($pluginName, $pluginClass, $manager)
 	{
-		$this->name = $this->getParam(0);
-		$this->loaded = $this->getParam(1);
-		$this->class = $this->getParam(2);
-		
 		$this->sizeY = 6;
 		
-		$this->background = new Quad();
-		$this->background->setStyle(BgsPlayerCard::BgsPlayerCard);
+		$this->background = new BgsPlayerCard();
 		$this->background->setSubStyle(BgsPlayerCard::BgCardSystem);
 		$this->addComponent($this->background);
 		
-		$this->labelName = new Label();
-		$this->labelName->setText('$fff'.$this->name.'$z');
-		$this->addComponent($this->labelName);
+		$this->pluginName = new Label();
+		$this->pluginName->setText('$fff'.$pluginName.'$z');
+		$this->addComponent($this->pluginName);
 		
-		$this->labelLoaded = new Label();
-		$this->addComponent($this->labelLoaded);
+		$this->loadState = new Label();
+		$this->addComponent($this->loadState);
 		
-		$this->buttonLoad = new Quad(7, 7);
-		$this->buttonLoad->setStyle(Quad::Icons64x64_1);
-		$this->addComponent($this->buttonLoad);
+		$this->loadButton = new Icons64x64_1(7);
+		$this->addComponent($this->loadButton);
 		
+		$this->loadAction = $this->createAction(array($manager, 'loadPlugin'), $pluginClass);
+		$this->unloadAction = $this->createAction(array($manager, 'unloadPlugin'), $pluginClass);
+		$this->setIsLoaded(PluginHandler::getInstance()->isPluginLoaded($pluginName));
 	}
 	
-	function beforeDraw()
+	function setIsLoaded($isLoaded)
 	{
-		if ($this->loaded)
+		if($isLoaded)
 		{
-			$this->labelLoaded->setText('$0f0Loaded');
-			$this->buttonLoad->setSubStyle(Icons64x64_1::ClipPause);
-			$this->buttonLoad->setAction($this->callback('onUnload'));
-			$this->buttonLoad->setVisibility(true);
+			$this->loadState->setText('$0f0Loaded');
+			$this->loadButton->setSubStyle(Icons64x64_1::ClipPause);
+			$this->loadButton->setAction($this->unloadAction);
 		}
 		else
 		{
-			$this->labelLoaded->setText('$f00Unloaded');
-			$this->buttonLoad->setSubStyle(Icons64x64_1::ClipPlay);
-			$this->buttonLoad->setAction($this->callback('onLoad'));
-			$this->buttonLoad->setVisibility(true);
+			$this->loadState->setText('$f00Unloaded');
+			$this->loadButton->setSubStyle(Icons64x64_1::ClipPlay);
+			$this->loadButton->setAction($this->loadAction);
 		}
-		$this->buttonLoad->setVisibility($this->name != 'Standard\PluginManager');
+		$this->redraw();
 	}
 	
-	function onResize()
-	{
-		$this->labelName->setPosition(1, $this->sizeY / 2);
-		$this->labelName->setValign('center2');
-		$this->labelName->setSizeX(($this->sizeX - 5) * 0.7);
-		
-		$this->labelLoaded->setSizeX(($this->sizeX - 5) * 0.3);
-		$this->labelLoaded->setValign('center2');
-		$this->labelLoaded->setPosition($this->labelName->getBorderRight() + 1, $this->sizeY / 2);
-		
-		$this->buttonLoad->setValign($this->sizeY / 2);
-		$this->buttonLoad->setPosition($this->labelLoaded->getBorderRight() - 4.5, -0.5);		
+	function onResize($oldX, $oldY)
+	{	
 		$this->background->setSize($this->sizeX, $this->sizeY);
-	}
-	
-	function afterDraw() {}
-	
-	function onLoad($login)
-	{
-		call_user_func($this->loadCallBack, $login, $this->class);
-	}
-	
-	function onUnload($login)
-	{
-		call_user_func($this->unloadCallBack, $login, $this->class);
-	}
-	
-	function destroy()
-	{
-		$this->loadCallBack = null;
-		$this->unloadCallBack = null;
-		parent::destroy();
+		
+		$this->pluginName->setSizeX(($this->sizeX - 5) * 0.7);
+		$this->pluginName->setPosition(1, -$this->sizeY / 2);
+		$this->pluginName->setValign('center2');
+		
+		$this->loadState->setSizeX(($this->sizeX - 5) * 0.3);
+		$this->loadState->setValign('center2');
+		$this->loadState->setPosition($this->pluginName->getBorderRight() + 1, -$this->sizeY / 2);
+		
+		$this->loadButton->setValign('center');
+		$this->loadButton->setPosition($this->loadState->getBorderRight() - 4.5, -$this->sizeY / 2);
 	}
 }
 

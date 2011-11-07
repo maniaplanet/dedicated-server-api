@@ -19,14 +19,10 @@ abstract class CommandLineInterpreter
 			'manialive_cfg::',//Set a configuration file to load instead of config.ini
 		));
 		
-		if (array_key_exists('manialive_cfg', $options))
-		{
+		if(isset($options['manialive_cfg']))
 			return $options['manialive_cfg'];
-		}
 		else
-		{
 			return 'config.ini';
-		}
 	}
 	
 	static function postConfigLoad()
@@ -40,7 +36,7 @@ abstract class CommandLineInterpreter
 			'user::'//Set the user to use during the communication with the server
 		));
 
-		$help = 'ManiaLive - TrackMania Dedicated Server Manager v2.0 (2011 Aug 22)'."\n"
+		$help = 'ManiaLive - TrackMania Dedicated Server Manager v2.0 (2011 Nov 4)'."\n"
 		.'Authors : '."\n"
 		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'."\n"
 		.'Usage: php bootstrapper.php [args]'."\n"

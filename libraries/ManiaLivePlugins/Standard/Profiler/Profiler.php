@@ -1,76 +1,70 @@
 <?php
+/**
+ * Profiler Plugin - Show statistics about ManiaLive
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Profiler;
 
-use ManiaLivePlugins\Standard\Version;
-use ManiaLive\Gui\Windowing\WindowHandler;
-use ManiaLivePlugins\Standard\Admin\Admin;
-use ManiaLive\Features\Admin\AdminGroup;
-use ManiaLive\Gui\Windowing\Windows\Info;
-use ManiaLive\Config\Loader;
-use ManiaLive\Data\Storage;
-use ManiaLive\DedicatedApi\Xmlrpc\Client;
 use ManiaLib\Gui\Elements\Icons128x128_1;
-use ManiaLive\Gui\Windowing\Event;
-use ManiaLive\Event\Dispatcher;
-use ManiaLive\Gui\Windowing\Listener;
+use ManiaLive\Application\Event as AppEvent;
+use ManiaLive\DedicatedApi\Xmlrpc\Client;
+use ManiaLive\Features\Admin\AdminGroup;
+use ManiaLive\Gui\Windows\Info;
+
 use ManiaLivePlugins\Standard\Profiler\Gui\Windows\Stats;
-use ManiaLive\DedicatedApi\Connection;
 
 class Profiler extends \ManiaLive\PluginHandler\Plugin
 {
-	protected $winStats;
-	protected $timeStarted;
+	private $isProfiling;
+	private $askingPlayers;
+	private $loopStart;
+	private $loopTimes;
+	private $loopCount;
 	
-	protected $loopStart;
-	protected $loopTimes;
-	protected $loopCount;
-	protected $loopAvg;
-	
-	protected $memLastTime;
-	protected $netLastTime;
-	
-	const MODE_COUNT = 1;
-	const MODE_PROFILER = 2;
 	const PROFILER_LOOPS = 1000;
-	const MEM_DEFAULT = 134217728;
+	const MEM_DEFAULT = 0x8000000; // 128 MB
 	
 	public static $me;
 	
-	function onInit()
-	{
-	}
-	
 	function onLoad()
-	{		
-		$this->timeStarted = time();
-		$this->mode = false;
-		$this->loopTimes = array();
-		$this->winStats = array();
+	{
+		$this->isProfiling = false;
+		$this->askingPlayers = array();
 		
 		$this->enablePluginEvents();
 		
-		$cmd = $this->registerChatCommand('profile', 'startProfiler', 0, true);
+		$cmd = $this->registerChatCommand('profile', 'startProfiler', 0, true, AdminGroup::get());
 		$cmd->isPublic = false;
 		$cmd->help = 'checks the average duration of one application loop.';
 		
-		$cmd = $this->registerChatCommand('stats', 'showStats', 0, true);
+		$cmd = $this->registerChatCommand('stats', 'showStats', 0, true, AdminGroup::get());
 		$cmd->isPublic = false;
 		$cmd->help = 'shows statistics on how the application performs.';
 		
-		$this->buildMenu();
+		if($this->isPluginLoaded('Standard\Menubar'))
+			$this->onPluginLoaded('Standard\Menubar');
 		
 		self::$me = $this;
 	}
 	
-	protected function buildMenu()
+	function onReady()
 	{
-		if ($this->isPluginLoaded('Standard\Menubar'))
+		Monitor::getInstance()->start();
+		Stats::Initialize();
+	}
+	
+	function onPluginLoaded($pluginId)
+	{
+		if($pluginId == 'Standard\Menubar')
 		{
 			// set menu icon for dedimanias menu ...
-			$this->callPublicMethod('Standard\Menubar',
-				'initMenu',
-				Icons128x128_1::Statistics);
+			$this->callPublicMethod('Standard\Menubar', 'initMenu', Icons128x128_1::Statistics);
 			
 			// add button for records window ...
 			$this->callPublicMethod('Standard\Menubar',
@@ -81,165 +75,58 @@ class Profiler extends \ManiaLive\PluginHandler\Plugin
 		}
 	}
 	
-	/**
-	 * (non-PHPdoc)
-	 * @see libraries/ManiaLive/PluginHandler/ManiaLive\PluginHandler.Plugin::onPluginLoaded()
-	 */
-	function onPluginLoaded($pluginId)
-	{
-		if ($pluginId == 'Standard\Menubar')
-		{
-			$this->buildMenu();
-		}
-	}
-	
 	function showStats($login)
 	{
-		if (!AdminGroup::contains($login))
-		{
-			$win = Info::Create($login);
-			$win->setSize(100, 30);
-			$win->setTitle('No Permission');
-			$win->setText('The command you have been trying to use is preserved to Administrators!');
-			$win->centerOnScreen();
-			WindowHandler::showDialog($win);
-			return;
-		}
-		
-		$this->mode = self::MODE_COUNT;
-		
-		$this->loopStart = time();
 		$stats = Stats::Create($login);
-		$stats->time_started = $this->timeStarted;
 		$stats->setSize(180, 97);
 		$stats->centerOnScreen();
 		$stats->show();
-		
-		// execute profiling on pre and postloop ...
-		$this->enableApplicationEvents();
-		
-		$this->enableWindowingEvents();
 	}
 	
 	function startProfiler($login)
 	{
-		if (!AdminGroup::contains($login))
-			return Connection::getInstance()->chatSendServerMessage('$f00This command is preserved to Administrators only!');
-		
-		$this->mode = self::MODE_PROFILER;
-		
-		// print notification
-		Connection::getInstance()->chatSendServerMessage('> Profiling started, this may take a while!', Storage::getInstance()->players[$login]);
-		
-		// profile on pre and postloop
-		$this->enableApplicationEvents();
+		if($this->isProfiling)
+			$this->connection->chatSendServerMessage('> Profiling already started, waiting for result!', $login);
+		else
+		{
+			$this->isProfiling = true;
+			$this->loopCount = 0;
+			$this->loopTimes = array();
+			$this->connection->chatSendServerMessage('> Profiling started, this may take a while!', $login);
+			$this->enableApplicationEvents(AppEvent::ON_PRE_LOOP | AppEvent::ON_POST_LOOP);
+		}
+		$this->askingPlayers[] = $login;
 	}
 	
 	function onPreLoop()
 	{
-		switch ($this->mode)
-		{
-			case self::MODE_COUNT:
-				if ($this->loopCount == 0)
-					$this->loopStart = microtime(true);
-				$this->loopCount++;
-				break;
-				
-			case self::MODE_PROFILER:
-				$this->loopStart = microtime(true);
-				break;
-				
-			default:
-		}
+		if($this->isProfiling)
+			$this->loopStart = microtime(true);
 	}
 	
 	function onPostLoop()
 	{
-		switch ($this->mode)
+		if($this->isProfiling)
 		{
-			case self::MODE_COUNT:
-				if ($this->loopStart != 0 && ($diff = microtime(true) - $this->loopStart) > 1)
-				{
-					$wins = Stats::GetAll();
-					foreach ($wins as $win_stat)
-					{
-						$win_stat->addCpuUsage(round($this->loopCount / $diff, 2));
-						$this->loopCount = 0;
-						
-						$send_diff = Client::$sent - $this->netLastTime[1];
-						$recv_diff = Client::$received - $this->netLastTime[0];
-						$win_stat->addNetUsage($recv_diff, $send_diff);
-						$this->netLastTime = array(Client::$received, Client::$sent);
-					}
-				}
-				if (microtime(true) - $this->memLastTime > 3)
-				{
-					$wins = Stats::GetAll();
-					foreach ($wins as $win_stat)
-					{
-						$this->memLastTime = microtime(true);
-						$win_stat->addMemoryUsage(memory_get_usage());
-					}
-				}
-				break;
-				
-			case self::MODE_PROFILER:
-				
-				$this->loopCount++;
-				$this->loopTimes[] = microtime(true) - $this->loopStart;
-				if ($this->loopCount > self::PROFILER_LOOPS)
-				{
-					$this->loopCount = 0;
-					
-					// calculate average loop time
-					$this->calculateStats();
-					
-					// stop profiling
-					$this->disableApplicationEvents();
-				}
-				break;
-				
-			default:
+			$this->loopTimes[] = microtime(true) - $this->loopStart;
+			if(++$this->loopCount > self::PROFILER_LOOPS)
+			{
+				array_shift($this->loopTimes);
+				$this->connection->chatSendServerMessage(
+						'> The average time for one application loop is '.round(1000 * array_sum($this->loopTimes) / count($this->loopTimes), 3).'ms',
+						array_unique($this->askingPlayers));
+				$this->isProfiling = false;
+				$this->askingPlayers = array();
+				$this->disableApplicationEvents();
+			}
 		}
-	}
-	
-	function onWindowRecover($login, $window)
-	{
-		if (Stats::$open > 0)
-		{	
-			// execute profiling on pre and postloop ...
-			$this->enableApplicationEvents();
-		}
-	}
-	
-	function onWindowClose($login, $window)
-	{
-		if (Stats::$open == 0)
-		{
-			// dont execute onloop events anymore
-			$this->disableApplicationEvents();
-
-			$this->loopCount = 0;
-			$this->loopStart = 0;
-		}
-	}
-	
-	function calculateStats()
-	{
-		// remove first time, its bad!
-		array_shift($this->loopTimes);
-		
-		// calculate average ...
-		$this->loopAvg = array_sum($this->loopTimes) / count($this->loopTimes);
-		$this->loopTimes = array();
-		
-		$message = 'The average time for one application loop is ' . round($this->loopAvg, 5);
-		Connection::getInstance()->chatSendServerMessage($message);
 	}
 	
 	function onUnload()
 	{
+		Monitor::getInstance()->stop();
 		Stats::EraseAll();
+		Stats::Clear();
 		parent::onUnload();
 	}
 }

@@ -1,110 +1,133 @@
 <?php
+/**
+ * Profiler Plugin - Show statistics about ManiaLive
+ *
+ * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
+ */
 
 namespace ManiaLivePlugins\Standard\Profiler\Gui\Controls;
 
 use ManiaLib\Gui\Layouts\Line;
-use ManiaLib\Gui\Elements\BgsPlayerCard;
-use ManiaLib\Gui\Elements\Icons64x64_1;
-use ManiaLib\Gui\Elements\Bgs1;
 use ManiaLib\Gui\Elements\Label;
 use ManiaLib\Gui\Elements\Quad;
-use ManiaLive\Gui\Windowing\Controls\Frame;
+use ManiaLive\Gui\Controls\Frame;
+use ManiaLive\Event\Dispatcher;
+use ManiaLivePlugins\Standard\Profiler\Listener as MonitorListener;
+use ManiaLivePlugins\Standard\Profiler\Event as MonitorEvent;
 
-class SpeedGraphTab extends \ManiaLive\Gui\Windowing\Controls\Tab
+class SpeedGraphTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorListener
 {
-	protected $container;
-	protected $container_lines;
-	public $stats;
-	
 	const RESPONSE_OPTIMAL = 50;
 	const RESPONSE_MINIMAL = 10;
 	
-	function initializeComponents()
+	private $bars = array();
+	private $cpuStats = array();
+	
+	private $barsFrame;
+	private $optimalLineFrame;
+	private $optimalLine;
+	private $criticalLineFrame;
+	private $criticalLine;
+	
+	function __construct()
 	{
-		$this->stats = array();
+		$this->setTitle('Speed Graph');
 		
-		$this->container = new Frame();
-		$this->container->applyLayout(new Line());
-		$this->addComponent($this->container);
+		$this->barsFrame = new Frame(1, 1 - $this->sizeY, new Line());
+		$this->addComponent($this->barsFrame);
 		
-		$this->container_lines = new Frame();
-		$this->addComponent($this->container_lines);
+		$this->criticalLineFrame = new Frame(0, 1 + (self::RESPONSE_MINIMAL * ($this->sizeY - 6) / self::RESPONSE_OPTIMAL) - $this->sizeY);
+		$text = new Label(75, 3);
+		$text->setTextColor('fff');
+		$text->setText('Critical Response Time (1/'.self::RESPONSE_MINIMAL.' Second)');
+		$text->setPosition(3, 3.5);
+		$text->setTextSize(2);
+		$this->criticalLineFrame->addComponent($text);
+		
+		$this->criticalLine = new Quad($this->sizeX - 2, 0.2);
+		$this->criticalLine->setBgcolor('a00');
+		$this->criticalLine->setPosX(1);
+		$this->criticalLine->setValign('center');
+		$this->criticalLineFrame->addComponent($this->criticalLine);
+		$this->addComponent($this->criticalLineFrame);
+		
+		$this->optimalLineFrame = new Frame(0, -5);
+		$text = new Label(75, 3);
+		$text->setTextColor('fff');
+		$text->setText('Optimal Response Time (1/'.self::RESPONSE_OPTIMAL.' Second)');
+		$text->setPosition(3, 3.5);
+		$text->setTextSize(2);
+		$this->optimalLineFrame->addComponent($text);
+		
+		$this->optimalLine = new Quad($this->sizeX - 2, 0.2);
+		$this->optimalLine->setBgcolor('0a0');
+		$this->optimalLine->setPosX(1);
+		$this->optimalLine->setValign('bottom');
+		$this->optimalLineFrame->addComponent($this->optimalLine);
+		$this->addComponent($this->optimalLineFrame);
+		
+		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_CPU_VALUE);
 	}
 	
-	function beforeDraw()
+	function onResize($oldX, $oldY)
 	{
-		$this->container->setPosition(1, $this->getSizeY() - 1);
-		$this->container->clearComponents();
-		
-		if (empty($this->stats))
-			return;
-
-		$max_height = $this->getSizeY() - 6;
-		
-		$max = max($this->stats);
-		if ($max < self::RESPONSE_OPTIMAL) $max = self::RESPONSE_OPTIMAL;
-		
-		$width = ($this->getSizeX() - 2) / 10;
-		
-		$c = count($this->stats);
-		for ($i = 0, $n = 0;$i < 10 && $i < $c; $i++)
+		$this->barsFrame->setPosY(1 - $this->sizeY);
+		$width = ($this->sizeX - 2) / 10;
+		$heightFactor = ($this->sizeY - 6) / max(self::RESPONSE_OPTIMAL, max($this->cpuStats));
+		foreach($this->bars as $i => $bar)
+			$bar->setSize($width, $this->cpuStats[$i] * $heightFactor);
+		$this->criticalLineFrame->setPosY(1 + $heightFactor * self::RESPONSE_MINIMAL - $this->sizeY);
+		$this->optimalLineFrame->setPosY(1 + $heightFactor * self::RESPONSE_OPTIMAL - $this->sizeY);
+		$this->criticalLine->setSizeX($this->sizeX - 2);
+		$this->optimalLine->setSizeX($this->sizeX - 2);
+	}
+	
+	function onNewCpuValue($newValue)
+	{
+		$this->cpuStats[] = $newValue;
+		if(count($this->cpuStats) > 10)
 		{
-			$frame = new Frame();
-			$frame->setSize($width, $max_height / $max * $this->stats[$i]);
-			$frame->setValign('bottom');
-			
-			$color = dechex($i);
-
-			$ui = new Quad();
-			$ui->setStyle(BgsPlayerCard::BgsPlayerCard);
-			$ui->setSubStyle(BgsPlayerCard::BgRacePlayerLine);
-			$ui->setBgcolor($color.$color.$color);
-			$ui->setSize($width, $max_height / $max * $this->stats[$i]);
-			$frame->addComponent($ui);
-			
-			$this->container->addComponent($frame);
+			array_shift($this->cpuStats);
+			$bar = array_shift($this->bars);
+			$this->barsFrame->removeComponent($bar);
+		}
+		else
+		{
+			$bar = new Quad();
+			$bar->setSizeX(($this->sizeX - 2) / 10);
+			$bar->setValign('bottom');
 		}
 		
-		$bar_min_posy = $this->getSizeY() - 1 - ($max_height / $max * self::RESPONSE_MINIMAL);
-		$bar_opt_posy = $this->getSizeY() - 1 - ($max_height / $max * self::RESPONSE_OPTIMAL);
+		$this->barsFrame->addComponent($bar);
+		$this->bars[] = $bar;
 		
-		// create bar for minimum
-		$this->container_lines->clearComponents();
+		$iColor = 0;
+		$heightFactor = ($this->sizeY - 6) / max(self::RESPONSE_OPTIMAL, max($this->cpuStats));
+		foreach($this->bars as $i => $bar)
+		{
+			$color = dechex($iColor++);
+			$bar->setBgcolor($color.$color.$color);
+			$bar->setSizeY($this->cpuStats[$i] * $heightFactor);
+		}
 		
-		// add bar for minimum response time ...
-		$txt = new Label(75, 3);
-		$txt->setTextColor('fff');
-		$txt->setText('Critical Response Time (1/' . self::RESPONSE_MINIMAL . ' Second)');
-		$txt->setPosition(3, $bar_min_posy - 2.5);
-		$txt->setTextSize(2);
-		$this->container_lines->addComponent($txt);
-		
-		$bar = new Quad($this->getSizeX() - 2, 0.2);
-		$bar->setStyle(null);
-		$bar->setBgcolor('a00');
-		$bar->setPosition(1, $bar_min_posy);
-		$bar->setValign('bottom');
-		$this->container_lines->addComponent($bar);
-		
-		// add bar for optimal response time ...
-		$txt = new Label(75, 3);
-		$txt->setTextColor('fff');
-		$txt->setText('Optimal Response Time (1/' . self::RESPONSE_OPTIMAL . ' Second)');
-		$txt->setPosition(3, $bar_opt_posy - 2.5);
-		$txt->setTextSize(2);
-		$this->container_lines->addComponent($txt);
-		
-		$bar = new Quad($this->getSizeX() - 2, 0.2);
-		$bar->setStyle(null);
-		$bar->setBgcolor('0a0');
-		$bar->setPosition(1, $bar_opt_posy);
-		$bar->setValign('bottom');
-		$this->container_lines->addComponent($bar);
+		$this->redraw();
 	}
+	
+	function onNewMemoryValue($newValue) {}
+	function onNewNetworkValue($newValue) {}
 	
 	function destroy()
 	{
-		unset($this->stats);
+		Dispatcher::unregister(MonitorEvent::getClass(), $this);
+		$this->barsFrame->destroy();
+		$this->criticalLineFrame->destroy();
+		$this->optimalLineFrame->destroy();
+		$this->bars = array();
+		$this->cpuStats = array();
 		parent::destroy();
 	}
 }

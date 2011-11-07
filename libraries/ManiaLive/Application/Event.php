@@ -15,19 +15,11 @@ namespace ManiaLive\Application;
 
 class Event extends \ManiaLive\Event\Event
 {
-	const ON_INIT = 1;
-	const ON_RUN = 2;
-	const ON_PRE_LOOP = 3;
-	const ON_POST_LOOP = 4;
-	const ON_TERMINATE = 5;
-	
-	protected $onWhat;
-	
-	function __construct($source, $onWhat)
-	{
-		parent::__construct($source);
-		$this->onWhat = $onWhat;
-	}
+	const ON_INIT      = 1;
+	const ON_RUN       = 2;
+	const ON_PRE_LOOP  = 4;
+	const ON_POST_LOOP = 8;
+	const ON_TERMINATE = 16;
 	
 	function fireDo($listener)
 	{

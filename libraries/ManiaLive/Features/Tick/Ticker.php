@@ -12,15 +12,17 @@
 namespace ManiaLive\Features\Tick;
 
 use ManiaLive\Event\Dispatcher;
+use ManiaLive\Application\Adapter as AppAdapter;
+use ManiaLive\Application\Event as AppEvent;
 
-class Ticker extends \ManiaLive\Application\Adapter
+class Ticker extends AppAdapter
 {
 	protected $microtime;
 	
 	function __construct()
 	{
 		$this->microtime = microtime(true);
-		Dispatcher::register(\ManiaLive\Application\Event::getClass(), $this);
+		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_PRE_LOOP);
 	}
 	
 	function onPreLoop()
@@ -29,7 +31,7 @@ class Ticker extends \ManiaLive\Application\Adapter
 		if($microtime - $this->microtime > 1)
 		{
 			$this->microtime = $microtime;
-			Dispatcher::dispatch(new Event($this));
+			Dispatcher::dispatch(new Event());
 		}
 	}
 }

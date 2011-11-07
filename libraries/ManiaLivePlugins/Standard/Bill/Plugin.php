@@ -1,18 +1,18 @@
 <?php
 /**
- * Transaction Plugin - Allow person to give planets to other persons
+ * Bill Plugin - Allow person to give planets to other persons
  *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
- * @version     $Revision: 265 $:
- * @author      $Author: martin.gwendal $:
- * @date        $Date: 2011-09-12 23:27:03 +0200 (lun., 12 sept. 2011) $:
+ * @version     $Revision$:
+ * @author      $Author$:
+ * @date        $Date$:
  */
 
 namespace ManiaLivePlugins\Standard\Bill;
 
-use ManiaLib\Filters\Validation;
 use ManiaLive\Features\Admin\AdminGroup;
+use ManiaLive\Utilities\Validation;
 
 class Plugin extends \ManiaLive\PluginHandler\Plugin
 {
@@ -112,7 +112,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 
 	function checkBill($login, $billId)
 	{
-		$bill = $this->connection->getBillState($billId);
+		$bill = $this->connection->getBillState((int)$billId);
 
 		$this->connection->chatSendServerMessage('The bill n°'.$billId.' is currently $<$o'.$bill->stateName.'$>', $login, true);
 	}

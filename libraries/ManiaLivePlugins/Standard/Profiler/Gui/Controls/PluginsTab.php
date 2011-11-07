@@ -1,7 +1,7 @@
 <?php
 /**
- * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ * Profiler Plugin - Show statistics about ManiaLive
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -12,37 +12,43 @@
 namespace ManiaLivePlugins\Standard\Profiler\Gui\Controls;
 
 use ManiaLib\Gui\Elements\Button;
-use ManiaLive\Gui\Windowing\Controls\Pager;
+use ManiaLive\Event\Dispatcher;
+use ManiaLive\PluginHandler\Listener as PluginListener;
+use ManiaLive\PluginHandler\Event as PluginEvent;
+use ManiaLive\Gui\ActionHandler;
+use ManiaLive\Gui\Controls\Pager;
 use ManiaLive\PluginHandler\PluginHandler;
-use ManiaLivePlugins\Standard\Profiler\Profiler;
-use ManiaLive\Gui\Handler\GuiHandler;
-use ManiaLive\DedicatedApi\Xmlrpc\Client_Gbx;
-use ManiaLive\Database\Connection;
-use ManiaLive\Threading\Commands\Command;
-use ManiaLive\Threading\ThreadPool;
-use ManiaLib\Gui\Elements\Label;
 
-class PluginsTab extends \ManiaLive\Gui\Windowing\Controls\Tab
+use ManiaLivePlugins\Standard\Profiler\Profiler;
+
+class PluginsTab extends \ManiaLive\Gui\Controls\Tabbable implements PluginListener
 {
-	protected $btnPluginManger;
-	protected $pgPlugins;
-	protected $pluginManagerAvailable;
+	private $managerButton;
+	private $pluginsPager;
+	private $pluginManagerAvailable = false;
+	private $pluginItems;
 	
-	function initializeComponents()
+	function __construct()
 	{
-		$this->pluginManagerAvailable = PluginHandler::getInstance()->isPluginLoaded('Standard\PluginManager');
+		$this->setTitle('Plugins');
 		
-		$this->btnPluginManger = new Button();
-		$this->btnPluginManger->setHalign('center');
-		$this->btnPluginManger->setStyle(Button::CardButtonSmallWide);
-		$this->btnPluginManger->setText('click here to manage your plugins');
-		$this->btnPluginManger->setVisibility($this->pluginManagerAvailable);
-		$this->addComponent($this->btnPluginManger);
+		$this->pluginItems = array();
 		
-		$this->pgPlugins = new Pager();
-		$this->pgPlugins->setPosition(0, $this->pluginManagerAvailable ? 8 : 2);
-		$this->pgPlugins->setStretchContentX(true);
-		$this->addComponent($this->pgPlugins);
+		$this->managerButton = new Button();
+		$this->managerButton->setHalign('center');
+		$this->managerButton->setStyle(Button::CardButtonSmallWide);
+		$this->managerButton->setText('click here to manage your plugins');
+		$this->managerButton->setAction(ActionHandler::getInstance()->createAction(array($this, 'showPluginManager')));
+		$this->addComponent($this->managerButton);
+		
+		$this->pluginsPager = new Pager();
+		$this->pluginsPager->setStretchContentX(true);
+		$this->addComponent($this->pluginsPager);
+		
+		foreach (PluginHandler::getInstance()->getLoadedPluginsList() as $plugin)
+			$this->onPluginLoaded($plugin);
+		
+		Dispatcher::register(PluginEvent::getClass(), $this);
 	}
 	
 	function showPluginManager($login)
@@ -50,30 +56,50 @@ class PluginsTab extends \ManiaLive\Gui\Windowing\Controls\Tab
 		PluginHandler::getInstance()->callPublicMethod(Profiler::$me, 'Standard\PluginManager', 'openWindow', array($login));
 	}
 	
-	function refreshList()
+	function onDraw()
 	{
-		$this->pgPlugins->clearItems();
-		foreach (PluginHandler::getInstance()->getLoadedPluginsList() as $plugin)
-		{
-			$plugin = explode('\\', $plugin);
-			$author = array_shift($plugin);
-			$package = implode('\\', $plugin);
-			
-			$item = new ListItem();
-			$item->label->setText('Author: ' . $author . ' - Package: ' . $package);
-			$this->pgPlugins->addItem($item);
-		}
+		$this->managerButton->setVisibility($this->pluginManagerAvailable);
+		$this->pluginsPager->setPosition(0, $this->pluginManagerAvailable ? -8 : -2);
 	}
 	
-	function onResize()
+	function onResize($oldX, $oldY)
 	{
-		$this->btnPluginManger->setPosition($this->sizeX / 2, 1);
-		$this->pgPlugins->setSize($this->sizeX, $this->sizeY - ($this->pluginManagerAvailable ? 12 : 2));
+		$this->managerButton->setPosition($this->sizeX / 2, -1);
+		$this->pluginsPager->setSize($this->sizeX, $this->sizeY - ($this->pluginManagerAvailable ? 12 : 2));
 	}
 	
-	function beforeDraw()
+	function onPluginLoaded($pluginId)
 	{
-		$this->btnPluginManger->setAction($this->callback('showPluginManager'));
+		$plugin = explode('\\', $pluginId);
+		$author = array_shift($plugin);
+		$package = implode('\\', $plugin);
+
+		$item = new ListItem();
+		$item->label->setText('Author: '.$author.' - Package: '.$package);
+		$this->pluginsPager->addItem($item);
+		$this->pluginItems[$pluginId] = $item;
+		
+		if($pluginId == 'Standard\PluginManager')
+			$this->pluginManagerAvailable = true;
+		
+		$this->redraw();
+	}
+	
+	function onPluginUnloaded($pluginId)
+	{
+		$this->pluginsPager->removeItem($this->pluginItems[$pluginId]);
+		unset($this->pluginItems[$pluginId]);
+		
+		if($pluginId == 'Standard\PluginManager')
+			$this->pluginManagerAvailable = false;
+		
+		$this->redraw();
+	}
+	
+	function destroy()
+	{
+		Dispatcher::unregister(PluginEvent::getClass(), $this);
+		parent::destroy();
 	}
 }
 

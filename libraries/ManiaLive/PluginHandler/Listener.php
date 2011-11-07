@@ -23,9 +23,9 @@ interface Listener extends \ManiaLive\Event\Listener
 	function onPluginLoaded($pluginId);
 	/**
 	 * Event launch when a plugin is unloaded
-	 * @param string $classname
+	 * @param string $pluginId
 	 */
-	function onPluginUnloaded($classname);
+	function onPluginUnloaded($pluginId);
 }
 
 ?>

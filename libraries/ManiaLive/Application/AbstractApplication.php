@@ -12,21 +12,22 @@
 namespace ManiaLive\Application;
 
 use ManiaLive\Cache\Cache;
-use ManiaLive\Gui\Windowing\WindowHandler;
-use ManiaLive\Threading\Tools;
-use ManiaLive\Threading\ThreadPool;
-use ManiaLive\Utilities\Logger;
 use ManiaLive\Config\Loader;
-use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLive\Data\Storage;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Event\Dispatcher;
-use ManiaLive\Gui\Handler\GuiHandler;
+use ManiaLive\Gui\GuiHandler;
+use ManiaLive\Features\ChatCommand\Interpreter;
 use ManiaLive\Features\Tick\Ticker;
+use ManiaLive\PluginHandler\PluginHandler;
+use ManiaLive\Threading\Tools;
+use ManiaLive\Threading\ThreadPool;
+use ManiaLive\Utilities\Logger;
 
 abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 {
 	const USLEEP_DELAY = 15000;
+	static $startTime;
 	/**
 	 * @var bool
 	 */
@@ -36,10 +37,6 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	 * @todo Connection is not the best name here. $dedicatedApi ? $api? $apiConnection ? etc.
 	 */
 	protected $connection;
-	/**
-	 * @var \ManiaLive\Cache\Cache
-	 */
-	protected $cache;
 	
 	protected function __construct()
 	{
@@ -60,7 +57,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			// add logfile prefix ...
 			$manialiveConfig = \ManiaLive\Config\Config::getInstance();
 			$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
-			if ($manialiveConfig->logsPrefix != null)
+			if($manialiveConfig->logsPrefix != null)
 			{
 				$ip = str_replace('.', '-', $serverConfig->host);
 				
@@ -74,7 +71,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			}
 				
 			// disable logging?
-			if (!$manialiveConfig->runtimeLog)
+			if(!$manialiveConfig->runtimeLog)
 				Logger::getLog('Runtime')->disableLog();
 			
 			// configure the dedicated server connection
@@ -92,46 +89,29 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	
 	protected function init()
 	{
-		// initialize components
 		new Ticker();
-		
-		// initialize caching
-		$this->cache = Cache::getInstance();
-		
-		// synchronize information with dedicated server
-		Storage::getInstance();
-		
-		// establish connection
 		$this->connection = Connection::getInstance();
-		
-		//Initialize Chat Command Interpreter
-		\ManiaLive\Features\ChatCommand\Interpreter::getInstance();
-		
-		// initialize plugin handler
-		PluginHandler::getInstance();
-		
-		// enable callbacks
 		$this->connection->enableCallbacks(true);
+		Cache::getInstance();
+		Storage::getInstance();
+		Interpreter::getInstance();
+		PluginHandler::getInstance();
+		GuiHandler::getInstance();
 		
-		// initialize threadpool
 		$pool = ThreadPool::getInstance();
-		
-		// send config to threads
 		if ($pool->getDatabase() != null)
 		{
 			Tools::setData($pool->getDatabase(), 'config', \ManiaLive\Config\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'database', \ManiaLive\Database\Config::getInstance());
-			Tools::setData($pool->getDatabase(), 'maniahome', \ManiaHome\Config::getInstance());
+			//Tools::setData($pool->getDatabase(), 'maniahome', \ManiaHome\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'manialive', \ManiaLive\Application\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'server', \ManiaLive\DedicatedApi\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'threading', \ManiaLive\Threading\Config::getInstance());
 		}
 		
-		// initialize windowing system
-		GuiHandler::hideAll();
-		WindowHandler::getInstance();
+		$this->connection->sendHideManialinkPage();
 		
-		Dispatcher::dispatch(new Event($this, Event::ON_INIT));
+		Dispatcher::dispatch(new Event(Event::ON_INIT));
 	}
 	
 	function run()
@@ -140,17 +120,16 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		{
 			$this->init();
 			
-			Dispatcher::dispatch(new Event($this, Event::ON_RUN));
+			Dispatcher::dispatch(new Event(Event::ON_RUN));
 			ThreadPool::getInstance()->run();
+			self::$startTime = microtime(true);
 			
 			while($this->running)
 			{
-				Dispatcher::dispatch(new Event($this, Event::ON_PRE_LOOP));
-				// TODO Put this into the event listener?
+				Dispatcher::dispatch(new Event(Event::ON_PRE_LOOP));
 				$this->connection->executeCallbacks();
-				GuiHandler::getInstance()->sendAll();
 				$this->connection->executeMultiCall();
-				Dispatcher::dispatch(new Event($this, Event::ON_POST_LOOP));
+				Dispatcher::dispatch(new Event(Event::ON_POST_LOOP));
 				usleep(static::USLEEP_DELAY);
 			}
 			$this->terminate();
@@ -169,7 +148,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	
 	protected function terminate()
 	{
-		Dispatcher::dispatch(new Event($this, Event::ON_TERMINATE));
+		Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 	}
 }
 

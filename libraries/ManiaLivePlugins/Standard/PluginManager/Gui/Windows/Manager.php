@@ -11,71 +11,61 @@
 
 namespace ManiaLivePlugins\Standard\PluginManager\Gui\Windows;
 
+use ManiaLive\Gui\Controls\Pager;
 use ManiaLive\PluginHandler\PluginHandler;
-
 use ManiaLivePlugins\Standard\PluginManager\Gui\Controls\Plugin;
-use ManiaLive\Gui\Windowing\Controls\Pager;
-use ManiaLib\Gui\Elements\Label;
-use ManiaLive\Gui\Windowing\Controls\Panel;
 
-class Manager extends \ManiaLive\Gui\Windowing\ManagedWindow
+class Manager extends \ManiaLive\Gui\ManagedWindow
 {
-	protected $label;
-	protected $pager;
+	static private $plugins = array();
 	
-	static function CreateFromPlugins($login, $plugins)
+	private $pager;
+	
+	static function AddPlugin($pluginClass, $manager)
 	{
-		$window = parent::Create($login);
+		$pluginId = PluginHandler::getPluginIdFromClass($pluginClass);
+		if($pluginId == 'Standard\PluginManager' || isset(self::$plugins[$pluginId]))
+			return;
 		
-		$window->pager->clearItems();
-		foreach ($plugins as $class)
-		{
-			$id = PluginHandler::getPluginIdFromClass($class);
-				$plugin = new Plugin(PluginHandler::getPluginIdFromClass($class),
-				PluginHandler::getInstance()->isPluginLoaded($id), $class);
-			
+		$plugin = new Plugin($pluginId, $pluginClass, $manager);
+		self::$plugins[$pluginId] = $plugin;
+		
+		foreach(self::GetAll() as $window)
 			$window->pager->addItem($plugin);
-		}
-		
-		return $window;
 	}
 	
-	function initializeComponents()
-	{	
+	static function GetPlugin($pluginId)
+	{
+		if(isset(self::$plugins[$pluginId]))
+			return self::$plugins[$pluginId];
+		return null;
+	}
+	
+	static function ErasePlugins()
+	{
+		foreach(self::$plugins as $plugin)
+			$plugin->destroy();
+	}
+	
+	protected function onConstruct()
+	{
+		$this->pager = new Pager();
+		
+		parent::onConstruct();
 		$this->setTitle('Plugin Manager');
 		$this->setMaximizable();
 		
-		$this->label = new Label();
-		$this->label->setPosition(3, 7);
-		$this->label->enableAutonewline();
-		$this->addComponent($this->label);
-		
-		$this->pager = new Pager();
-		$this->pager->setPosition(2, 16);
+		$this->pager->setPosition(2, -16);
 		$this->pager->setStretchContentX(true);
 		$this->addComponent($this->pager);
+		foreach(self::$plugins as $plugin)
+			$this->pager->addItem($plugin);
 	}
 	
-	function onDraw()
+	function onResize($oldX, $oldY)
 	{
-		$this->label->setText('');
-	}
-	
-	function onResize()
-	{
-		$this->label->setSizeX($this->sizeX - 6);
+		parent::onResize($oldX, $oldY);
 		$this->pager->setSize($this->sizeX - 4, $this->sizeY - 20);
-	}
-	
-	function clearPlugins()
-	{
-		$items = $this->pager->clearItems();
-		foreach ($items as $item) $item->destroy();
-	}
-	
-	function addPlugin(Plugin $plugin)
-	{
-		$this->pager->addItem($plugin);
 	}
 }
 ?>
