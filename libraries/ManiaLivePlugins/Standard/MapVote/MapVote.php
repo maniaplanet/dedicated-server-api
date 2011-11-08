@@ -31,8 +31,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 
 	function onLoad()
 	{
-		$this->enableDatabase();
-		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_BEGIN_MAP);
+		Vote::Initialize($this);
 
 		// register chat command to give a good rating
 		$cmd = $this->registerChatCommand('++', 'voteGood', 0, true);
@@ -41,7 +40,10 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		// register chat command to give a bad rating
 		$cmd = $this->registerChatCommand('--', 'voteBad', 0, true);
 		$cmd->help = 'Use this if you do not like the current track and want it to be removed.';
-
+		
+		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_BEGIN_MAP);
+		$this->enableDatabase();
+		
 		if(!$this->db->tableExists('votes'))
 		{
 			$this->db->execute(
@@ -58,8 +60,6 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				'ENGINE=InnoDB '.
 				'ROW_FORMAT=DEFAULT;');
 		}
-		
-		Vote::Initialize($this);
 	}
 	
 	function onReady()

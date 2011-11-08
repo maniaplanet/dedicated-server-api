@@ -11,12 +11,12 @@
 
 namespace ManiaLive\Threading;
 
-use ManiaLive\Threading\Commands\Command;
+use ManiaLive\Database\SQLite\Connection;
 use ManiaLive\Event\Dispatcher;
+use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Threading\Commands\QuitCommand;
 use ManiaLive\Threading\Commands\PingCommand;
 use ManiaLive\Utilities\Logger;
-use ManiaLive\Database\SQLite\Connection;
 
 /**
  * Each Thread represents its own process.
@@ -456,8 +456,8 @@ class Thread
 }
 
 // thread does not respond to a ping, though it is not busy
-class ThreadDiedException extends Exception {};
+class ThreadDiedException extends \Exception {};
 
 // a thread is busy and did not respond for a given amount of seconds
-class ThreadTimedOutExcpetion extends Exception {};
+class ThreadTimedOutExcpetion extends \Exception {};
 ?>
