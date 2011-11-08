@@ -174,16 +174,10 @@ abstract class Connection
 }
 
 class Exception extends \Exception {}
-
 class ConnectionException extends Exception {}
-
 class DisconnectionException extends Exception {}
-
 class NotSupportedException extends Exception {}
-
 class NotConnectedException extends Exception {}
-
 class SelectionException extends Exception {}
-
 class QueryException extends Exception {}
 ?>

@@ -30,6 +30,37 @@ class Process
 	private $incomingJobCount;
 	private $parent;
 	
+	function __construct($pid, $parent)
+	{
+		$this->id = $pid;
+		$this->parent = $parent;
+		
+		// print first message from thread ...
+		echo 'Thread started successfully!'.APP_NL;
+		
+		// when script terminates call this function to
+		// update the thread's status ...
+		register_shutdown_function(array($this, 'setClosed'));
+		
+		// connect to database ...
+		$this->db = Tools::getDb($this->parent);
+		if($this->db->isConnected())
+			echo 'DB is connected, waiting for jobs ...'.APP_NL;
+		
+		$this->incomingJob = null;
+		
+		// get configuration ...
+		\ManiaLive\Config\Config::forceInstance(Tools::getData($this->db, 'config'));
+		\ManiaLive\Database\Config::forceInstance(Tools::getData($this->db, 'database'));
+		\ManiaLive\Features\WebServices\Config::forceInstance(Tools::getData($this->db, 'wsapi'));
+		\ManiaLive\Application\Config::forceInstance(Tools::getData($this->db, 'manialive'));
+		\ManiaLive\DedicatedApi\Config::forceInstance(Tools::getData($this->db, 'server'));
+		\ManiaLive\Threading\Config::forceInstance(Tools::getData($this->db, 'threading'));
+		
+		// thread state is ready ...
+		$this->setReady();
+	}
+	
 	/**
 	 * Static function to set ready state.
 	 * @param integer $pid
@@ -45,7 +76,7 @@ class Process
 	 */
 	function setBusy($busy_flag = true)
 	{
-		$this->db->execute("UPDATE threads SET last_beat=" . (time()+60) . ", busy=" . intval($busy_flag) . " WHERE proc_id=" . $this->id);
+		$this->db->execute('UPDATE threads SET last_beat=%s, busy=%d WHERE proc_id=%d', time()+60, $busy_flag, $this->id);
 	}
 	
 	/**
@@ -54,7 +85,7 @@ class Process
 	 */
 	function setLastBeat()
 	{
-		$this->db->execute("UPDATE threads SET last_beat=" . (time()+60) . " WHERE proc_id=" . $this->id);
+		$this->db->execute('UPDATE threads SET last_beat=%s WHERE proc_id=%d', time()+60, $this->id);
 	}
 	
 	/**
@@ -63,54 +94,22 @@ class Process
 	 */
 	function setClosed()
 	{
-		echo 'Closed Thread!' . APP_NL;
-		$this->db->execute("UPDATE threads SET state=3 WHERE proc_id=" . $this->id);
-	}
-	
-	function __construct($pid, $parent)
-	{
-		$this->id = $pid;
-		$this->parent = $parent;
-		
-		// print first message from thread ...
-		echo "Thread started successfully!" . APP_NL;
-		
-		// when script terminates call this function to
-		// update the thread's status ...
-		register_shutdown_function(array($this, 'setClosed'));
-		
-		// connect to database ...
-		$this->db = Tools::getDb($this->parent);
-		if ($this->db->isConnected())
-		{
-			echo "DB is connected, waiting for jobs ..." . APP_NL;
-		}
-		
-		$this->incomingJob = null;
-		
-		// get configuration ...
-		\ManiaLive\Config\Config::forceInstance(Tools::getData($this->db, 'config'));
-		\ManiaLive\Database\Config::forceInstance(Tools::getData($this->db, 'database'));
-		//\ManiaHome\Config::forceInstance(Tools::getData($this->db, 'maniahome'));
-		\ManiaLive\Application\Config::forceInstance(Tools::getData($this->db, 'manialive'));
-		\ManiaLive\DedicatedApi\Config::forceInstance(Tools::getData($this->db, 'server'));
-		\ManiaLive\Threading\Config::forceInstance(Tools::getData($this->db, 'threading'));
-		
-		// thread state is ready ...
-		$this->setReady();
+		echo 'Closed Thread!'.APP_NL;
+		$this->db->execute('UPDATE threads SET state=3 WHERE proc_id=%d', $this->id);
 	}
 	
 	/**
 	 * 
 	 * Enter description here ...
-	 * @param unknown_type $cmd
-	 * @param unknown_type $return_value
+	 * @param integer $cmdId
+	 * @param mixed $returnValue
 	 */
-	function returnResult($cmd_id, $return_value)
+	function returnResult($cmdId, $returnValue)
 	{
 		//$return_value = array($return_value, ($this->incoming_job_count == 0));
-		$this->db->execute("UPDATE cmd SET done=1, result='".base64_encode(serialize($return_value))."' WHERE cmd_id=".$cmd_id);
-		echo "Result saved rows:" . $this->db->affectedRows() . APP_NL;
+		$this->db->execute('UPDATE cmd SET done=1, result=%s WHERE cmd_id=%d',
+				$this->db->quote(base64_encode(serialize($returnValue))), $cmdId);
+		echo 'Result saved rows: '.$this->db->affectedRows().APP_NL;
 	}
 	
 	/**
@@ -121,65 +120,41 @@ class Process
 	function getWork()
 	{
 		// query db for jobs ...
-		$result = $this->db->query("SELECT cmd_id, cmd, param FROM cmd WHERE done=0 AND proc_id=" . $this->id . " ORDER BY datestamp DESC");
+		$result = $this->db->query('SELECT cmd_id, cmd, param FROM cmd WHERE done=0 AND proc_id=%d ORDER BY datestamp DESC', $this->id);
 		$this->incomingJobCount = $result->recordCount();
 		
-		if ($this->incomingJobCount > 0)
-		{
-			echo 'Incoming Jobs: ' . $this->incomingJobCount . APP_NL;
-		}
+		if($this->incomingJobCount > 0)
+			echo 'Incoming Jobs: '.$this->incomingJobCount.APP_NL;
 		else
-		{
 			return false;
-		}
 		
 		// process incoming jobs ...
-		while ($this->incomingJob = $result->fetchArray())
+		while($this->incomingJob = $result->fetchArray())
 		{
 			$this->incomingJobCount--;
 			
 			// this will save some writing ...
 			$cmd = $this->incomingJob['cmd'];
-			$cmd_id = $this->incomingJob['cmd_id'];
-			$cmd_param = $this->incomingJob['param'];
+			$cmdId = $this->incomingJob['cmd_id'];
+			$cmdParam = $this->incomingJob['param'];
 			
-			echo 'Got Command: ' . $cmd . APP_NL;
+			echo 'Got Command: '.$cmd.APP_NL;
 			
-			switch ($cmd)
+			switch($cmd)
 			{
 				case 'ping':
-					
 					// ping returns always true ...
-					$this->returnResult($cmd_id, true);
-					
+					$this->returnResult($cmdId, true);
 					break;
-				
 				case 'run':
-					
-					// update thread status ...
 					$this->setBusy();
-					
-					// start job processing ...
-					echo "Processing Command ID: " . $cmd_id . APP_NL;
-					
+					echo 'Processing Command ID: '.$cmdId.APP_NL;
 					// process incoming job ...
-					// __autoload is automatically triggered on unserialize!
-					$job = unserialize(base64_decode($cmd_param));
-					$return_value = $job->run();
-					
-					//store results
-					$this->returnResult($cmd_id, $return_value);		
-					
-					// update thread status ...
+					$job = unserialize(base64_decode($cmdParam));
+					$this->returnResult($cmdId, $job->run());	
 					$this->setReady();
-					
 					break;
-					
-				case 'exit':
-					
-					exit();
-	
-					break;
+				case 'exit': exit();
 			}
 		}
 

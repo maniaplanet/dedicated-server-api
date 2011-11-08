@@ -51,22 +51,20 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 		$this->database = null;
 		
 		// check if library's enabled ...
-		if (! (extension_loaded('SQLite') || extension_loaded('SQLite3')) )
+		if(! (extension_loaded('SQLite') || extension_loaded('SQLite3')) )
 		{
 			Console::println("Threading will be disabled, enable the 'SQLite' extension on your system!");
 			self::$threadingEnabled = false;
 		}
 		else
-		{
 			self::$threadingEnabled = Config::getInstance()->enabled;
-		}
 		
 		// continue depending whether threading is enabled or not ...
-		if (self::$threadingEnabled)
+		if(self::$threadingEnabled)
 		{
 			// keep manialive clean!
 			// delete unused threading databases ...
-			$files = glob(APP_ROOT . '/data/threading_*.db'); 
+			$files = glob(APP_ROOT.'/data/threading_*.db'); 
 			if(is_array($files))
 			{
 			    foreach($files as $file)
@@ -81,24 +79,23 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			$this->database = Tools::getDb();
 			
 			// setup database ...
-			$this->logger->write("Setting up Database ...");
+			$this->logger->write('Setting up Database ...');
 			Tools::setupDb();
 			
 			// clean threads and states ...
-			$this->logger->write("Removing old threads and commands ...");
+			$this->logger->write('Removing old threads and commands ...');
 			$this->clean();
 		}
 		else
 		{
 			// just print some information ...
 			Console::println('[Attention] Threading disabled - this may cause performance issues!');
-			$this->logger->write("Application started with threading disabled!");
+			$this->logger->write('Application started with threading disabled!');
 			
 			// create emulated thread number 0 ...
 			$this->threads[0] = new Thread(0);
 		}
 		
-		// register me ...
 		Dispatcher::register(TickEvent::getClass(), $this);
 	}
 	
@@ -145,13 +142,12 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function createThread()
 	{
-		if (self::$threadingEnabled)
+		if(self::$threadingEnabled)
 		{
 			// create thread ...
 			$thread = Thread::Create();
 			$this->threads[$thread->getId()] = $thread;
-			
-			$this->logger->write("Thread with ID " . $thread->getId() . " has been started!");
+			$this->logger->write('Thread with ID '.$thread->getId().' has been started!');
 			
 			// increase thread count
 			$this->threadsCount++;
@@ -159,10 +155,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			return $thread->getId();
 		}
 		else
-		{
-			// if disabled all jobs run on emulated thread #0 ...
 			return 0;
-		}
 	}
 	
 	/**
@@ -173,10 +166,10 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function removeThread($id)
 	{
-		if (self::$threadingEnabled)
+		if(self::$threadingEnabled)
 		{
 			// check whether thread exists ...
-			if (array_key_exists($id, $this->threads))
+			if(isset($this->threads[$id]))
 			{
 				$this->logger->write("Closing Thread with ID " . $id);
 				
@@ -200,7 +193,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function getThread($id)
 	{
-		return (isset($this->threads[$id]) ? $this->threads[$id] : null);
+		return isset($this->threads[$id]) ? $this->threads[$id] : null;
 	}
 	
 	/**
@@ -211,14 +204,14 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	function clean()
 	{
 		// on startup remove every thread, job and data from the database!
-		$this->database->execute("DELETE FROM threads");
-		$this->logger->write("DB threads are cleaned, rows affected: " . $this->database->affectedRows());
+		$this->database->execute('DELETE FROM threads');
+		$this->logger->write('DB threads are cleaned, rows affected: '.$this->database->affectedRows());
 		
-		$this->database->execute("DELETE FROM cmd");
-		$this->logger->write("DB cmds are cleaned, rows affected: " . $this->database->affectedRows());
+		$this->database->execute('DELETE FROM cmd');
+		$this->logger->write('DB cmds are cleaned, rows affected: '.$this->database->affectedRows());
 		
-		$this->database->execute("DELETE FROM data");
-		$this->logger->write("DB data is cleaned, rows affected: " . $this->database->affectedRows());
+		$this->database->execute('DELETE FROM data');
+		$this->logger->write('DB data is cleaned, rows affected: '.$this->database->affectedRows());
 	}
 	
 	/**
@@ -226,49 +219,44 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 * The ThreadPool will then decide which Thread will take
 	 * the work.
 	 * @param ManiaLive\Threading\Commands\Command $command
-	 * @throws WrongTypeException
 	 */
-	function addCommand(Command $command, $force_tid = false)
+	function addCommand(Command $command, $forceTid = false)
 	{
 		Console::printDebug('new Command has been added to the ThreadPool ...');
 		
 		// this command may only run on a specific thread ...
-		if ($force_tid !== false)
+		if($forceTid !== false)
 		{
-			$this->threads[$force_tid]->addCommandToBuffer($command);
+			$this->threads[$forceTid]->addCommandToBuffer($command);
 			return;
 		}
 		
 		$sent = false;
-		$thread_prev = false;
-		$thread_first = null;
-		$thread_id = null;
-		foreach ($this->threads as $thread)
+		$threadPrev = false;
+		$threadFirst = null;
+		$threadId = null;
+		foreach($this->threads as $thread)
 		{
-			$thread_cur = $thread->getCommandCount();
-			if ($thread_prev !== false)
+			$threadCur = $thread->getCommandCount();
+			if($threadPrev !== false)
 			{
-				if ($thread_prev > $thread_cur)
+				if($threadPrev > $threadCur)
 				{
-					$thread_id = $thread->getId();
+					$threadId = $thread->getId();
 					break;
 				}
 			}
 			else
-			{
-				$thread_first = $thread;
-			}
-			$thread_prev = $thread_cur;
+				$threadFirst = $thread;
+			$threadPrev = $threadCur;
 		}
 		
-		if ($thread_id === null) 
-		{
-			$thread_id = $thread_first->getId();
-		}
+		if($threadId === null) 
+			$threadId = $threadFirst->getId();
 		
-		Console::printDebug('Command has been assigned to thread #' . $thread_id);
+		Console::printDebug('Command has been assigned to thread #' . $threadId);
 		
-		$this->threads[$thread_id]->addCommandToBuffer($command);
+		$this->threads[$threadId]->addCommandToBuffer($command);
 	}
 	
 	/**
@@ -277,12 +265,10 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function onTick()
 	{
-		if (!$this->running)
-		{
+		if(!$this->running)
 			return;
-		}
 		
-		if (self::$threadingEnabled)
+		if(self::$threadingEnabled)
 		{
 			// afterwards collect responses,
 			// current jobs may response next tick ...
@@ -308,36 +294,25 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			$start = time() + Config::getInstance()->sequentialTimeout;
 			
 			// get commands from each thread and execute them seqeuntially ...
-			foreach ($this->threads as $thread)
+			foreach($this->threads as $thread)
 			{
-				while ($command = $thread->shiftCommand())
+				while($command = $thread->shiftCommand())
 				{
-					if ($command->name == Command::Run)
+					if($command->name == Command::Run)
 					{
-						// run the command and store result ...
 						$command->result = $command->param->run();
-						
-						// then run callback function ...
-						if ($command->callback != null)
+						if($command->callback != null)
 						{
 							// set threadid on 0 for the emulated main process ...
 							if (is_callable($command->callback))
-							{
-								// build response ...
 								call_user_func($command->callback, $command);
-							}
 							else
-							{
 								throw new \BadMethodCallException('The callback method that you defined for the currently processed Job could not be called!');
-							}
 						}
 					}
-					
 					// stop after specified time
-					if (time() > $start)
-					{
+					if(time() > $start)
 						break;
-					}
 				}
 			}
 		}
@@ -350,9 +325,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	function sendCommands()
 	{
 		foreach ($this->threads as $thread)
-		{
 			$thread->sendBufferedCommands();
-		}
 	}
 	
 	/**
@@ -372,41 +345,32 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 		catch (\Exception $ex)
 		{
 			sqlite_busy_timeout($this->database->getHandle(), 60000);
-			if (strpos($ex->getMessage(), 'database is locked') === false)
-			{
+			if(strpos($ex->getMessage(), 'database is locked') === false)
 				throw $ex;
-			}
 		}
 		sqlite_busy_timeout($this->database->getHandle(), 60000);
 		
 		// no jobs that are finished ...
-		if ($results == null || !$results->recordAvailable())
-		{
+		if($results == null || !$results->recordAvailable())
 			return;
-		}
 		
 		// do anything with them ...
 		$ids = array();
-		while ($result = $results->fetchArray())
+		while($result = $results->fetchArray())
 		{
-			$tid = $result['thread_id'];
-			$cid = $result['cmd_id'];
+			$threadId = $result['thread_id'];
+			$cmdId = $result['cmd_id'];
 			
-			Console::printDebug('Got response for Command (' . $result['cmd'] . ') #' . $cid . ' finished on Thread #' . $tid . '!');
+			Console::printDebug('Got response for Command (' . $result['cmd'] . ') #' . $cmdId . ' finished on Thread #' . $threadId . '!');
 			
 			$result = unserialize(base64_decode($result['result']));
-			if (array_key_exists($tid, $this->threads))
-			{
-				$this->threads[$tid]->receiveResponse($cid, $result);
-			}
-			$ids[] = $cid;
+			if(isset($this->threads[$threadId]))
+				$this->threads[$threadId]->receiveResponse($cmdId, $result);
+			$ids[] = $cmdId;
 		}
 		
-		// build delete query ...
-		$query = 'DELETE FROM cmd WHERE done=1 AND cmd_id IN (' . implode(',', $ids) . ')';
-		
 		// delete jobs from database ...
-		$this->database->execute($query);
+		$this->database->execute('DELETE FROM cmd WHERE done=1 AND cmd_id IN (%s)', implode(',', $ids));
 	}
 	
 	/**
@@ -416,9 +380,9 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	function removeDeadThreads()
 	{
 		// modify local threads array
-		foreach ($this->threads as $id => $thread)
+		foreach($this->threads as $id => $thread)
 		{
-			if ($thread->getState() == 4)
+			if($thread->getState() == Thread::STATE_DEAD)
 			{
 				self::$threadsDiedCount++;
 				$this->threadsCount--;
@@ -438,14 +402,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function getThreadCount()
 	{
-		if (!self::$threadingEnabled)
-		{
-			return 1;
-		}
-		else
-		{
-			return $this->threadsCount;
-		}
+		return self::$threadingEnabled ? $this->threadsCount : 1;
 	}
 	
 	/**
@@ -459,21 +416,14 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			$this->logger->write('ThreadPool is being deleted, stopping all threads!');
 			
 			// tell every thread to shut down ...
-			foreach ($this->threads as $id => $thread)
-			{
+			foreach($this->threads as $id => $thread)
 				$this->removeThread($id);
-			}
 		}
-		catch (\Exception $ex)
+		catch(\Exception $ex)
 		{
 			// uncaught errors in destructors are bad ...
 		}
 	}
 }
 
-class Exception extends \Exception {}
-
-class NotSupportedException extends Exception {}
-
-class WrongTypeException extends Exception {}
 ?>

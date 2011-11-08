@@ -49,7 +49,7 @@ abstract class CommandLineInterpreter
 		.'  --dedicated_cfg=xxx  - xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated\'s config file.'."\n"
 		.'  --manialive_cfg=xxx  - xxx represents the name of the ManiaLive\'s configuration file. This file should be present in the ManiaLive\'s config file.'."\n";
 
-		if (array_key_exists('help', $options))
+		if(isset($options['help']))
 		{
 			echo $help;
 			exit;
@@ -57,7 +57,7 @@ abstract class CommandLineInterpreter
 		
 		$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
 
-		if (array_key_exists('user', $options))
+		if(isset($options['user']))
 		{
 			if($options['user'] != 'SuperAdmin' && $options['user'] != 'Admin' && $options['user'] != 'User')
 			{
@@ -68,10 +68,13 @@ abstract class CommandLineInterpreter
 			$serverConfig->user = $options['user'];
 		}
 
-		if (array_key_exists('dedicated_cfg', $options))
+		if(isset($options['dedicated_cfg']))
 		{
-			$filename = __DIR__.'\\UserData\\Config\\'.$options['cfg'];
-			if (file_exists($filename))
+			$filename = \ManiaLive\Config\Config::getInstance()->dedicatedPath
+					.DIRECTORY_SEPARATOR.'UserData'
+					.DIRECTORY_SEPARATOR.'Config'
+					.DIRECTORY_SEPARATOR.$options['cfg'];
+			if(file_exists($filename))
 			{
 				//Load the config file
 				$dom = new \DOMDocument();
@@ -90,30 +93,20 @@ abstract class CommandLineInterpreter
 					$serverConfig->password = $pass;
 				}
 
-				if (array_key_exists('address', $options))
-				{
+				if(isset($options['address']))
 					$serverConfig->host = $options['address'];
-				}
 			}
 			else
-			{
 				throw new Exception('configuration file not found.....'.APP_NL.'stopping software....');
-			}
 		}
 		else
 		{
-			if (array_key_exists('rpcport', $options))
-			{
+			if(isset($options['rpcport']))
 				$serverConfig->port = $options['rpcport'];
-			}
-			if (array_key_exists('address', $options))
-			{
+			if(isset($options['address']))
 				$serverConfig->host = $options['address'];
-			}
-			if (array_key_exists('password', $options))
-			{
+			if(isset($options['password']))
 				$serverConfig->password = $options['password'];
-			}
 		}
 	}
 }

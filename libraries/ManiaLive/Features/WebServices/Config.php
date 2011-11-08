@@ -9,21 +9,13 @@
  * @date        $Date$:
  */
 
-namespace ManiaLive\Threading;
+namespace ManiaLive\Features\WebServices;
 
-/**
- * Jobs need to extend this class
- * before you can add them to the
- * ThreadPool!
- * 
- * @author Florian Schnell
- */
-abstract class Runnable
+class Config extends \ManiaLib\Utils\Singleton
 {
-	/**
-	 * This method will be run on another process.
-	 */
-	abstract function run();
+	public $username;
+	public $password;
+	public $manialink;
 }
 
 ?>

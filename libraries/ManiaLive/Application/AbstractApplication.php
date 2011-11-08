@@ -103,7 +103,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		{
 			Tools::setData($pool->getDatabase(), 'config', \ManiaLive\Config\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'database', \ManiaLive\Database\Config::getInstance());
-			//Tools::setData($pool->getDatabase(), 'maniahome', \ManiaHome\Config::getInstance());
+			Tools::setData($pool->getDatabase(), 'wsapi', \ManiaLive\Features\WebServices\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'manialive', \ManiaLive\Application\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'server', \ManiaLive\DedicatedApi\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'threading', \ManiaLive\Threading\Config::getInstance());

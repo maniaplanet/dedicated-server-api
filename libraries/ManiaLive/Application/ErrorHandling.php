@@ -28,7 +28,7 @@ abstract class ErrorHandling
 
 		// worst case, the application has reported maximal possible number of errors
 		$config = \ManiaLive\Config\Config::getInstance();
-		if ($config->maxErrorCount !== false && self::$errorCount > $config->maxErrorCount)
+		if($config->maxErrorCount !== false && self::$errorCount > $config->maxErrorCount)
 			die();
 	}
 
@@ -61,18 +61,10 @@ abstract class ErrorHandling
 	 */
 	public static function processModuleException(\Exception $e)
 	{
-		// will cause program to quit in any case
-		if ($e instanceof FatalException)
-		{
+		// FatalException will cause program to quit in any case
+		// CriticalEventException can be caught by upper module exception handler
+		if($e instanceof FatalException || $e instanceof CriticalEventException)
 			throw $e;
-		}
-
-		// throw exception again to be caught by upper module exception hander
-		elseif ($e instanceof CriticalEventException)
-		{
-			throw $e;
-		}
-
 		// display message and continue if possible
 		else
 		{
@@ -87,9 +79,9 @@ abstract class ErrorHandling
 	 */
 	public static function processEventException(\Exception $e)
 	{
-		if ($e instanceof CriticalEventException)
+		if($e instanceof CriticalEventException)
 		{
-			if (!($e instanceof SilentCriticalEventException))
+			if(!($e instanceof SilentCriticalEventException))
 			{
 				self::increaseErrorCount();
 				self::displayAndLogError($e);
@@ -98,9 +90,7 @@ abstract class ErrorHandling
 
 		// anything else, this normally should(!) be a fatalexception ...
 		else
-		{
 			throw $e;
-		}
 	}
 
 	/**
@@ -110,12 +100,12 @@ abstract class ErrorHandling
 	 */
 	public static function displayAndLogError(\Exception $e)
 	{
-		$log = APP_NL . '    Occured on ' . date("d.m.Y") . ' at ' . date("H:i:s") . ' at process with ID #' . getmypid() . APP_NL;
-		$log .= '    ---------------------------------' . APP_NL;
+		$log = APP_NL.'    Occured on '.date("d.m.Y").' at '.date("H:i:s").' at process with ID #'.getmypid().APP_NL
+				.'    ---------------------------------'.APP_NL;
 		Console::println('');
 		foreach (self::computeMessage($e) as $line)
 		{
-			$log .= $line . APP_NL;
+			$log .= $line.APP_NL;
 			Console::println(wordwrap($line, 73, APP_NL.'      ', true));
 		}
 		Console::println('');
@@ -123,7 +113,7 @@ abstract class ErrorHandling
 		Logger::getLog('Error')->write($log);
 
 		// write into global error log if config says so
-		if (\ManiaLive\Config\Config::getInstance()->globalErrorLog)
+		if(\ManiaLive\Config\Config::getInstance()->globalErrorLog)
 			error_log($log, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'GlobalErrorLog.txt');
 	}
 
@@ -133,12 +123,10 @@ abstract class ErrorHandling
 	 */
 	public static function processStartupException(\Exception $e)
 	{
-		$message = APP_NL;
-		$message .=  'Critical startup error!';
-		$message .=  APP_NL;
-		foreach (self::computeMessage($e) as $line)
-			$message .=  wordwrap($line, 73, APP_NL.'      ', true) . APP_NL;
-		$message .=  APP_NL;
+		$message = APP_NL.'Critical startup error!'.APP_NL;
+		foreach(self::computeMessage($e) as $line)
+			$message .=  wordwrap($line, 73, APP_NL.'      ', true).APP_NL;
+		$message .= APP_NL;
 
 		// log and display error, then die!
 		error_log($message, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'ErrorLog_'.getmypid().'.txt');
@@ -164,17 +152,12 @@ abstract class ErrorHandling
 		$buffer[] = '  - Stack: ';
 
 		$lines = explode("\n", $trace);
-		foreach ($lines as $i => $line)
+		foreach($lines as $i => $line)
 		{
-			if ($i == 0)
-			{
+			if($i == 0)
 				$buffer[count($buffer)-1] .= $line;
-			}
 			else
-			{
-				$line = '           '.$line;
-				$buffer[] = $line;
-			}
+				$buffer[] = '           '.$line;
 		}
 
 		return $buffer;

@@ -171,9 +171,9 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 			if($parameters)
 			{
 				$matches = array();
-				preg_match_all('/"([^"]+)"|([^\s]+)/', $parameters, $matches);
+				preg_match_all('/(?!\\\\)"((?:\\\\"|[^"])+)"?|([^\s]+)/', $parameters, $matches);
 				$parameters = array_map(
-						function($str, $word) { return $str != '' ? $str : $word; },
+						function($str, $word) { return str_replace('\\"', '"', $str != '' ? $str : $word); },
 						$matches[1], $matches[2]);
 			}
 			else
