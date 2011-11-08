@@ -185,7 +185,8 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		{
 			if($taskbarIndex == self::MAX_THUMBNAILS - 1)
 			{
-				$info = Info::Create($login, true, 40, 25);
+				$info = Info::Create($login, false);
+				$info->setSize(40, 25);
 				$info->setTitle('Too many Windows!');
 				$info->setText("You are in the process of minimizing another window ...\n".
 					"Due to restricted resources you have reached the limit of allowed concurrent displayable minimized windows.\n".

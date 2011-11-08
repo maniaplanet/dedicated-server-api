@@ -30,7 +30,7 @@ abstract class Panel extends Window
 	private $header;
 	private $buttonClose;
 	
-	protected function onConstruct($sizeX=70, $sizeY=60)
+	protected function onConstruct()
 	{
 		// form background ...
 		$this->main = new Bgs1InRace();
@@ -65,8 +65,6 @@ abstract class Panel extends Window
 		$this->buttonClose->setValign('center');
 		$this->buttonClose->setAction($this->createAction(array($this, 'hide')));
 		$this->addComponent($this->buttonClose);
-		
-		$this->setSize($sizeX, $sizeY);
 	}
 	
 	function onResize($oldX, $oldY)

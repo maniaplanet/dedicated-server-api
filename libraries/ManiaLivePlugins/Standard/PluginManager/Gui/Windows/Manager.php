@@ -49,15 +49,15 @@ class Manager extends \ManiaLive\Gui\ManagedWindow
 	
 	protected function onConstruct()
 	{
-		$this->pager = new Pager();
-		
 		parent::onConstruct();
 		$this->setTitle('Plugin Manager');
 		$this->setMaximizable();
 		
+		$this->pager = new Pager();
 		$this->pager->setPosition(2, -16);
 		$this->pager->setStretchContentX(true);
 		$this->addComponent($this->pager);
+		
 		foreach(self::$plugins as $plugin)
 			$this->pager->addItem($plugin);
 	}

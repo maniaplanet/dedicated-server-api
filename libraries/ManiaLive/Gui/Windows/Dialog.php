@@ -45,9 +45,9 @@ final class Dialog extends \ManiaLive\Gui\Panel
 	protected $answer;
 	protected $buttons;
 	
-	protected function onConstruct($sizeX=70, $sizeY=60)
+	protected function onConstruct()
 	{
-		parent::onConstruct($sizeX, $sizeY);
+		parent::onConstruct();
 		$this->setBackgroundStyle(Bgs1::BgWindow2);
 		
 		$this->text = new Label();

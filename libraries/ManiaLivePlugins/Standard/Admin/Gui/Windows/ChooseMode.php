@@ -40,7 +40,8 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 	
 	function onConstruct()
 	{
-		parent::onConstruct(count(self::$modes) * 20 + 2, 36);
+		parent::onConstruct();
+		$this->setSize(count(self::$modes) * 20 + 2, 36);
 		$this->setTitle('Choose Game Mode');
 		
 		// create layout for buttons ...
@@ -87,7 +88,8 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 		try
 		{
 			Connection::getInstance()->setGameMode($mode);
-			$dialog = Dialog::Create($login, false, 125, 40);
+			$dialog = Dialog::Create($login, false);
+			$dialog->setSize(125, 40);
 			$dialog->setTitle('Game Mode Changed!');
 			$dialog->setText(
 					'You have selected '.self::$modes[$mode][0].",\n".
@@ -101,7 +103,8 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 		}
 		catch (\Exception $ex)
 		{
-			$win = Info::Create($login, false, 40, 23);
+			$win = Info::Create($login, false);
+			$win->setSize(40, 23);
 			$win->setTitle('Error');
 			$win->setText($ex->getMessage());
 			$win->centerOnScreen();

@@ -53,7 +53,9 @@ class Stats extends \ManiaLive\Gui\ManagedWindow
 	
 	function onConstruct()
 	{
-		// create tabview and fill it with content ...
+		parent::onConstruct();
+		$this->setTitle('Statistics');
+		
 		$this->tabbedPane = new TabbedPane();
 		$this->tabbedPane->setPosition(1, -15);
 		$this->tabbedPane->addTab(self::$overviewTab);
@@ -61,10 +63,6 @@ class Stats extends \ManiaLive\Gui\ManagedWindow
 		$this->tabbedPane->addTab(self::$memoryTab);
 		$this->tabbedPane->addTab(self::$networkGraphTab);
 		$this->tabbedPane->addTab(self::$pluginsTab);
-		
-		parent::onConstruct();
-		$this->setTitle('Statistics');
-		
 		$this->addComponent($this->tabbedPane);
 	}
 	

@@ -82,9 +82,9 @@ class ManagedWindow extends Panel
 	 * Use the static Create method to instanciate
 	 * a new object of that class.
 	 */
-	protected function onConstruct($sizeX=70, $sizeY=60)
+	protected function onConstruct()
 	{
-		parent::onConstruct($sizeX, $sizeY);
+		parent::onConstruct();
 		$this->oldSizeX = null;
 		$this->oldSizeY = null;
 		

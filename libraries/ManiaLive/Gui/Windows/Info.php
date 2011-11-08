@@ -21,9 +21,9 @@ final class Info extends \ManiaLive\Gui\Panel
 {
 	private $text;
 	
-	protected function onConstruct($sizeX=70, $sizeY=60)
+	protected function onConstruct()
 	{	
-		parent::onConstruct($sizeX, $sizeY);
+		parent::onConstruct();
 
 		$this->text = new Label();
 		$this->text->setPosition(2, -17);
