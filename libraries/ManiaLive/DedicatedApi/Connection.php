@@ -27,26 +27,6 @@ use ManiaLive\Utilities\Console;
 class Connection extends \ManiaLib\Utils\Singleton
 {
 	/**
-	 * XML-RPC server port
-	 * @var int
-	 */
-	static public $port = 5000;
-	/**
-	 * XML-RPC server hostname
-	 * @var string
-	 */
-	static public $hostname = '127.0.0.1';
-	/**
-	 * XML-RPC username (SuperAdmin, Admin or User)
-	 * @var string
-	 */
-	static public $username = 'SuperAdmin';
-	/**
-	 * XML-RPC password
-	 * @var string
-	 */
-	static public $password = 'SuperAdmin';
-	/**
 	 * XML-RPC client instance
 	 * @var
 	 */
@@ -75,9 +55,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	protected function __construct()
 	{
-		$this->xmlrpcClient = new Xmlrpc\ClientMulticall(self::$hostname, self::$port);
+	    $config = Config::getInstance();
+		$this->xmlrpcClient = new Xmlrpc\ClientMulticall($config->host, $config->port);
 		Console::printlnFormatted('XML-RPC connection established');
-		$this->authenticate(self::$username, self::$password);
+		$this->authenticate($config->user, $config->password);
 		$this->setApiVersion('2011-10-06');
 		Console::printlnFormatted('Successfully authentified with XML-RPC server');
 	}

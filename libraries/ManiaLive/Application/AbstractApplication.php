@@ -73,12 +73,6 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			// disable logging?
 			if(!$manialiveConfig->runtimeLog)
 				Logger::getLog('Runtime')->disableLog();
-			
-			// configure the dedicated server connection
-			Connection::$hostname = $serverConfig->host;
-			Connection::$port = $serverConfig->port;
-			Connection::$username = $serverConfig->user;
-			Connection::$password = $serverConfig->password;
 		}
 		catch (\Exception $e)
 		{
