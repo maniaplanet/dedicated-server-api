@@ -29,8 +29,6 @@ class Config extends \ManiaLib\Utils\Singleton
 			$this->phpPath = 'php.exe';
 		else
 			$this->phpPath = '`which php`';
-		
-		$this->logsPath = APP_ROOT.'logs';
 	}
 }
 

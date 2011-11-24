@@ -47,11 +47,6 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	 */
 	public $spectators = array();
 	/**
-	 * Contains Player object. It represents the current ranking on the server
-	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
-	 */
-	public $ranking = array();
-	/**
 	 * Contains Map objects. It represents the current maps available on the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Map[]
 	 */
@@ -204,10 +199,6 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$this->players[$login]->isConnected = false;
 		else if(isset($this->spectators[$login]))
 			$this->spectators[$login]->isConnected = false;
-
-		foreach($this->ranking as $key => $player)
-			if($player->login == $login)
-				unset($this->ranking[$key]);
 	}
 
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
@@ -225,10 +216,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$this->isWarmUp = false;
 		}
 		else
-		{
-			$rankings = Player::fromArrayOfArray($rankings);
-			$this->updateRanking($rankings);
-		}
+			$this->updateRanking(Player::fromArrayOfArray($rankings));
 	}
 
 	function onBeginMap($map, $warmUp, $matchContinuation)
@@ -277,10 +265,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		try
 		{
 			if(count($this->players) || count($this->spectators))
-			{
-				$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
-				$this->updateRanking($rankings);
-			}
+				$this->updateRanking(Connection::getInstance()->getCurrentRanking(-1, 0));
 		}
 		catch (\Exception $ex) {}
 	}
@@ -304,7 +289,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			{
 				$timeOffset = $this->checkpoints[$login][$checkCount - $offset];
 
-				for ($i = 0; $i < count($checks); ++$i)
+				for($i = 0; $i < count($checks); ++$i)
 					$checks[$i] -= $timeOffset;
 			}
 
@@ -317,10 +302,10 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex)
 	{
 		// reset all checkpoints on first checkpoint
-		if ($checkpointIndex == 0)
+		if($checkpointIndex == 0)
 			$this->checkpoints[$login] = array();
 		// sanity check
-		else if ($checkpointIndex > 0 &&
+		else if($checkpointIndex > 0 &&
 				(!isset($this->checkpoints[$login])
 				|| !isset($this->checkpoints[$login][$checkpointIndex - 1])
 				|| $timeOrScore < $this->checkpoints[$login][$checkpointIndex - 1]))
@@ -329,7 +314,6 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		// store current checkpoint score in array
 		$this->checkpoints[$login][$checkpointIndex] = $timeOrScore;
 
-		//print_r($this->checkpoints[$login]);
 		// if player has finished a complete lap
 		if($this->currentMap->nbCheckpoints && ($checkpointIndex + 1) % $this->currentMap->nbCheckpoints == 0)
 		{
@@ -344,7 +328,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 				{
 					// calculate checkpoint scores for current lap
 					$offset = $this->checkpoints[$login][($checkpointIndex - $this->currentMap->nbCheckpoints)];
-					for ($i = 0; $i < count($checkpoints); $i++)
+					for($i = 0; $i < count($checkpoints); ++$i)
 						$checkpoints[$i] -= $offset;
 
 					// calculate current lap score
@@ -365,7 +349,6 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	{
 		if(!isset($this->players[$login]))
 			return;
-		
 		$player = $this->players[$login];
 
 		switch($this->gameInfos->gameMode)
@@ -375,10 +358,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 				if($timeOrScore > 0 && ($player->score <= 0 || $timeOrScore > $player->score))
 				{
 					$oldScore = $player->score;
-					$player->score = $timeOrScore;
-
-					$rankings = Connection::getInstance()->getCurrentRanking(-1, 0);
-					$this->updateRanking($rankings);
+					$this->updateRanking(Connection::getInstance()->getCurrentRanking(-1, 0));
 
 					if($player->score == $timeOrScore)
 					{
@@ -390,7 +370,6 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 							$player->score = $oldScore;
 							return;
 						}
-						break;
 
 						Dispatcher::dispatch(new Event(Event::ON_PLAYER_NEW_BEST_SCORE, $player, $oldScore, $timeOrScore));
 					}
@@ -402,26 +381,14 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 				if($timeOrScore > 0 && ($player->bestTime <= 0 || $timeOrScore < $player->bestTime))
 				{
 					$oldBest = $player->bestTime;
-					$player->bestTime = $timeOrScore;
-					if($this->gameInfos->gameMode !== GameInfos::GAMEMODE_TIMEATTACK)
-					{
-						$ranking = Connection::getInstance()->getCurrentRankingForLogin($player);
-						$rankOld = $player->rank;
-						$player->rank = $ranking[0]->rank;
-						$player->bestTime = $ranking[0]->bestTime;
-						$player->bestCheckpoints = $ranking[0]->bestCheckpoints;
-
-						if($rankOld != $player->rank)
-							Dispatcher::dispatch(new Event(Event::ON_PLAYER_NEW_RANK, $player, $rankOld, $player->rank));
-					}
-					else
-						$this->updateRanking(Connection::getInstance()->getCurrentRanking(-1, 0));
+					$this->updateRanking(Connection::getInstance()->getCurrentRanking(-1, 0));
 
 					if($player->bestTime == $timeOrScore)
 					{
 						// sanity checks
 						$totalChecks = 0;
-						switch ($this->gameInfos->gameMode) {
+						switch($this->gameInfos->gameMode)
+						{
 							case GameInfos::GAMEMODE_LAPS:
 								$totalChecks = $this->currentMap->nbCheckpoints * $this->gameInfos->lapsNbLaps;
 								break;
@@ -438,7 +405,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 								break;
 						}
 
-						if(count($player->bestCheckpoints) != $totalChecks) {
+						if(count($player->bestCheckpoints) != $totalChecks)
+						{
 							Console::println('Best time\'s checkpoint count does not match and was ignored!');
 							Console::printPlayerBest($player);
 							$player->bestTime = $oldBest;
@@ -477,49 +445,26 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onPlayerInfoChanged($playerInfo)
 	{
-		$keys = array_keys($playerInfo);
-		$keys = array_map('lcfirst', $keys);
-		$keys[] = 'forceSpectator';
-		$keys[] = 'isReferee';
-		$keys[] = 'isPodiumReady';
-		$keys[] = 'isUsingStereoscopy';
-		$keys[] = 'spectator';
-		$keys[] = 'temporarySpectator';
-		$keys[] = 'pureSpectator';
-		$keys[] = 'autoTarget';
-		$keys[] = 'currentTargetId';
-
 		$playerInfo = Player::fromArray($playerInfo);
-
-		if($playerInfo->spectator == 0)
+		$player = $this->getPlayerObject($playerInfo->login);
+		if(!$player)
+			return;
+		
+		$wasSpectator = $player->spectator;
+		foreach($playerInfo as $key => $value)
+			$player->$key = $value;
+		
+		if($wasSpectator && !$player->spectator)
 		{
-			if(isset($this->players[$playerInfo->login]))
-				foreach($keys as $key)
-					$this->players[$playerInfo->login]->$key = $playerInfo->$key;
-			else if(isset($this->spectators[$playerInfo->login]))
-			{
-				$this->players[$playerInfo->login] = $this->spectators[$playerInfo->login];
-				unset($this->spectators[$playerInfo->login]);
-				foreach($keys as $key)
-					$this->players[$playerInfo->login]->$key = $playerInfo->$key;
-				
-				Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_SIDE, $this->players[$playerInfo->login], 'spectator'));
-			}
+			unset($this->spectators[$player->login]);
+			$this->players[$player->login] = $player;
+			Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_SIDE, $player, 'spectator'));
 		}
-		else
+		else if(!$wasSpectator && $player->spectator)
 		{
-			if(isset($this->spectators[$playerInfo->login]))
-				foreach($keys as $key)
-					$this->spectators[$playerInfo->login]->$key = $playerInfo->$key;
-			else if(isset($this->players[$playerInfo->login]))
-			{
-				$this->spectators[$playerInfo->login] = $this->players[$playerInfo->login];
-				unset($this->players[$playerInfo->login]);
-				foreach ($keys as $key)
-					$this->spectators[$playerInfo->login]->$key = $playerInfo->$key;
-				
-				Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_SIDE, $this->spectators[$playerInfo->login], 'player'));
-			}
+			unset($this->players[$player->login]);
+			$this->spectators[$player->login] = $player;
+			Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_SIDE, $player, 'player'));
 		}
 	}
 
@@ -555,49 +500,31 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	protected function updateRanking($rankings)
 	{
-		$changed = array();
 		foreach($rankings as $ranking)
 		{
 			if($ranking->rank == 0)
 				continue;
-			else if(isset($this->players[$ranking->login]))
-			{
-				$player = $this->players[$ranking->login];
-				$rankOld = $player->rank;
+			
+			$player = $this->getPlayerObject($ranking->login);
+			if(!$player)
+				continue;
+			
+			$rankOld = $player->rank;
+			$player->rank = $ranking->rank;
+			$player->bestTime = $ranking->bestTime;
+			$player->bestCheckpoints = $ranking->bestCheckpoints;
+			$player->score = $ranking->score;
+			$player->nbrLapsFinished = $ranking->nbrLapsFinished;
+			$player->ladderScore = $ranking->ladderScore;
 
-				$player->playerId = $ranking->playerId;
-				$player->rank = $ranking->rank;
-				$player->bestTime = $ranking->bestTime;
-				$player->bestCheckpoints = $ranking->bestCheckpoints;
-				$player->score = $ranking->score;
-				$player->nbrLapsFinished = $ranking->nbrLapsFinished;
-				$player->ladderScore = $ranking->ladderScore;
-
-				if($rankOld != $player->rank)
-					Dispatcher::dispatch(new Event(Event::ON_PLAYER_NEW_RANK, $player, $rankOld, $player->rank));
-
-				$this->ranking[$ranking->rank] = $this->players[$ranking->login];
-			}
-			else if(isset($this->spectators[$ranking->login]))
-			{
-				$spectator = $this->spectators[$ranking->login];
-
-				$spectator->playerId = $ranking->playerId;
-				$spectator->rank = $ranking->rank;
-				$spectator->bestTime = $ranking->bestTime;
-				$spectator->bestCheckpoints = $ranking->bestCheckpoints;
-				$spectator->score = $ranking->score;
-				$spectator->nbrLapsFinished = $ranking->nbrLapsFinished;
-				$spectator->ladderScore = $ranking->ladderScore;
-
-				$this->ranking[$ranking->rank] = $this->spectators[$ranking->login];
-			}
+			if(!$player->isSpectator && $rankOld != $player->rank)
+				Dispatcher::dispatch(new Event(Event::ON_PLAYER_NEW_RANK, $player, $rankOld, $player->rank));
 		}
 	}
 
 	protected function resetScores()
 	{
-		foreach($this->players as $key => $player)
+		foreach($this->players as $player)
 		{
 			$player->bestTime = 0;
 			$player->rank = 0;

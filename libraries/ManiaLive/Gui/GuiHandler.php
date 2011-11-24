@@ -95,52 +95,64 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		}
 	}
 	
-	function addtoShow(Window $window, $login = null)
+	function addtoShow(Window $window, $logins)
 	{
 		if($window instanceof ManagedWindow)
 		{
-			if($this->managedWindow[$login] && $this->managedWindow[$login] !== $window && !$this->sendToTaskbar($login))
+			if($this->managedWindow[$logins] && $this->managedWindow[$logins] !== $window && !$this->sendToTaskbar($logins))
 				return false;
-			$this->managedWindow[$login] = $window;
+			$this->managedWindow[$logins] = $window;
 			if(($thumbnail = $this->getThumbnail($window)))
 				$thumbnail->hide();
 		}
 		
-		if(isset($this->nextWindows[$window->getId()]))
-			$this->nextWindows[$window->getId()][$login] = $window;
-		else
-			$this->nextWindows[$window->getId()] = array($login => $window);
+		if(!is_array($logins))
+			$logins = array($logins);
+		
+		foreach($logins as $login)
+		{
+			if(isset($this->nextWindows[$window->getId()]))
+				$this->nextWindows[$window->getId()][$login] = $window;
+			else
+				$this->nextWindows[$window->getId()] = array($login => $window);
+		}
 		
 		return true;
 	}
 	
-	function addToHide(Window $window, $login = null)
+	function addToHide(Window $window, $logins)
 	{
-		if($window instanceof ManagedWindow && $this->managedWindow[$login] === $window)
-			$this->managedWindow[$login] = null;
+		if($window instanceof ManagedWindow && $this->managedWindow[$logins] === $window)
+			$this->managedWindow[$logins] = null;
 		
 		if(isset($this->currentWindows[$window->getId()]))
 		{
-			if(isset($this->currentWindows[$window->getId()][$login]))
+			if(!is_array($logins))
+				$logins = array($logins);
+			
+			foreach($logins as $login)
 			{
-				if(isset($this->nextWindows[$window->getId()]))
-					$this->nextWindows[$window->getId()][$login] = false;
+				if(isset($this->currentWindows[$window->getId()][$login]))
+				{
+					if(isset($this->nextWindows[$window->getId()]))
+						$this->nextWindows[$window->getId()][$login] = false;
+					else
+						$this->nextWindows[$window->getId()] = array($login => false);
+				}
 				else
-					$this->nextWindows[$window->getId()] = array($login => false);
-			}
-			else
-			{
-				unset($this->nextWindows[$window->getId()][$login]);
-				if(!$this->nextWindows[$window->getId()])
-					unset($this->nextWindows[$window->getId()]);
+				{
+					unset($this->nextWindows[$window->getId()][$login]);
+					if(!$this->nextWindows[$window->getId()])
+						unset($this->nextWindows[$window->getId()]);
+				}
 			}
 		}
-		else if($window === $this->dialogShown[$login])
+		else if($window === $this->dialogShown[$logins])
 		{
 			if(isset($this->nextWindows[$window->getId()]))
-				$this->nextWindows[$window->getId()][$login] = false;
+				$this->nextWindows[$window->getId()][$logins] = false;
 			else
-				$this->nextWindows[$window->getId()] = array($login => false);
+				$this->nextWindows[$window->getId()] = array($logins => false);
 		}
 		else
 			unset($this->nextWindows[$window->getId()]);

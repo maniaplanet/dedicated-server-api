@@ -60,7 +60,12 @@ final class ActionHandler extends \ManiaLib\Utils\Singleton implements ServerLis
 			$params = array($login);
 			array_splice($params, count($params), 0, $this->callbacks[$answer][1]);
 			if(count($entries))
-				$params[] = $entries;
+			{
+				$entryValues = array();
+				foreach($entries as $entry)
+					$entryValues[$entry['Name']] = $entry['Value'];
+				$params[] = $entryValues;
+			}
 			call_user_func_array($this->callbacks[$answer][0], $params);
 		}
 	}

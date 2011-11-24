@@ -120,7 +120,7 @@ class Process
 	function getWork()
 	{
 		// query db for jobs ...
-		$result = $this->db->query('SELECT cmd_id, cmd, param FROM cmd WHERE done=0 AND proc_id=%d ORDER BY datestamp DESC', $this->id);
+		$result = $this->db->query('SELECT cmd_id, cmd, param FROM cmd WHERE done=0 AND proc_id=%d ORDER BY datestamp ASC, cmd_id ASC', $this->id);
 		$this->incomingJobCount = $result->recordCount();
 		
 		if($this->incomingJobCount > 0)

@@ -38,33 +38,34 @@ while (true)
 		// ... every second!
 		sleep(1);
 		
-		// on linux we need to check whether the main application is still
-		// running, otherwise we will quit.
-		if (APP_OS == 'UNIX' && !isParentRunning($parent)) die();
+		// check whether the main application is still running, otherwise we will quit.
+		if(!isParentRunning($parent))
+			die();
 	}
 }
 
 /**
- * Linux only.
  * Check whether the parent process is still alive.
  * @param $command
  */
 function isParentRunning($pid)
 {
-	// create our system command
-	$cmd = "ps $pid";
- 
-	// run the system command and assign output to a variable
-	exec($cmd, $output, $result);
- 
-	// check the number of lines that were returned
-	if(count($output) >= 2)
+	if(APP_OS == 'UNIX')
 	{
-		// the process is still alive
-		return strpos($output[1], 'bootstrapper.php') !== false;
+		// run the system command and assign output to a variable
+		exec("ps $pid", $output, $result);
+
+		if(count($output) >= 2)
+			return strpos($output[1], 'bootstrapper.php') !== false;
+		return false;
 	}
- 
-	// the process is dead
-	return false;
+	else
+	{
+		exec("tasklist /FI \"PID eq $pid\"", $output, $result);
+		
+		if(count($output) >= 4)
+			return strpos($output[3], 'php.exe') !== false;
+		return false;
+	}
 }    
 ?>

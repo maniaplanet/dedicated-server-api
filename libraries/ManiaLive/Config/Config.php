@@ -27,11 +27,6 @@ class Config extends \ManiaLib\Utils\Singleton
 
 	function __construct()
 	{
-		if(APP_OS == 'WIN')
-			$this->phpPath = 'php.exe';
-		else
-			$this->phpPath = '`which php`';
-		
 		$this->logsPath = APP_ROOT.'logs';
 	}
 }

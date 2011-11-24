@@ -18,12 +18,12 @@ namespace ManiaLive\Threading;
  * 
  * @author Florian Schnell
  */
-abstract class Runnable
+interface Runnable
 {
 	/**
 	 * This method will be run on another process.
 	 */
-	abstract function run();
+	function run();
 }
 
 ?>

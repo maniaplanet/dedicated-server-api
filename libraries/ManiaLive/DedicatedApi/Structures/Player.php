@@ -26,7 +26,6 @@ class Player extends AbstractStructure
 	public $uploadRate;
 	public $isSpectator;
 	public $isInOfficialMode;
-	public $isReferee;
 	public $avatar;
 	public $skins;
 	public $ladderStats;
@@ -49,6 +48,7 @@ class Player extends AbstractStructure
 
 	//Flags details
 	public $forceSpectator;
+	public $isReferee;
 	public $isPodiumReady;
 	public $isUsingStereoscopy;
 
@@ -72,17 +72,17 @@ class Player extends AbstractStructure
 		$object = parent::fromArray($array);
 
 		$object->skins = Skin::fromArrayOfArray($object->skins);
-		$object->forceSpectator = $object->flags % 10;
 		//Detail flags
-		$object->isReferee = ($object->flags / 10) % 10;
-		$object->isPodiumReady = ($object->flags /100) % 10;
-		$object->isUsingStereoscopy = (int)($object->flags /1000) % 10;
+		$object->forceSpectator = $object->flags % 10; // 0, 1 or 2
+		$object->isReferee = (bool) (intval($object->flags / 10) % 10);
+		$object->isPodiumReady = (bool) (intval($object->flags / 100) % 10);
+		$object->isUsingStereoscopy = (bool) (intval($object->flags / 1000) % 10);
 		//Details spectatorStatus
-		$object->spectator = $object->spectatorStatus % 10;
-		$object->temporarySpectator = ($object->spectatorStatus /10) % 10;
-		$object->pureSpectator = ($object->spectatorStatus /100) % 10;
-		$object->autoTarget = ($object->spectatorStatus /1000) % 10;
-		$object->currentTargetId = (int)($object->spectatorStatus /10000);
+		$object->spectator = (bool) ($object->spectatorStatus % 10);
+		$object->temporarySpectator = (bool) (intval($object->spectatorStatus / 10) % 10);
+		$object->pureSpectator = (bool) (intval($object->spectatorStatus / 100) % 10);
+		$object->autoTarget = (bool) (intval($object->spectatorStatus / 1000) % 10);
+		$object->currentTargetId = intval($object->spectatorStatus / 10000);
 		
 		return $object;
 	}
