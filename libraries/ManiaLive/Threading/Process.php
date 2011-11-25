@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -14,12 +14,13 @@ namespace ManiaLive\Threading;
 use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Logger;
 use ManiaLive\Database\SQLite\Connection;
+use ManiaLive\Utilities\Console;
 
 /**
  * This class is running in it's own process and is
  * being instanciated by the thread_ignitor.php.
  * A Process is being represented by a Thread on the "server" side.
- * 
+ *
  * @author Florian Schnell
  */
 class Process
@@ -29,26 +30,28 @@ class Process
 	private $incomingJob;
 	private $incomingJobCount;
 	private $parent;
-	
+
 	function __construct($pid, $parent)
 	{
 		$this->id = $pid;
 		$this->parent = $parent;
-		
+
 		// print first message from thread ...
-		echo 'Thread started successfully!'.PHP_EOL;
-		
+		Console::println('Thread started successfully!');
+
 		// when script terminates call this function to
 		// update the thread's status ...
 		register_shutdown_function(array($this, 'setClosed'));
-		
+
 		// connect to database ...
 		$this->db = Tools::getDb($this->parent);
 		if($this->db->isConnected())
-			echo 'DB is connected, waiting for jobs ...'.PHP_EOL;
-		
+		{
+			Console::println('DB is connected, waiting for jobs ...');
+		}
+
 		$this->incomingJob = null;
-		
+
 		// get configuration ...
 		\ManiaLive\Config\Config::forceInstance(Tools::getData($this->db, 'config'));
 		\ManiaLive\Database\Config::forceInstance(Tools::getData($this->db, 'database'));
@@ -56,11 +59,11 @@ class Process
 		\ManiaLive\Application\Config::forceInstance(Tools::getData($this->db, 'manialive'));
 		\ManiaLive\DedicatedApi\Config::forceInstance(Tools::getData($this->db, 'server'));
 		\ManiaLive\Threading\Config::forceInstance(Tools::getData($this->db, 'threading'));
-		
+
 		// thread state is ready ...
 		$this->setReady();
 	}
-	
+
 	/**
 	 * Static function to set ready state.
 	 * @param integer $pid
@@ -69,7 +72,7 @@ class Process
 	{
 		$this->setBusy(0);
 	}
-	
+
 	/**
 	 * Static function to set busy state.
 	 * @param integer $pid
@@ -78,7 +81,7 @@ class Process
 	{
 		$this->db->execute('UPDATE threads SET last_beat=%s, busy=%d WHERE proc_id=%d', time()+60, $busy_flag, $this->id);
 	}
-	
+
 	/**
 	 * Static function to set last thread activity.
 	 * @param integer $pid
@@ -87,19 +90,19 @@ class Process
 	{
 		$this->db->execute('UPDATE threads SET last_beat=%s WHERE proc_id=%d', time()+60, $this->id);
 	}
-	
+
 	/**
 	 * Static function to set closed state.
 	 * @param integer $pid
 	 */
 	function setClosed()
 	{
-		echo 'Closed Thread!'.PHP_EOL;
+		Console::println('Closed Thread!');
 		$this->db->execute('UPDATE threads SET state=3 WHERE proc_id=%d', $this->id);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Enter description here ...
 	 * @param integer $cmdId
 	 * @param mixed $returnValue
@@ -109,9 +112,9 @@ class Process
 		//$return_value = array($return_value, ($this->incoming_job_count == 0));
 		$this->db->execute('UPDATE cmd SET done=1, result=%s WHERE cmd_id=%d',
 				$this->db->quote(base64_encode(serialize($returnValue))), $cmdId);
-		echo 'Result saved rows: '.$this->db->affectedRows().PHP_EOL;
+		Console::println('Result saved rows: '.$this->db->affectedRows());
 	}
-	
+
 	/**
 	 * Checks the threading database Connection for new
 	 * commands addressed to itself.
@@ -122,24 +125,24 @@ class Process
 		// query db for jobs ...
 		$result = $this->db->query('SELECT cmd_id, cmd, param FROM cmd WHERE done=0 AND proc_id=%d ORDER BY datestamp ASC, cmd_id ASC', $this->id);
 		$this->incomingJobCount = $result->recordCount();
-		
+
 		if($this->incomingJobCount > 0)
-			echo 'Incoming Jobs: '.$this->incomingJobCount.PHP_EOL;
+			Console::println('Incoming Jobs: '.$this->incomingJobCount);
 		else
 			return false;
-		
+
 		// process incoming jobs ...
 		while($this->incomingJob = $result->fetchArray())
 		{
 			$this->incomingJobCount--;
-			
+
 			// this will save some writing ...
 			$cmd = $this->incomingJob['cmd'];
 			$cmdId = $this->incomingJob['cmd_id'];
 			$cmdParam = $this->incomingJob['param'];
-			
-			echo 'Got Command: '.$cmd.PHP_EOL;
-			
+
+			Console::println('Got Command: '.$cmd);
+
 			switch($cmd)
 			{
 				case 'ping':
@@ -148,10 +151,10 @@ class Process
 					break;
 				case 'run':
 					$this->setBusy();
-					echo 'Processing Command ID: '.$cmdId.PHP_EOL;
+					Console::println('Processing Command ID: '.$cmdId);
 					// process incoming job ...
 					$job = unserialize(base64_decode($cmdParam));
-					$this->returnResult($cmdId, $job->run());	
+					$this->returnResult($cmdId, $job->run());
 					$this->setReady();
 					break;
 				case 'exit': exit();

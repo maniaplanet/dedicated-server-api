@@ -19,25 +19,22 @@ abstract class Console
 
     public static function println($string)
     {
-	 if(!Config::getInstance()->verbose)
+	 Logger::getLog('Runtime')->write($string);
+	 if(Config::getInstance()->verbose)
 	 {
-	     return;
+	     echo $string.PHP_EOL;
 	 }
 
-	 Logger::getLog('Runtime')->write($string);
-	 echo $string.PHP_EOL;
     }
 
     public static function print_rln($string)
     {
-	 if(!Config::getInstance()->verbose)
-	 {
-	     return;
-	 }
-	 
 	 $line = print_r($string, true);
 	 Logger::getLog('Runtime')->write($line);
-	 echo $line.PHP_EOL;
+	 if(!Config::getInstance()->verbose)
+	 {
+	     echo $line.PHP_EOL;
+	 }
     }
 
     public static function getDatestamp()
