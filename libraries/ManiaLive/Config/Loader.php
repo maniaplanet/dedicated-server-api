@@ -239,7 +239,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 	
 	protected function debug($message)
 	{
-		error_log($this->debugPrefix.' '.$message.APP_NL, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'Loader_'.getmypid().'.txt');
+		error_log($this->debugPrefix.' '.$message.PHP_EOL, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'Loader_'.getmypid().'.txt');
 	}
 }
 

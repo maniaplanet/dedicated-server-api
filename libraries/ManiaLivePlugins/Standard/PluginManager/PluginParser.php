@@ -11,7 +11,7 @@
 
 namespace ManiaLivePlugins\Standard\PluginManager;
 
-class PluginParser extends \ManiaLive\Threading\Runnable
+class PluginParser implements \ManiaLive\Threading\Runnable
 {
 	function run()
 	{
@@ -20,7 +20,7 @@ class PluginParser extends \ManiaLive\Threading\Runnable
 		foreach($this->searchFolderForPlugin(APP_ROOT.'libraries'.DIRECTORY_SEPARATOR.'ManiaLivePlugins') as $plugin)
 			if(($class = $this->validatePlugin($plugin)) !== false)
 				$availablePlugins[] = $class;
-		
+
 		return $availablePlugins;
 	}
 

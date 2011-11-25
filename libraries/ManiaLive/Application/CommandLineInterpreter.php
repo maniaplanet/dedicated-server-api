@@ -61,7 +61,7 @@ abstract class CommandLineInterpreter
 		{
 			if($options['user'] != 'SuperAdmin' && $options['user'] != 'Admin' && $options['user'] != 'User')
 			{
-				echo 'Invalid Username'.APP_NL.$help;
+				echo 'Invalid Username'.PHP_EOL.$help;
 				exit;
 			}
 
@@ -97,7 +97,7 @@ abstract class CommandLineInterpreter
 					$serverConfig->host = $options['address'];
 			}
 			else
-				throw new Exception('configuration file not found.....'.APP_NL.'stopping software....');
+				throw new Exception('configuration file not found.....'.PHP_EOL.'stopping software....');
 		}
 		else
 		{

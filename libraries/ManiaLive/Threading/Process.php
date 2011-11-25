@@ -36,7 +36,7 @@ class Process
 		$this->parent = $parent;
 		
 		// print first message from thread ...
-		echo 'Thread started successfully!'.APP_NL;
+		echo 'Thread started successfully!'.PHP_EOL;
 		
 		// when script terminates call this function to
 		// update the thread's status ...
@@ -45,7 +45,7 @@ class Process
 		// connect to database ...
 		$this->db = Tools::getDb($this->parent);
 		if($this->db->isConnected())
-			echo 'DB is connected, waiting for jobs ...'.APP_NL;
+			echo 'DB is connected, waiting for jobs ...'.PHP_EOL;
 		
 		$this->incomingJob = null;
 		
@@ -94,7 +94,7 @@ class Process
 	 */
 	function setClosed()
 	{
-		echo 'Closed Thread!'.APP_NL;
+		echo 'Closed Thread!'.PHP_EOL;
 		$this->db->execute('UPDATE threads SET state=3 WHERE proc_id=%d', $this->id);
 	}
 	
@@ -109,7 +109,7 @@ class Process
 		//$return_value = array($return_value, ($this->incoming_job_count == 0));
 		$this->db->execute('UPDATE cmd SET done=1, result=%s WHERE cmd_id=%d',
 				$this->db->quote(base64_encode(serialize($returnValue))), $cmdId);
-		echo 'Result saved rows: '.$this->db->affectedRows().APP_NL;
+		echo 'Result saved rows: '.$this->db->affectedRows().PHP_EOL;
 	}
 	
 	/**
@@ -124,7 +124,7 @@ class Process
 		$this->incomingJobCount = $result->recordCount();
 		
 		if($this->incomingJobCount > 0)
-			echo 'Incoming Jobs: '.$this->incomingJobCount.APP_NL;
+			echo 'Incoming Jobs: '.$this->incomingJobCount.PHP_EOL;
 		else
 			return false;
 		
@@ -138,7 +138,7 @@ class Process
 			$cmdId = $this->incomingJob['cmd_id'];
 			$cmdParam = $this->incomingJob['param'];
 			
-			echo 'Got Command: '.$cmd.APP_NL;
+			echo 'Got Command: '.$cmd.PHP_EOL;
 			
 			switch($cmd)
 			{
@@ -148,7 +148,7 @@ class Process
 					break;
 				case 'run':
 					$this->setBusy();
-					echo 'Processing Command ID: '.$cmdId.APP_NL;
+					echo 'Processing Command ID: '.$cmdId.PHP_EOL;
 					// process incoming job ...
 					$job = unserialize(base64_decode($cmdParam));
 					$this->returnResult($cmdId, $job->run());	

@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -20,36 +20,36 @@ abstract class Console
 	public static function println($string)
 	{
 		Logger::getLog('Runtime')->write($string);
-		echo $string.APP_NL;
+		echo $string.PHP_EOL;
 	}
-	
+
 	public static function print_rln($string)
 	{
 		$line = print_r($string, true);
 		Logger::getLog('Runtime')->write($line);
-		echo $line.APP_NL;
+		echo $line.PHP_EOL;
 	}
-	
+
 	public static function getDatestamp()
 	{
 		return date("H:i:s");
 	}
-	
+
 	public static function printlnFormatted($string)
 	{
 		$line = '[' . self::getDatestamp() . '] ' . $string;
 		self::println($line);
 	}
-	
+
 	public static function printDebug($string)
 	{
-		if (APP_DEBUG)
+		if (\ManiaLive\Config\Config::getInstance()->debug)
 		{
 			$line = '[' . self::getDatestamp() . '|Debug] ' . $string;
 			self::println($line);
 		}
 	}
-	
+
 	public static function printPlayerBest(Player $player)
 	{
 		$str = array();
@@ -58,9 +58,9 @@ abstract class Console
 		{
 			$str[] = '  [Checkpoint #' . $i . ': ' . $time . ']';
 		}
-		Console::println(implode(APP_NL, $str));
+		Console::println(implode(PHP_EOL, $str));
 	}
-	
+
 	public static function printPlayerScore(Player $player)
 	{
 		$str = array();
@@ -69,7 +69,7 @@ abstract class Console
 		{
 			$str[] = '  [Checkpoint #' . $i . ': ' . $score . ']';
 		}
-		Console::println(implode(APP_NL, $str));
+		Console::println(implode(PHP_EOL, $str));
 	}
 }
 

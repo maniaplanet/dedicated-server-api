@@ -100,13 +100,13 @@ abstract class ErrorHandling
 	 */
 	public static function displayAndLogError(\Exception $e)
 	{
-		$log = APP_NL.'    Occured on '.date("d.m.Y").' at '.date("H:i:s").' at process with ID #'.getmypid().APP_NL
-				.'    ---------------------------------'.APP_NL;
+		$log = PHP_EOL.'    Occured on '.date("d.m.Y").' at '.date("H:i:s").' at process with ID #'.getmypid().PHP_EOL
+				.'    ---------------------------------'.PHP_EOL;
 		Console::println('');
 		foreach (self::computeMessage($e) as $line)
 		{
-			$log .= $line.APP_NL;
-			Console::println(wordwrap($line, 73, APP_NL.'      ', true));
+			$log .= $line.PHP_EOL;
+			Console::println(wordwrap($line, 73, PHP_EOL.'      ', true));
 		}
 		Console::println('');
 
@@ -123,10 +123,10 @@ abstract class ErrorHandling
 	 */
 	public static function processStartupException(\Exception $e)
 	{
-		$message = APP_NL.'Critical startup error!'.APP_NL;
+		$message = PHP_EOL.'Critical startup error!'.PHP_EOL;
 		foreach(self::computeMessage($e) as $line)
-			$message .=  wordwrap($line, 73, APP_NL.'      ', true).APP_NL;
-		$message .= APP_NL;
+			$message .=  wordwrap($line, 73, PHP_EOL.'      ', true).PHP_EOL;
+		$message .= PHP_EOL;
 
 		// log and display error, then die!
 		error_log($message, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'ErrorLog_'.getmypid().'.txt');
