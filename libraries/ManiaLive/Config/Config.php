@@ -25,6 +25,7 @@ class Config extends \ManiaLib\Utils\Singleton
 	//Set to true to disable the updater
 	public $lanMode = false;
 	public $debug = false;
+	public $verbose = true;
 
 	function __construct()
 	{
