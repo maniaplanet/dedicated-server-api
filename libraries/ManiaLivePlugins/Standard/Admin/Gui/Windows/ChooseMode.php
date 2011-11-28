@@ -16,7 +16,6 @@ use ManiaLib\Gui\Layouts\Line;
 use ManiaLive\Data\Storage;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\DedicatedApi\Structures\GameInfos;
-use ManiaLive\Gui\Window;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Windows\Dialog;
 use ManiaLive\Gui\Windows\Info;
@@ -35,7 +34,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 		GameInfos::GAMEMODE_STUNTS => array('Stunts', Icons128x32_1::RT_Stunts)
 	);
 	
-	private $buttons;
+	private $buttons = array();
 	private $buttonsFrame;
 	
 	function onConstruct()
@@ -45,15 +44,13 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 		$this->setTitle('Choose Game Mode');
 		
 		// create layout for buttons ...
-		$this->buttonsFrame = new Frame(1, -15);
-		$this->buttonsFrame->setLayout(new Line());
+		$this->buttonsFrame = new Frame(1, -15, new Line());
 		$this->addComponent($this->buttonsFrame);
 		
-		foreach(self::$modes as $mode => $nameAndSubStyle)
+		foreach(self::$modes as $mode => $modeInfo)
 		{
-			$button = new ButtonMode($nameAndSubStyle[0], $nameAndSubStyle[1]);
+			$button = new ButtonMode($modeInfo[0], $modeInfo[1]);
 			$button->setAction($this->createAction(array($this, 'onClickMode'), $mode));
-			
 			$this->buttons[$mode] = $button;
 			$this->buttonsFrame->addComponent($button);
 		}
@@ -63,13 +60,10 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 	{
 		$currentMode = Storage::getInstance()->gameInfos->gameMode;
 		foreach($this->buttons as $mode => $button)
-			if($mode == $currentMode)
-				$button->setSelected();
-			else
-				$button->setNotSelected();
+			$button->setSelected($mode == $currentMode);
 	}
 	
-	function dialogClosed($login, Window $dialog)
+	function dialogClosed($login, \ManiaLive\Gui\Window $dialog)
 	{
 		if($dialog->getAnswer() == Dialog::YES)
 		{

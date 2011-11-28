@@ -44,14 +44,12 @@ class ButtonMode extends \ManiaLive\Gui\Control
 		$this->background->setAction($action);
 	}
 	
-	function setSelected()
+	function setSelected($selected=true)
 	{
-		$this->background->setSubStyle(Bgs1InRace::NavButtonBlink);
-	}
-	
-	function setNotSelected()
-	{
-		$this->background->setSubStyle(Bgs1InRace::BgTitleGlow);
+		if($selected)
+			$this->background->setSubStyle(Bgs1InRace::NavButtonBlink);
+		else
+			$this->background->setSubStyle(Bgs1InRace::BgTitleGlow);
 	}
 }
 
