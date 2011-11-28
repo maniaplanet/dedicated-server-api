@@ -52,6 +52,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 			Manager::AddPlugin($pluginClass, $this);
 		
 		$this->registerChatCommand('pluginManager', 'openWindow', 0, true, AdminGroup::get());
+		$this->setPublicMethod('openWindow');
 		if($this->isPluginLoaded('Standard\Menubar', 1.0))
 			$this->buildMenu();
 	}
