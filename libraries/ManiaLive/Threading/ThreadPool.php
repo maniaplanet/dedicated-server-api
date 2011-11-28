@@ -283,7 +283,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			{
 				$this->removeDeadThreads();
 			}
-			catch (ThreadTimedOutExcpetion $ex)
+			catch (ThreadTimedOutException $ex)
 			{
 				$this->removeDeadThreads();
 			}

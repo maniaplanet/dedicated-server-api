@@ -35,22 +35,7 @@ class Process
 	{
 		$this->id = $pid;
 		$this->parent = $parent;
-
-		// print first message from thread ...
-		Console::println('Thread started successfully!');
-
-		// when script terminates call this function to
-		// update the thread's status ...
-		register_shutdown_function(array($this, 'setClosed'));
-
-		// connect to database ...
 		$this->db = Tools::getDb($this->parent);
-		if($this->db->isConnected())
-		{
-			Console::println('DB is connected, waiting for jobs ...');
-		}
-
-		$this->incomingJob = null;
 
 		// get configuration ...
 		\ManiaLive\Config\Config::forceInstance(Tools::getData($this->db, 'config'));
@@ -59,6 +44,18 @@ class Process
 		\ManiaLive\Application\Config::forceInstance(Tools::getData($this->db, 'manialive'));
 		\ManiaLive\DedicatedApi\Config::forceInstance(Tools::getData($this->db, 'server'));
 		\ManiaLive\Threading\Config::forceInstance(Tools::getData($this->db, 'threading'));
+
+		// print first message from thread ...
+		Console::println('Thread started successfully!');
+
+		// when script terminates call this function to
+		// update the thread's status ...
+		register_shutdown_function(array($this, 'setClosed'));
+
+		if($this->db->isConnected())
+			Console::println('DB is connected, waiting for jobs ...');
+
+		$this->incomingJob = null;
 
 		// thread state is ready ...
 		$this->setReady();

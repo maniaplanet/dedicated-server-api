@@ -271,7 +271,7 @@ class Thread
 			{
 				$this->setState(self::STATE_DEAD);
 				Dispatcher::dispatch(new Event(Event::ON_THREAD_TIMES_OUT, $this));
-				throw new ThreadTimedOutExcpetion('Thread is busy for too long!');
+				throw new ThreadTimedOutException('Thread is busy for too long!');
 			}
 			return;
 		}
@@ -459,5 +459,5 @@ class Thread
 class ThreadDiedException extends \Exception {};
 
 // a thread is busy and did not respond for a given amount of seconds
-class ThreadTimedOutExcpetion extends \Exception {};
+class ThreadTimedOutException extends \Exception {};
 ?>
