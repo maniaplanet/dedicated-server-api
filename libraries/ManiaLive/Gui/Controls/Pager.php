@@ -120,7 +120,7 @@ class Pager extends \ManiaLive\Gui\Control
 		$this->redraw();
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->buttonPrev->setPosition(0, 5 - $this->sizeY);
 		$this->buttonNext->setPosition($this->sizeX - 10, 5 - $this->sizeY);

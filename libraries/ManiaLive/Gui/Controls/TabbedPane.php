@@ -52,7 +52,7 @@ class TabbedPane extends \ManiaLive\Gui\Control
 		$this->addComponent($this->content);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->panes[$this->activeId]->setSize($this->sizeX - 1, $this->sizeY - 5.5);
 		$this->background->setSize($this->sizeX, $this->sizeY - 5);

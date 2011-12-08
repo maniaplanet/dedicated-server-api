@@ -18,7 +18,7 @@ use ManiaLib\Gui\Drawable;
  */
 abstract class Container extends \ManiaLib\Gui\Component
 {
-	protected $components = array();
+	private $components = array();
 	
 	/**
 	 * Adds a new Component to the Container.

@@ -30,17 +30,17 @@ class ManagedWindow extends Panel
 	/**
 	 * This will create a new instance of the window
 	 * that extends this class.
-	 * @param string $login
+	 * @param string $recipient
 	 * @param bool $singleton
 	 * @return \ManiaLive\Gui\Windowing\ManagedWindow
 	 * @throws \Exception
 	 */
-	static function Create($login = null, $singleton = true)
+	static function Create($recipient = null, $singleton = true)
 	{
-		if($login == null)
+		if($recipient == null || $recipient instanceof Group)
 			throw new \Exception('You can not send a window instance of ManagedWindow to more than one player!');
 		
-		return parent::Create($login, $singleton);
+		return parent::Create($recipient, $singleton);
 	}
 	
 	/**

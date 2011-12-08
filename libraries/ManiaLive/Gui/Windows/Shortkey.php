@@ -22,14 +22,6 @@ final class Shortkey extends \ManiaLive\Gui\Window
 	const F7 = 3;
 	const F8 = 4;
 	
-	static function Create($login = null, $singleton = true)
-	{
-		if($login == null)
-			throw new \Exception('You can not send a window instance of Shortkey to more than one player!');
-		
-		return parent::Create($login, true);
-	}
-	
 	protected function onConstruct()
 	{
 		$this->onKey = array(
@@ -82,7 +74,8 @@ final class Shortkey extends \ManiaLive\Gui\Window
 	// to avoid memory leaks !!!!
 	function removeCallback($key)
 	{
-		$this->onKey[$key] = null;
+		if($key != self::F8)
+			$this->onKey[$key] = null;
 	}
 	
 	function onKey($login, $key)

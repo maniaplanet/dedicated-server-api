@@ -35,6 +35,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	
 	private $hidingGui = array();
 	private $dialogs = array();
+	private $dialogsRecipients = array();
 	private $dialogShown = array();
 	private $managedWindow = array();
 	private $thumbnails = array();
@@ -95,87 +96,106 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		}
 	}
 	
-	function addtoShow(Window $window, $logins)
+	function addtoShow(Window $window, $recipients)
 	{
 		if($window instanceof ManagedWindow)
 		{
-			if($this->managedWindow[$logins] && $this->managedWindow[$logins] !== $window && !$this->sendToTaskbar($logins))
+			if($this->managedWindow[$recipients] && $this->managedWindow[$recipients] !== $window && !$this->sendToTaskbar($recipients))
 				return false;
-			$this->managedWindow[$logins] = $window;
+			$this->managedWindow[$recipients] = $window;
 			if(($thumbnail = $this->getThumbnail($window)))
 				$thumbnail->hide();
 		}
 		
-		if(!is_array($logins))
-			$logins = array($logins);
+		$windowId = $window->getId();
+		if(!is_array($recipients) && !($recipients instanceof Group))
+			$recipients = array($recipients);
 		
-		foreach($logins as $login)
+		foreach($recipients as $login)
 		{
-			if(isset($this->nextWindows[$window->getId()]))
-				$this->nextWindows[$window->getId()][$login] = $window;
-			else
-				$this->nextWindows[$window->getId()] = array($login => $window);
+			if(Storage::getInstance()->getPlayerObject($login))
+			{
+				if(isset($this->nextWindows[$windowId]))
+					$this->nextWindows[$windowId][$login] = $window;
+				else
+					$this->nextWindows[$windowId] = array($login => $window);
+			}
 		}
 		
 		return true;
 	}
 	
-	function addToHide(Window $window, $logins)
+	function addToHide(Window $window, $recipients)
 	{
-		if($window instanceof ManagedWindow && $this->managedWindow[$logins] === $window)
-			$this->managedWindow[$logins] = null;
+		if($window instanceof ManagedWindow && $this->managedWindow[$recipients] === $window)
+			$this->managedWindow[$recipients] = null;
 		
-		if(isset($this->currentWindows[$window->getId()]))
+		$windowId = $window->getId();
+		if(!is_array($recipients) && !($recipients instanceof Group))
+			$recipients = array($recipients);
+		
+		if(isset($this->currentWindows[$windowId]))
 		{
-			if(!is_array($logins))
-				$logins = array($logins);
-			
-			foreach($logins as $login)
+			foreach($recipients as $login)
 			{
-				if(isset($this->currentWindows[$window->getId()][$login]))
+				if(isset($this->currentWindows[$windowId][$login]))
 				{
-					if(isset($this->nextWindows[$window->getId()]))
-						$this->nextWindows[$window->getId()][$login] = false;
+					if(isset($this->nextWindows[$windowId]))
+						$this->nextWindows[$windowId][$login] = false;
 					else
-						$this->nextWindows[$window->getId()] = array($login => false);
+						$this->nextWindows[$windowId] = array($login => false);
 				}
 				else
 				{
-					unset($this->nextWindows[$window->getId()][$login]);
-					if(!$this->nextWindows[$window->getId()])
-						unset($this->nextWindows[$window->getId()]);
+					unset($this->nextWindows[$windowId][$login]);
+					if(!$this->nextWindows[$windowId])
+						unset($this->nextWindows[$windowId]);
 				}
 			}
-		}
-		else if($window === $this->dialogShown[$logins])
-		{
-			if(isset($this->nextWindows[$window->getId()]))
-				$this->nextWindows[$window->getId()][$logins] = false;
-			else
-				$this->nextWindows[$window->getId()] = array($logins => false);
 		}
 		else
-			unset($this->nextWindows[$window->getId()]);
+		{
+			$wasADialog = false;
+			foreach($recipients as $login)
+			{
+				if(isset($this->dialogShown[$login]) && $this->dialogShown[$login] === $window)
+				{
+					if(isset($this->nextWindows[$windowId]))
+						$this->nextWindows[$windowId][$login] = false;
+					else
+						$this->nextWindows[$windowId] = array($login => false);
+					$wasADialog = true;
+				}
+			}
+			if(!$wasADialog)
+				unset($this->nextWindows[$windowId]);
+		}
 		
 		return true;
 	}
 	
-	function addToRedraw(Window $window, $login = null)
+	function addToRedraw(Window $window, $recipients = null)
 	{
+		$windowId = $window->getId();
+		
 		if($window instanceof ManagedWindow && ($thumbnail = $this->getThumbnail($window)))
 			$thumbnail->enableHighlight();
-		else if(isset($this->currentWindows[$window->getId()]))
+		else if(isset($this->currentWindows[$windowId]))
 		{
-			if(isset($this->currentWindows[$window->getId()][$login]))
-			{
-				if(isset($this->nextWindows[$window->getId()]))
+			if(!is_array($recipients) && !($recipients instanceof Group))
+				$recipients = array($recipients);
+			
+			foreach($recipients as $login)
+				if(isset($this->currentWindows[$windowId][$login]))
 				{
-					if(!isset($this->nextWindows[$window->getId()][$login]))
-						$this->nextWindows[$window->getId()][$login] = $window;
+					if(isset($this->nextWindows[$windowId]))
+					{
+						if(!isset($this->nextWindows[$windowId][$login]))
+							$this->nextWindows[$windowId][$login] = $window;
+					}
+					else
+						$this->nextWindows[$windowId] = array($login => $window);
 				}
-				else
-					$this->nextWindows[$window->getId()] = array($login => $window);
-			}
 		}
 		
 		return true;
@@ -238,16 +258,28 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		return array_shift($this->dialogs[$login]);
 	}
 	
-	function addDialog(Window $dialog)
+	function addDialog(Window $dialog, $recipients)
 	{
-		$this->dialogs[$dialog->getRecipient()][] = $dialog;
+		if(!is_array($recipients) && !($recipients instanceof Group))
+			$recipients = array($recipients);
+		
+		foreach($recipients as $login)
+		{
+			if(isset($this->dialogs[$login]) && !isset($this->dialogsRecipients[$dialog->getId()][$login]))
+			{
+				$this->dialogs[$login][] = $dialog;
+				$this->dialogsRecipients[$dialog->getId()][$login] = true;
+			}
+		}
 		
 		$dialog->addCloseCallback(array($this, 'onDialogClosed'));
 	}
 	
 	function onDialogClosed($login, Window $dialog)
 	{
-		$dialog->destroy();
+		unset($this->dialogsRecipients[$dialog->getId()][$login]);
+		if(empty($this->dialogsRecipients[$dialog->getId()]))
+			$dialog->destroy();
 		$this->dialogShown[$login] = null;
 	}
 	
@@ -432,6 +464,11 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	{
 		Window::Erase($login);
 		CustomUI::Erase($login);
+		
+		foreach($this->dialogs[$login] as $dialog)
+			$this->onDialogClosed($login, $dialog);
+		if($this->dialogShown[$login])
+			$this->onDialogClosed($login, $this->dialogShown[$login]);
 		
 		unset($this->hidingGui[$login]);
 		unset($this->dialogs[$login]);

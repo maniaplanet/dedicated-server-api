@@ -67,7 +67,7 @@ abstract class Panel extends Window
 		$this->addComponent($this->buttonClose);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		// set size of form ...
 		$this->main->setSize($this->sizeX, $this->sizeY - 14);

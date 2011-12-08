@@ -32,7 +32,7 @@ abstract class Window extends Container implements TickListener
 	static private $instancesByClass = array();
 	static private $instancesByLoginAndClass = array();
 	
-	private $login;
+	private $recipient;
 	private $autohide = false;
 	private $linksDisabled = false;
 	private $closeCallbacks = array();
@@ -43,14 +43,15 @@ abstract class Window extends Container implements TickListener
 	 * This will create one instance of the window for
 	 * each player. If you dont want to use this feature
 	 * you can deactivate it by setting singleton to false.
-	 * @param string $login
+	 * @param Group|string|null $recipient
 	 * @param bool $singleton
 	 * @return \ManiaLive\Gui\Windowing\Window
 	 */
-	static function Create($login = null, $singleton = true)
+	static function Create($recipient = null, $singleton = true)
 	{
 		$className = get_called_class();
 		$args = array_slice(func_get_args(), 2);
+		$login = strval($recipient);
 		
 		if(!isset(self::$instancesByClass[$className]))
 			self::$instancesByClass[$className] = array();
@@ -60,20 +61,20 @@ abstract class Window extends Container implements TickListener
 			self::$instancesByLoginAndClass[$login][$className] = array();
 		
 		if(!$singleton)
-			$instance = new static($login, $args);
+			$instance = new static($recipient, $args);
 		else if(isset(self::$singletons[$login]))
 		{
 			if(isset(self::$singletons[$login][$className]))
 				return self::$singletons[$login][$className];
 			else
 			{
-				$instance = new static($login, $args);
+				$instance = new static($recipient, $args);
 				self::$singletons[$login][$className] = $instance;
 			}
 		}
 		else
 		{
-			$instance = new static($login, $args);
+			$instance = new static($recipient, $args);
 			self::$singletons[$login] = array($className => $instance);
 		}
 		
@@ -98,14 +99,15 @@ abstract class Window extends Container implements TickListener
 	}
 	
 	/**
-	 * Gets all instances of this window type for
-	 * a specific player that is currently on
-	 * the server.
+	 * Gets all instances of this window type for a specific player
+	 * (or group of players) that is (are) currently on the server.
+	 * @param Group|string $recipient
 	 */
-	static function Get($login)
+	static function Get($recipient)
 	{
 		$className = get_called_class();
 		$instances = array();
+		$login = strval($recipient);
 		
 		if(isset(self::$instancesByLoginAndClass[$login]))
 			foreach(self::$instancesByLoginAndClass[$login] as $class => $windows)
@@ -132,11 +134,12 @@ abstract class Window extends Container implements TickListener
 	/**
 	 * Frees the memory that has been allocated for the player's window(s).
 	 * If it is currently displayed it will also be closed.
-	 * @param string $login
+	 * @param Group|string $recipient
 	 */
-	static function Erase($login)
+	static function Erase($recipient)
 	{
 		$className = get_called_class();
+		$login = strval($recipient);
 		
 		if(isset(self::$instancesByLoginAndClass[$login]))
 			foreach(self::$instancesByLoginAndClass[$login] as $class => $windows)
@@ -163,11 +166,11 @@ abstract class Window extends Container implements TickListener
 	/**
 	 * Can't be called from outside of the class
 	 * to retrieve a new instance call Create.
-	 * @param string $login
+	 * @param string $recipient
 	 */
-	final private function __construct($login, $args = array())
+	final private function __construct($recipient, $args = array())
 	{
-		$this->login = $login;
+		$this->recipient = $recipient;
 		$this->id = spl_object_hash($this);
 		$this->visible = false;
 		
@@ -183,14 +186,14 @@ abstract class Window extends Container implements TickListener
 	 * Use this method to initialize all subcomponents
 	 * and add them to the Window's intern container.
 	 */
-	abstract protected function onConstruct();
+	protected function onConstruct() {}
 	
 	/**
 	 * @return string Whom this window is sent to.
 	 */
 	final public function getRecipient()
 	{
-		return $this->login;
+		return $this->recipient;
 	}
 	
 	/**
@@ -305,14 +308,16 @@ abstract class Window extends Container implements TickListener
 	
 	/**
 	 * Simply show the window on the lowest z-layer.
-	 * @param string $login Update or show window for specific player only.
+	 * @param mixed $recipient Update or show window for specific player only.
 	 */
-	final public function show($login = null)
+	final public function show($recipient = null)
 	{
 		$wasVisible = $this->visible;
 		$this->visible = true;
 		
-		GuiHandler::getInstance()->addToShow($this, $this->login ?: $login);
+		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+			$recipient = $this->recipient;
+		GuiHandler::getInstance()->addToShow($this, $recipient);
 		
 		if(!$wasVisible)
 			$this->onShow();
@@ -323,7 +328,9 @@ abstract class Window extends Container implements TickListener
 		$wasVisible = $this->visible;
 		$this->visible = true;
 		
-		GuiHandler::getInstance()->addDialog($this);
+		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+			$recipient = $this->recipient;
+		GuiHandler::getInstance()->addDialog($this, $recipient);
 		
 		if(!$wasVisible)
 			$this->onShow();
@@ -331,26 +338,30 @@ abstract class Window extends Container implements TickListener
 	
 	/**
 	 * Closes the window and informs other windows about it.
-	 * @param string $login
+	 * @param mixed $recipient
 	 */
-	final public function hide($login = null)
+	final public function hide($recipient = null)
 	{
 		$wasVisible = $this->visible;
 		$this->visible = false;
 		
-		GuiHandler::getInstance()->addToHide($this, $this->login ?: $login);
+		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+			$recipient = $this->recipient;
+		GuiHandler::getInstance()->addToHide($this, $recipient);
 		
 		if($wasVisible)
 		{
 			$this->onHide();
 			foreach($this->closeCallbacks as $callback)
-				call_user_func($callback, $this->login ?: $login, $this);
+				call_user_func($callback, $recipient, $this);
 		}
 	}
 	
-	final public function redraw($login = null)
+	final public function redraw($recipient = null)
 	{
-		GuiHandler::getInstance()->addToRedraw($this, $this->login ?: $login);
+		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+			$recipient = $this->recipient;
+		GuiHandler::getInstance()->addToRedraw($this, $recipient);
 	}
 	
 	final public function save()
@@ -378,7 +389,7 @@ abstract class Window extends Container implements TickListener
 		
 		// render each element contained by the control and set z values...
 		$zCur = 0;
-		foreach($this->components as $component)
+		foreach($this->getComponents() as $component)
 		{
 			$component->setPosZ($zCur);
 			if($component instanceof Control)
@@ -446,9 +457,9 @@ abstract class Window extends Container implements TickListener
 		
 		// remove from intern window list ...
 		$className = get_called_class();
-		unset(self::$singletons[$this->login][$className]);
+		unset(self::$singletons[strval($this->recipient)][$className]);
 		unset(self::$instancesByClass[$className][$this->id]);
-		unset(self::$instancesByLoginAndClass[$this->login][$className][$this->id]);
+		unset(self::$instancesByLoginAndClass[strval($this->recipient)][$className][$this->id]);
 		
 		foreach($this->actions as $action)
 			ActionHandler::getInstance()->deleteAction($action);

@@ -93,7 +93,7 @@ final class Dialog extends \ManiaLive\Gui\Panel
 	function onButton($login, $button)
 	{
 		$this->answer = $button;
-		$this->hide();
+		$this->hide($login);
 	}
 	
 	function getAnswer()
@@ -104,6 +104,12 @@ final class Dialog extends \ManiaLive\Gui\Panel
 	function setButtons($buttons)
 	{
 		$this->buttons = $buttons;
+	}
+	
+	function destroy()
+	{
+		parent::destroy();
+		$this->options->destroy();
 	}
 }
 

@@ -35,11 +35,15 @@ final class CustomUI
 		self::SCORETABLE => 'scoretable',
 		self::GLOBAL_UI => 'global'
 	);
+	private static $defaultState = self::ALL;
 	
 	private $currentState = self::ALL;
-	private $nextState = self::ALL;
+	private $nextState;
 	
-	private function __construct() {}
+	private function __construct()
+	{
+		$this->nextState = self::$defaultState;
+	}
 	
 	static function Create($login)
 	{
@@ -63,12 +67,15 @@ final class CustomUI
 		$fields &= self::ALL;
 		foreach(self::$instances as $customUI)
 			$customUI->nextState |= $fields;
+		self::$defaultState |= $fields;
 	}
 	
 	static function HideForAll($fields)
 	{
+		$fields = ~$fields;
 		foreach(self::$instances as $customUI)
-			$customUI->nextState &= ~$fields;
+			$customUI->nextState &= $fields;
+		self::$defaultState &= $fields;
 	}
 	
 	function show($fields)

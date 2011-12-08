@@ -27,6 +27,12 @@ class Frame extends \ManiaLive\Gui\Control
 		$this->posY = $posY;
 		$this->layout = $layout;
 	}
+	
+	protected function onResize($oldX, $oldY)
+	{
+		if($this->layout)
+			$this->layout->setSize($this->sizeX, $this->sizeY);
+	}
 }
 
 ?>

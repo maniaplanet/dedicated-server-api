@@ -127,14 +127,17 @@ abstract class Control extends Container implements Drawable, Containable
 		else if($this->valign == 'center')
 			$posY += $this->getRealSizeY() / 2;
 		
-		// layout cloning, because manialib is used to erase objects after usage.
-		Manialink::beginFrame($posX, $posY, $this->posZ, $this->scale, $this->layout ? clone $this->layout : null);
+		// layout cloning, because manialib is used to erase objects after usage. 2 frames because of ManiaLib
+		// (someday something better should be done about this)
+		Manialink::beginFrame($posX, $posY, $this->posZ, $this->scale);
+		if($this->layout)
+			Manialink::beginFrame(0, 0, 0, null, $this->layout ? clone $this->layout : null);
 		if($this->linksDisabled)
 			Manialink::disableLinks();
 		
 		// render each element contained by the control and set z values ...
 		$zCur = 0;
-		foreach($this->components as $component)
+		foreach($this->getComponents() as $component)
 		{
 			$component->setPosZ($zCur);
 			if($component instanceof Control)
@@ -157,6 +160,8 @@ abstract class Control extends Container implements Drawable, Containable
 		
 		if($this->linksDisabled)
 			Manialink::enableLinks();
+		if($this->layout)
+			Manialink::endFrame();
 		Manialink::endFrame();
 		
 		// post filtering of the drawing process ...
