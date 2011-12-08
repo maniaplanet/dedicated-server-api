@@ -63,7 +63,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 			$button->setSelected($mode == $currentMode);
 	}
 	
-	function dialogClosed($login, \ManiaLive\Gui\Window $dialog)
+	function onDialogClosed($login, \ManiaLive\Gui\Window $dialog)
 	{
 		if($dialog->getAnswer() == Dialog::YES)
 		{
@@ -90,7 +90,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 					'New game mode will be set on map change!'."\n".
 					'Do you want to restart now?');
 			$dialog->setButtons(Dialog::YES | Dialog::NO);
-			$dialog->addCloseCallback(array($this, 'dialogClosed'));
+			$dialog->addCloseCallback(array($this, 'onDialogClosed'));
 			$dialog->centerOnScreen();
 			$dialog->showAsDialog();
 			$this->show();

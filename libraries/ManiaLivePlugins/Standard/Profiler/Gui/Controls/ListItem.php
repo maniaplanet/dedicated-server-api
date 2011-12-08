@@ -34,7 +34,7 @@ class ListItem extends \ManiaLive\Gui\Control
 		$this->setSizeY($sizeY);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->background->setSize($this->sizeX, $this->sizeY);
 		$this->label->setPosition(2, -$this->sizeY / 2);

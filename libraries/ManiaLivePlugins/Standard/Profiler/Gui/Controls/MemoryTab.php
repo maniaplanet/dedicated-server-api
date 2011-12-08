@@ -68,7 +68,7 @@ class MemoryTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorListe
 		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_MEMORY_VALUE);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->barsFrame->setPosition(1, 1 - $this->sizeY);
 		$this->linesFrame->setPosition(1, 1 - $this->sizeY);

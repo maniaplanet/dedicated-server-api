@@ -63,7 +63,7 @@ class NetGraphTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_NETWORK_VALUE);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->barsFrame->setPosition(1, 1 - $this->sizeY);
 		$this->linesFrame->setPosition(1, 1 - $this->sizeY);

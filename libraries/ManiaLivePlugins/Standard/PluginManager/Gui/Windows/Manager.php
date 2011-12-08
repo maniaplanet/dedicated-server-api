@@ -62,7 +62,7 @@ class Manager extends \ManiaLive\Gui\ManagedWindow
 			$this->pager->addItem($plugin);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		parent::onResize($oldX, $oldY);
 		$this->pager->setSize($this->sizeX - 4, $this->sizeY - 20);

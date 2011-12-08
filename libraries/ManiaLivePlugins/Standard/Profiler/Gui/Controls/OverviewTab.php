@@ -53,7 +53,7 @@ class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_CPU_VALUE);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->leftLabel->setSize($this->sizeX / 2 - 2, $this->sizeY - 2);
 		$this->rightLabel->setSize($this->sizeX / 2 - 2, $this->sizeY - 2);	

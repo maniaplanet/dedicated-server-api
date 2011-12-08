@@ -62,7 +62,7 @@ class PluginsTab extends \ManiaLive\Gui\Controls\Tabbable implements PluginListe
 		$this->pluginsPager->setPosition(0, $this->pluginManagerAvailable ? -8 : -2);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->managerButton->setPosition($this->sizeX / 2, -1);
 		$this->pluginsPager->setSize($this->sizeX, $this->sizeY - ($this->pluginManagerAvailable ? 12 : 2));

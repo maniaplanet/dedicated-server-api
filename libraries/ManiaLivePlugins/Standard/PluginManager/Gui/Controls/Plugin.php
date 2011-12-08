@@ -66,7 +66,7 @@ class Plugin extends \ManiaLive\Gui\Control
 		$this->redraw();
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{	
 		$this->background->setSize($this->sizeX, $this->sizeY);
 		

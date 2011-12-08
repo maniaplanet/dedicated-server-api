@@ -66,7 +66,7 @@ class Stats extends \ManiaLive\Gui\ManagedWindow
 		$this->addComponent($this->tabbedPane);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		parent::onResize($oldX, $oldY);
 		$this->tabbedPane->setSize($this->sizeX - 2, $this->sizeY - 16);

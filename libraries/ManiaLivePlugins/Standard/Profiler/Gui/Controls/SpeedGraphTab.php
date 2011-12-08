@@ -73,7 +73,7 @@ class SpeedGraphTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorL
 		Dispatcher::register(MonitorEvent::getClass(), $this, MonitorEvent::ON_NEW_CPU_VALUE);
 	}
 	
-	function onResize($oldX, $oldY)
+	protected function onResize($oldX, $oldY)
 	{
 		$this->barsFrame->setPosY(1 - $this->sizeY);
 		$width = ($this->sizeX - 2) / 10;
