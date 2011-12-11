@@ -20,6 +20,8 @@ use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
  */
 final class ActionHandler extends \ManiaLib\Utils\Singleton implements ServerListener
 {
+	const NONE = 0xFFFFFFFF;
+	
 	protected $callbacks = array();
 	protected $lastAction = 0;
 	

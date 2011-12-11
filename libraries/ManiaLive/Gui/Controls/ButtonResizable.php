@@ -13,6 +13,7 @@ namespace ManiaLive\Gui\Controls;
 
 use ManiaLib\Gui\Elements\Bgs1InRace;
 use ManiaLib\Gui\Elements\Label;
+use ManiaLive\Gui\ActionHandler;
 
 /**
  * Use this button if you need something
@@ -21,32 +22,31 @@ use ManiaLib\Gui\Elements\Label;
  */
 class ButtonResizable extends \ManiaLive\Gui\Control
 {
-	protected $button;
 	protected $label;
 	
-	function __construct($sizeX=20, $sizeY=4)
+	function __construct($sizeX=35, $sizeY=7)
 	{
-		$this->sizeX = $sizeX;
-		$this->sizeY = $sizeY;
-		
-		$this->button = new Bgs1InRace();
-		$this->button->setSubStyle(Bgs1InRace::BgButton);
-		$this->addComponent($this->button);
-		
 		$this->label = new Label();
 		$this->label->setAlign('center', 'center2');
-		$this->label->setStyle(Label::TextButtonSmall);
-		//$this->label->setTextColor('08f');
+		$this->label->setStyle(Label::TextButtonNav);
+		$this->label->setFocusAreaColor1('000');
+		$this->label->setFocusAreaColor2('fff');
 		$this->addComponent($this->label);
+		
+		$this->setSize($sizeX, $sizeY);
+	}
+	
+	protected function onResize($oldX, $oldY)
+	{
+		$this->label->setScale($this->sizeY / 6.5);
+		$this->label->setSize(6.5 * $this->sizeX / $this->sizeY - .25, 6.5);
+		$this->label->setPosition($this->sizeX / 2, -$this->sizeY / 2);
 	}
 	
 	function onDraw()
 	{
-		$this->button->setSize($this->sizeX, $this->sizeY);
-		
-		$this->label->setTextSize($this->sizeY - 2);
-		$this->label->setSize($this->sizeX - 3, $this->sizeY - 1);
-		$this->label->setPosition($this->sizeX / 2, -$this->sizeY / 2);
+		if($this->label->getAction() == null && $this->label->getManialink() == null && $this->label->getUrl() == null)
+			$this->label->setAction(ActionHandler::NONE);
 	}
 	
 	function getText()
@@ -56,22 +56,22 @@ class ButtonResizable extends \ManiaLive\Gui\Control
 	
 	function setText($text)
 	{
-		$this->label->setText('$08f'.$text);
+		$this->label->setText('$fff'.$text);
 	}
 	
 	function setAction($action)
 	{
-		$this->button->setAction($action);
+		$this->label->setAction($action);
 	}
 	
 	function setUrl($url)
 	{
-		$this->button->setUrl($url);
+		$this->label->setUrl($url);
 	}
 	
 	function setManialink($manialink)
 	{
-		$this->button->setManialink($manialink);
+		$this->label->setManialink($manialink);
 	}
 }
 

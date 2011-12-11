@@ -11,7 +11,7 @@
 
 namespace ManiaLive\Gui;
 
-use ManiaLib\Gui\Elements\Quad;
+use ManiaLib\Gui\Elements\Bgs1;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
@@ -52,8 +52,8 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	
 	protected function __construct()
 	{
-		$this->dialogBg = new Quad(340, 200);
-		$this->dialogBg->setBgColor('234C');
+		$this->dialogBg = new Bgs1(340, 200);
+		$this->dialogBg->setSubStyle(Bgs1::BgDialogBlur);
 		$this->dialogBg->setAlign('center', 'center');
 		$this->dialogBg->setPosZ(Window::Z_DIALOG);
 		$this->dialogBg->setScriptEvents();
