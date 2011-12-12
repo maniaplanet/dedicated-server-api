@@ -24,7 +24,7 @@ class Config extends \ManiaLib\Utils\Singleton
 	public $spectatorIdleKick = 600;
 	
 	public $posX = 0;
-	public $posY = -20;
+	public $posY = -40;
 }
 
 ?>

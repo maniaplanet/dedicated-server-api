@@ -11,9 +11,12 @@
 
 namespace ManiaLivePlugins\Standard\AutoQueue;
 
+use ManiaLive\Data\Event as PlayerEvent;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Gui\ActionHandler;
+use ManiaLive\Gui\Windows\Dialog;
+use ManiaLivePlugins\Standard\AutoQueue\Gui\Windows\FreeSpot;
 use ManiaLivePlugins\Standard\AutoQueue\Gui\Windows\Queue;
 
 /**
@@ -51,7 +54,6 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 		$this->enableDedicatedEvents(
 				ServerEvent::ON_PLAYER_CONNECT
 				| ServerEvent::ON_PLAYER_DISCONNECT
-				| ServerEvent::ON_PLAYER_INFO_CHANGED
 				| ServerEvent::ON_PLAYER_CHAT
 				| ServerEvent::ON_PLAYER_CHECKPOINT
 				| ServerEvent::ON_PLAYER_INCOHERENCE
@@ -59,23 +61,39 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 				| ServerEvent::ON_BEGIN_MATCH
 				| ServerEvent::ON_END_MATCH
 		);
+		$this->enableStorageEvents(PlayerEvent::ON_PLAYER_CHANGE_SIDE);
 		$this->enableTickerEvent();
 	}
 	
 	function queue($login)
 	{
-		if($this->queueable[$login])
+		if($this->queueable[$login])// && !isset($this->mapsPlayed[$login]))
 		{
 			if(array_search($login, $this->queue) === false)
 				$this->queue[] = $login;
 			if(count($this->mapsPlayed) < $this->storage->server->currentMaxPlayers)
 				$this->letQueueFirstPlay();
+			else
+			{
+				Queue::Add($this->storage->getPlayerObject($login));
+				$queue = Queue::Create($login);
+				$queue->setIsQueued();
+				$queue->show();
+			}
 		}
 	}
 	
 	function unqueue($login)
 	{
-		$this->queue = array_diff($this->queue, array($login));
+		$queuePos = array_search($login, $this->queue);
+		if($queuePos !== false)
+		{
+			unset($this->queue[$queuePos]);
+			Queue::Remove($this->storage->getPlayerObject($login));
+			$queue = Queue::Create($login);
+			$queue->setIsUnqueued();
+			$queue->redraw();
+		}
 	}
 	
 	private function letQueueFirstPlay()
@@ -87,6 +105,19 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 			$this->connection->forceSpectator($login, 0);
 			$this->mapsPlayed[$login] = 0;
 			Queue::Erase($login);
+			Queue::Remove($this->storage->getPlayerObject($login));
+			FreeSpot::Create($login)->show();
+		}
+	}
+	
+	function onKickDialogClosed($login, Dialog $dialog)
+	{
+		if($dialog->getAnswer() == Dialog::OK)
+			$this->connection->kick($login);
+		else
+		{
+			$this->connection->forceSpectator($login, 2);
+			$this->connection->forceSpectator($login, 0);
 		}
 	}
 	
@@ -129,35 +160,47 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 		}
 		else
 			$this->unqueue($login);
+		
+		Queue::Erase($login);
+		FreeSpot::Erase($login);
 	}
 	
-	function onPlayerInfoChanged($playerInfo)
+	function onPlayerChangeSide($player, $oldSide)
 	{
-		$isSpectator = (bool) ($playerInfo['SpectatorStatus'] % 2);
-		$forcedSpectator = $playerInfo['Flags'] % 10;
-		$hasPlayerSlot = (bool) (($playerInfo['Flags'] / 1000000) % 10);
-		
-		$login = $playerInfo['Login'];
-		if($isSpectator)
+		if($player->spectator)
 		{
-			if($hasPlayerSlot)
+			if($player->hasPlayerSlot)
 			{
-				if($forcedSpectator != 1)
+				try
 				{
-					$this->connection->forceSpectator($login, 1);
-					unset($this->mapsPlayed[$login]);
+					$this->connection->spectatorReleasePlayerSlot($player);
 				}
-				$this->connection->spectatorReleasePlayerSlot($login);
+				catch(\Exception $e)
+				{
+					$dialog = Dialog::Create($player->login, false);
+					$dialog->setSize(80, 36);
+					$dialog->setTitle('AutoQueue Warning');
+					$dialog->setText("There is too much spectators already.\nYou'll be kicked so someone else can play.");
+					$dialog->setButtons(Dialog::OK | Dialog::CANCEL);
+					$dialog->addCloseCallback(array($this, 'onKickDialogClosed'));
+					$dialog->showAsDialog();
+					return;
+				}
 				$this->letQueueFirstPlay();
 			}
-			if($this->queueable[$login])
+			$queue = Queue::Create($player->login);
+			switch($player->forceSpectator)
 			{
-				$queue = Queue::Create($login);
-				if(in_array($login, $this->queue))
+				case 0:
+					$this->connection->forceSpectator($player, 1);
+					unset($this->mapsPlayed[$player->login]);
+					$queue->show();
+					break;
+				case 1:
+					$this->queue($login);
 					$queue->setIsQueued();
-				else
-					$queue->setIsUnqueued();
-				$queue->show();
+					$queue->show();
+					break;
 			}
 		}
 	}
@@ -181,10 +224,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 					&& (!AdminGroup::contains($login) || $config->kickAdmins))
 			{
 				if($config->queueInsteadOfKick)
-				{
 					$this->connection->forceSpectator($login, 1);
-					$this->queue($login);
-				}
 				else
 					$this->connection->kick($login);
 				--$nbToKick;
@@ -222,6 +262,8 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 		ActionHandler::getInstance()->deleteAction($this->enterQueueAction);
 		ActionHandler::getInstance()->deleteAction($this->leaveQueueAction);
 		Queue::EraseAll();
+		Queue::Clear();
+		FreeSpot::EraseAll();
 		
 		parent::onUnLoad();
 	}
