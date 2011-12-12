@@ -109,13 +109,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 				$details = $connection->getDetailedPlayerInfo($player->login);
 
 				foreach($details as $key => $value)
-				{
 					if($value)
-					{
-						$param = lcfirst($key);
-						$player->$param = $value;
-					}
-				}
+						$player->$key = $value;
 
 				if($player->spectatorStatus % 10 == 0)
 					$this->players[$player->login] = $player;
@@ -167,13 +162,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$details = Connection::getInstance()->getDetailedPlayerInfo($login);
 
 			foreach($details as $key => $value)
-			{
 				if($value)
-				{
-					$param = lcfirst($key);
-					$playerInfos->$param = $value;
-				}
-			}
+					$playerInfos->$key = $value;
 
 			if($isSpectator)
 				$this->spectators[$login] = $playerInfos;

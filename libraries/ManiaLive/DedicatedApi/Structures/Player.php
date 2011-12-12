@@ -51,6 +51,9 @@ class Player extends AbstractStructure
 	public $isReferee;
 	public $isPodiumReady;
 	public $isUsingStereoscopy;
+	public $isManagedByAnOtherServer;
+	public $isServer;
+	public $hasPlayerSlot;
 
 	//SpectatorStatus details
 	public $spectator;
@@ -77,6 +80,9 @@ class Player extends AbstractStructure
 		$object->isReferee = (bool) (intval($object->flags / 10) % 10);
 		$object->isPodiumReady = (bool) (intval($object->flags / 100) % 10);
 		$object->isUsingStereoscopy = (bool) (intval($object->flags / 1000) % 10);
+		$object->isManagedByAnOtherServer = (bool) (intval($object->flags / 10000) % 10);
+		$object->isServer = (bool) (intval($object->flags / 100000) % 10);
+		$object->hasPlayerSlot = (bool) (intval($object->flags / 1000000) % 10);
 		//Details spectatorStatus
 		$object->spectator = (bool) ($object->spectatorStatus % 10);
 		$object->temporarySpectator = (bool) (intval($object->spectatorStatus / 10) % 10);

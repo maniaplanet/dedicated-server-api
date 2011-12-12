@@ -33,7 +33,7 @@ abstract class Window extends Container implements TickListener
 	static private $instancesByLoginAndClass = array();
 	
 	private $recipient;
-	private $autohide = false;
+	private $timeout = false;
 	private $linksDisabled = false;
 	private $closeCallbacks = array();
 	private $above = array();
@@ -202,16 +202,16 @@ abstract class Window extends Container implements TickListener
 	 */
 	public function setTimeout($seconds)
 	{
-		$this->autohide = time() + $seconds;
+		$this->timeout = time() + $seconds;
 		Dispatcher::register(TickEvent::getClass(), $this);
 	}
 	
 	/**
 	 * If the window will hide after a specific amount of time.
 	 */
-	public function getAutohide()
+	public function getTimeout()
 	{
-		return !$this->autohide ? false : $this->autohide - time();
+		return !$this->timeout ? false : $this->timeout - time();
 	}
 	
 	/**
@@ -220,9 +220,9 @@ abstract class Window extends Container implements TickListener
 	 */
 	public function onTick()
 	{
-		if(time() >= $this->autohide)
+		if(time() >= $this->timeout)
 		{
-			$this->autohide = false;
+			$this->timeout = false;
 			$this->hide();
 			Dispatcher::unregister(TickEvent::getClass(), $this);
 		}
@@ -325,6 +325,7 @@ abstract class Window extends Container implements TickListener
 	
 	final public function showAsDialog()
 	{
+		$this->centerOnScreen();
 		$wasVisible = $this->visible;
 		$this->visible = true;
 		

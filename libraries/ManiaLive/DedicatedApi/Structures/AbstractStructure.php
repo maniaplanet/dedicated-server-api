@@ -15,24 +15,23 @@ abstract class AbstractStructure
 {
 	static public function fromArray($array)
 	{
-		if(!is_array($array)) return $array;
+		if(!is_array($array))
+			return $array;
+		
 		$object = new static;
-		foreach($array as $key=>$value)
-		{
-			$key = lcfirst($key);
-			$object->$key = $value;
-		}
+		foreach($array as $key => $value)
+			$object->{lcfirst($key)} = $value;
 		return $object;
 	}
 	
 	static public function fromArrayOfArray($array)
 	{
-		if(!is_array($array)) return $array;
+		if(!is_array($array))
+			return $array;
+		
 		$result = array();
-		foreach($array as $key=>$value)
-		{
+		foreach($array as $key => $value)
 			$result[$key] = static::fromArray($value);
-		}
 		return $result;
 	}
 	
