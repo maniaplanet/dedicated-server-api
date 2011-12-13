@@ -11,7 +11,6 @@
 
 namespace ManiaLive\Threading;
 
-use ManiaLive\Database\SQLite\Connection;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Threading\Commands\QuitCommand;
@@ -34,16 +33,30 @@ class Thread
 	const STATE_PENDING = 2;
 	const STATE_CLOSED  = 3;
 	const STATE_DEAD    = 4;
+	
+	static $responseTimes = array();
+	static $responseTimeAverage = 0;
+	
+	/**
+	 * database connection the thread needs to
+	 * communicate with the process.
+	 * @var \ManiaLive\Database\SQLite\Connection
+	 */
+	static private $db;
+	/**
+	 * Counts Process instances
+	 * @var integer
+	 */
+	static private $pcounter = 0;
+	/**
+	 * Counts thread instances
+	 * @var integer
+	 */
+	static private $tcounter = 0;
 	/**
 	 * @var int
 	 */
 	private $state;
-	/**
-	 * database connectio the thread needs to
-	 * communicate with the process.
-	 * @var Connection
-	 */
-	static $db;
 	/**
 	 * ID of the Thread.
 	 * @var integer
@@ -64,25 +77,13 @@ class Thread
 	 * executed on the Process.
 	 * @var array[Command]
 	 */
-	private $commands;
-	/**
-	 * Number of the commands that are still being
-	 * processed.
-	 * @var integer
-	 */
-	private $commandCount;
+	private $commands = array();
 	/**
 	 * Commands that were sent to the server, but
 	 * of which we didn't get any response yet.
 	 * @var array[Command]
 	 */
-	private $commandsSent;
-	/**
-	 * How many commands have been sent yet without
-	 * getting a response?
-	 * @var integer
-	 */
-	private $commandsSentCount;
+	private $commandsSent = array();
 	/**
 	 * When has the ping signal been sent to the
 	 * process?
@@ -94,29 +95,11 @@ class Thread
 	 * @var integer
 	 */
 	private $busyStarted;
-	/**
-	 * Counts Process instances
-	 * @var integer
-	 */
-	static $pcounter = 0;
-	/**
-	 * Counts thread instances
-	 * @var integer
-	 */
-	static $tcounter = 0;
 
-	function __construct($id) {
-
+	function __construct($id)
+	{
 		$this->id = $id;
 		$this->log = Logger::getLog($this->getPid(), 'threading');
-
-		// commands waiting ...
-		$this->commands = array();
-		$this->commandCount = 0;
-
-		// commands currently being processed ...
-		$this->commandsSent = array();
-		$this->commandsSentCount = 0;
 
 		// database stuff ...
 		if(ThreadPool::$threadingEnabled)
@@ -140,12 +123,9 @@ class Thread
 	 */
 	static function Create()
 	{
-		self::$tcounter++;
-		$t = new Thread(self::$tcounter);
-
-		// check whether process is running ...
+		$t = new Thread(++self::$tcounter);
 		$t->ping();
-
+		
 		return $t;
 	}
 
@@ -206,7 +186,7 @@ class Thread
 	 */
 	function isBusy()
 	{
-		return $this->commandsSentCount > 0;
+		return count($this->commandsSent) > 0;
 	}
 
 	/**
@@ -222,7 +202,6 @@ class Thread
 				$this->pid, $this->id, self::$db->quote($command->name), $command->getId(),
 				self::$db->quote(base64_encode(serialize($command->param))), time());
 
-		$this->commandsSentCount++;
 		$this->commandsSent[$command->getId()] = $command;
 	}
 
@@ -233,9 +212,7 @@ class Thread
 	 */
 	function addCommandToBuffer(Command $command)
 	{
-		$this->commandCount++;
 		$command->threadId = $this->id;
-		$command->timeSent = microtime(true);
 		$this->commands[$command->getId()] = $command;
 	}
 
@@ -277,7 +254,7 @@ class Thread
 		}
 
 		// only continue if there are commands to be processed ...
-		if($this->commandCount == 0)
+		if($this->getCommandCount() == 0)
 		{
 			// state is now unknown, next send will require a ping
 			// to see whether process is still running.
@@ -306,13 +283,12 @@ class Thread
 			if(++$i > $config->chunkSize)
 				break;
 
+			$command->timeSent = microtime(true);
 			self::$db->execute(
 					'INSERT INTO cmd(proc_id, thread_id, cmd, cmd_id, param, done, datestamp) VALUES(%d, %d, %s, %d, %s, 0, %s);',
 					$this->pid, $this->id, self::$db->quote($command->name), $command->getId(),
 					self::$db->quote(base64_encode(serialize($command->param))), time());
 			$this->commandsSent[$command->id] = $command;
-			++$this->commandsSentCount;
-			--$this->commandCount;
 			unset($this->commands[$command->id]);
 		}
 
@@ -337,7 +313,6 @@ class Thread
 		$command->result = $result;
 		$callback = $command->callback;
 		unset($this->commandsSent[$cmdId]);
-		$this->commandsSentCount--;
 
 		$this->busyStarted = $this->isBusy() ? time() : null;
 		$this->setState(self::STATE_READY);
@@ -347,13 +322,8 @@ class Thread
 			call_user_func($callback, $command);
 
 		// calculate average response time
-		if(ThreadPool::$avgResponseTime == null)
-			ThreadPool::$avgResponseTime = (microtime(true) - $command->timeSent);
-		else
-		{
-			ThreadPool::$avgResponseTime += (microtime(true) - $command->timeSent);
-			ThreadPool::$avgResponseTime /= 2;
-		}
+		self::$responseTimes[] = microtime(true) - $command->timeSent;
+		self::$responseTimeAverage = array_sum(self::$responseTimes) / count(self::$responseTimes);
 	}
 
 	/**
@@ -389,7 +359,6 @@ class Thread
 		$this->busyStarted = time();
 		$this->pingStarted = null;
 		$this->commandsSent = array();
-		$this->commandsSentCount = 0;
 		$this->setState(self::STATE_UNKNOWN);
 		$this->ping();
 
@@ -424,7 +393,7 @@ class Thread
 	 */
 	function getCommandCount()
 	{
-		return $this->commandCount;
+		return count($this->commands);
 	}
 
 	/**

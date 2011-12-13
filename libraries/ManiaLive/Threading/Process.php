@@ -11,9 +11,6 @@
 
 namespace ManiaLive\Threading;
 
-use ManiaLive\Config\Loader;
-use ManiaLive\Utilities\Logger;
-use ManiaLive\Database\SQLite\Connection;
 use ManiaLive\Utilities\Console;
 
 /**
@@ -28,7 +25,6 @@ class Process
 	private $id;
 	private $db;
 	private $incomingJob;
-	private $incomingJobCount;
 	private $parent;
 
 	function __construct($pid, $parent)
@@ -37,13 +33,22 @@ class Process
 		$this->parent = $parent;
 		$this->db = Tools::getDb($this->parent);
 
-		// get configuration ...
-		\ManiaLive\Config\Config::forceInstance(Tools::getData($this->db, 'config'));
-		\ManiaLive\Database\Config::forceInstance(Tools::getData($this->db, 'database'));
-		\ManiaLive\Features\WebServices\Config::forceInstance(Tools::getData($this->db, 'wsapi'));
-		\ManiaLive\Application\Config::forceInstance(Tools::getData($this->db, 'manialive'));
-		\ManiaLive\DedicatedApi\Config::forceInstance(Tools::getData($this->db, 'server'));
-		\ManiaLive\Threading\Config::forceInstance(Tools::getData($this->db, 'threading'));
+		// load config from DB
+		$configs = array(
+			'config' => \ManiaLive\Config\Config::getInstance(),
+			'database' => \ManiaLive\Database\Config::getInstance(),
+			'wsapi' => \ManiaLive\Features\WebServices\Config::getInstance(),
+			'manialive' => \ManiaLive\Application\Config::getInstance(),
+			'server' => \ManiaLive\DedicatedApi\Config::getInstance(),
+			'threading' => Config::getInstance()
+		);
+		foreach($configs as $dbName => $instance)
+		{
+			$data = Tools::getData($this->db, $dbName);
+			if($data)
+				foreach((array)$data as $key => $value)
+					$instance->$key = $value;
+		}
 
 		// print first message from thread ...
 		Console::println('Thread started successfully!');
@@ -56,8 +61,6 @@ class Process
 			Console::println('DB is connected, waiting for jobs ...');
 
 		$this->incomingJob = null;
-
-		// thread state is ready ...
 		$this->setReady();
 	}
 
@@ -67,16 +70,16 @@ class Process
 	 */
 	function setReady()
 	{
-		$this->setBusy(0);
+		$this->setBusy(false);
 	}
 
 	/**
 	 * Static function to set busy state.
 	 * @param integer $pid
 	 */
-	function setBusy($busy_flag = true)
+	function setBusy($isBusy = true)
 	{
-		$this->db->execute('UPDATE threads SET last_beat=%s, busy=%d WHERE proc_id=%d', time()+60, $busy_flag, $this->id);
+		$this->db->execute('UPDATE threads SET last_beat=%s, busy=%d WHERE proc_id=%d', time()+60, $isBusy, $this->id);
 	}
 
 	/**
@@ -107,7 +110,8 @@ class Process
 	function returnResult($cmdId, $returnValue)
 	{
 		//$return_value = array($return_value, ($this->incoming_job_count == 0));
-		$this->db->execute('UPDATE cmd SET done=1, result=%s WHERE cmd_id=%d',
+		$this->db->execute(
+				'UPDATE cmd SET done=1, result=%s WHERE cmd_id=%d',
 				$this->db->quote(base64_encode(serialize($returnValue))), $cmdId);
 		Console::println('Result saved rows: '.$this->db->affectedRows());
 	}
@@ -121,26 +125,19 @@ class Process
 	{
 		// query db for jobs ...
 		$result = $this->db->query('SELECT cmd_id, cmd, param FROM cmd WHERE done=0 AND proc_id=%d ORDER BY datestamp ASC, cmd_id ASC', $this->id);
-		$this->incomingJobCount = $result->recordCount();
-
-		if($this->incomingJobCount > 0)
-			Console::println('Incoming Jobs: '.$this->incomingJobCount);
+		
+		if($result->recordCount() > 0)
+			Console::println('Incoming Jobs: '.$result->recordCount());
 		else
 			return false;
 
 		// process incoming jobs ...
 		while($this->incomingJob = $result->fetchArray())
 		{
-			$this->incomingJobCount--;
-
-			// this will save some writing ...
-			$cmd = $this->incomingJob['cmd'];
+			Console::println('Got Command: '.$this->incomingJob['cmd']);
+			
 			$cmdId = $this->incomingJob['cmd_id'];
-			$cmdParam = $this->incomingJob['param'];
-
-			Console::println('Got Command: '.$cmd);
-
-			switch($cmd)
+			switch($this->incomingJob['cmd'])
 			{
 				case 'ping':
 					// ping returns always true ...
@@ -150,7 +147,7 @@ class Process
 					$this->setBusy();
 					Console::println('Processing Command ID: '.$cmdId);
 					// process incoming job ...
-					$job = unserialize(base64_decode($cmdParam));
+					$job = unserialize(base64_decode($this->incomingJob['param']));
 					$this->returnResult($cmdId, $job->run());
 					$this->setReady();
 					break;

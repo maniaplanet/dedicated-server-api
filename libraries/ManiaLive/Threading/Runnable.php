@@ -12,11 +12,7 @@
 namespace ManiaLive\Threading;
 
 /**
- * Jobs need to extend this class
- * before you can add them to the
- * ThreadPool!
- * 
- * @author Florian Schnell
+ * Jobs need to implement this interface before you can add them to the ThreadPool!
  */
 interface Runnable
 {

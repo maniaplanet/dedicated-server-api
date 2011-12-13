@@ -21,10 +21,8 @@ use ManiaLive\Utilities\Logger;
 
 /**
  * Thread-Management is done here.
- * Add Threads and Jobs, the
- * ThreadPool will then assign Jobs
- * to the Threads to (hopefully) get
- * best performance ...
+ * Add Threads and Jobs, the ThreadPool will then assign Jobs to the Threads
+ * to (hopefully) get best performance ...
  * 
  * @author Florian Schnell
  */
@@ -32,21 +30,16 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 {
 	private $running;
 	private $threads;
-	private $threadsPending;
-	private $threadsCount;
 	private $database;
 	private $logger;
 	
 	static $threadingEnabled = false;
 	static $threadsDiedCount = 0;
-	static $avgResponseTime = null;
 	
 	function __construct()
 	{
 		$this->running = false;
 		$this->threads = array();
-		$this->threadsPending = array();
-		$this->threadsCount = 0;
 		$this->logger = Logger::getLog('main', 'threading');
 		$this->database = null;
 		
@@ -149,9 +142,6 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			$this->threads[$thread->getId()] = $thread;
 			$this->logger->write('Thread with ID '.$thread->getId().' has been started!');
 			
-			// increase thread count
-			$this->threadsCount++;
-			
 			return $thread->getId();
 		}
 		else
@@ -177,8 +167,6 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 				$quit = new QuitCommand();
 				$this->threads[$id]->sendCommand($quit);
 				unset($this->threads[$id]);
-				
-				$this->threadsCount--;
 				
 				return true;
 			}
@@ -324,7 +312,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function sendCommands()
 	{
-		foreach ($this->threads as $thread)
+		foreach($this->threads as $thread)
 			$thread->sendBufferedCommands();
 	}
 	
@@ -385,12 +373,8 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 			if($thread->getState() == Thread::STATE_DEAD)
 			{
 				self::$threadsDiedCount++;
-				$this->threadsCount--;
-				
 				Console::printDebug('Detected dead Thread with ID ' . $thread->getId() . ' - running Process #' . $thread->getPid() . '!');
-				
 				$thread->restart();
-				
 				Console::printDebug('Restarted Thread with ID ' . $thread->getId() . ' - assigned Process #' . $thread->getPid() . ' ...');
 			}
 		}
@@ -402,7 +386,7 @@ class ThreadPool extends \ManiaLib\Utils\Singleton implements TickListener
 	 */
 	function getThreadCount()
 	{
-		return self::$threadingEnabled ? $this->threadsCount : 1;
+		return count($this->threads);
 	}
 	
 	/**
