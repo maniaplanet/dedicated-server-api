@@ -183,7 +183,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 					$dialog->setText("There is too much spectators already.\nYou'll be kicked so someone else can play.");
 					$dialog->setButtons(Dialog::OK | Dialog::CANCEL);
 					$dialog->addCloseCallback(array($this, 'onKickDialogClosed'));
-					$dialog->showAsDialog();
+					$dialog->showModal();
 					return;
 				}
 				$this->letQueueFirstPlay();

@@ -37,7 +37,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 	private $buttons = array();
 	private $buttonsFrame;
 	
-	function onConstruct()
+	protected function onConstruct()
 	{
 		parent::onConstruct();
 		$this->setSize(count(self::$modes) * 20 + 2, 36);
@@ -73,7 +73,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 				$this->hide();
 			}
 			else
-				$dialog->showAsDialog();
+				$dialog->showModal();
 		}
 	}
 	
@@ -92,7 +92,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 			$dialog->setButtons(Dialog::YES | Dialog::NO);
 			$dialog->addCloseCallback(array($this, 'onDialogClosed'));
 			$dialog->centerOnScreen();
-			$dialog->showAsDialog();
+			$dialog->showModal();
 			$this->show();
 		}
 		catch (\Exception $ex)
@@ -102,7 +102,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 			$win->setTitle('Error');
 			$win->setText($ex->getMessage());
 			$win->centerOnScreen();
-			$win->showAsDialog();
+			$win->showModal();
 		}
 	}
 }

@@ -23,7 +23,7 @@ class Menu extends \ManiaLive\Gui\Window
 	private $items = array();
 	private $activeItem = null;
 
-	function onConstruct()
+	protected function onConstruct()
 	{
 		$this->container = new Frame(0, 0, new Column(0, 0, Column::DIRECTION_DOWN));
 		$this->addComponent($this->container);

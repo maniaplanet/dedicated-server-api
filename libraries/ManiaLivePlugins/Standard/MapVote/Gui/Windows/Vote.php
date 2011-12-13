@@ -98,7 +98,7 @@ class Vote extends \ManiaLive\Gui\Window
 		self::$bad = null;
 	}
 	
-	function onConstruct()
+	protected function onConstruct()
 	{
 		$this->mark = new BgsPlayerCard(8, 8);
 		$this->mark->setAlign('center', 'center');

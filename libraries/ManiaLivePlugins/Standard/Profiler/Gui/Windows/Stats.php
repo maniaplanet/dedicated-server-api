@@ -51,7 +51,7 @@ class Stats extends \ManiaLive\Gui\ManagedWindow
 		self::$pluginsTab = null;
 	}
 	
-	function onConstruct()
+	protected function onConstruct()
 	{
 		parent::onConstruct();
 		$this->setTitle('Statistics');

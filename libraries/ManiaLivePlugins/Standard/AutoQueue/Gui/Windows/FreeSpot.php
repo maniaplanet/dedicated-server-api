@@ -18,7 +18,7 @@ use ManiaLivePlugins\Standard\AutoQueue\Config;
  */
 class FreeSpot extends \ManiaLive\Gui\Window
 {
-	function onConstruct()
+	protected function onConstruct()
 	{
 		$ui = new Bgs1InRace(40, 5.5);
 		$ui->setSubStyle(Bgs1InRace::BgCardList);

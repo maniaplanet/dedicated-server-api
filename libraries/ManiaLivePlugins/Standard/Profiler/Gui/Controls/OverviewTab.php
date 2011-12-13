@@ -16,8 +16,8 @@ use ManiaLive\Database\Connection;
 use ManiaLive\DedicatedApi\Xmlrpc\Client;
 use ManiaLive\Gui\GuiHandler;
 use ManiaLive\PluginHandler\PluginHandler;
-use ManiaLive\Threading\Commands\Command;
 use ManiaLive\Threading\ThreadPool;
+use ManiaLive\Threading\Thread;
 use ManiaLive\Event\Dispatcher;
 use ManiaLivePlugins\Standard\Profiler\Listener as MonitorListener;
 use ManiaLivePlugins\Standard\Profiler\Event as MonitorEvent;
@@ -76,7 +76,7 @@ class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 			$text .= '$iRetrieving information...$z'."\n";
 		else
 			$text .= 'Current Cycles per Second: '.end($this->cpuStats)."\n"
-					.'Avg Reaction Time: '.round(1000 * count($this->cpuStats) / array_sum($this->cpuStats))." msecs\n";
+					.'Avg Reaction Time: '.round(1000 * count($this->cpuStats) / (array_sum($this->cpuStats) ?: 1))." msecs\n";
 		
 		// manialive specific stats
 		$text .= '$oManiaLive$z'."\n";
@@ -92,8 +92,8 @@ class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 		// threading
 		$text .= '$oThreading$z'."\n";
 		if(ThreadPool::$threadingEnabled)
-			$text .= 'Enabled; '.'Running:'.ThreadPool::getInstance()->getThreadCount().'; Restarted:'.ThreadPool::$threadsDiedCount."\n"
-					.Command::getTotalCommands().' commands finished at avg '.round(ThreadPool::$avgResponseTime, 3).' sec';
+			$text .= 'Enabled; Running:'.ThreadPool::getInstance()->getThreadCount().'; Restarted:'.ThreadPool::$threadsDiedCount."\n"
+					.count(Thread::$responseTimes).' commands finished at avg '.round(Thread::$responseTimeAverage, 3).' sec';
 		else
 			$text .= "Disabled\n";
 		

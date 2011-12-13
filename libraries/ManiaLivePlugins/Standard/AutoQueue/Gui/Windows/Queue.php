@@ -107,7 +107,7 @@ class Queue extends \ManiaLive\Gui\Window
 		self::$leaveQueueAction = null;
 	}
 	
-	function onConstruct()
+	protected function onConstruct()
 	{
 		$this->queueButton = new ButtonResizable(20, 4);
 		$this->queueButton->setHalign('center');
