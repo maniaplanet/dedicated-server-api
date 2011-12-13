@@ -24,7 +24,7 @@ abstract class Window extends Container implements TickListener
 	// Don't ask why these sizes, there's something weird ingame >.<
 	const Z_MIN = -100;
 	const Z_MAXIMIZED = 0;
-	const Z_DIALOG = 25;
+	const Z_MODAL = 25;
 	const Z_MAX = 50;
 	const Z_OFFSET = .1;
 	
@@ -323,7 +323,7 @@ abstract class Window extends Container implements TickListener
 			$this->onShow();
 	}
 	
-	final public function showAsDialog()
+	final public function showModal($recipient = null)
 	{
 		$this->centerOnScreen();
 		$wasVisible = $this->visible;
@@ -331,7 +331,7 @@ abstract class Window extends Container implements TickListener
 		
 		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
 			$recipient = $this->recipient;
-		GuiHandler::getInstance()->addDialog($this, $recipient);
+		GuiHandler::getInstance()->addModal($this, $recipient);
 		
 		if(!$wasVisible)
 			$this->onShow();
