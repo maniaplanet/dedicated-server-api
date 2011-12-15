@@ -161,7 +161,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		
 		$isRegistered = $this->isRegistered($command);
 		if($isRegistered == self::REGISTERED_AS_POLYMORPHIC)
-			$this->callCommand($login, $text, $command, $parameters, true);
+			$this->callCommand($login, $text, $command, $parameters ? array($parameters) : array(), true);
 		else if($isRegistered == self::NOT_REGISTERED_AT_ALL)
 			Connection::getInstance()->chatSendServerMessage(
 					'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.',
