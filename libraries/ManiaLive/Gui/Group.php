@@ -48,7 +48,7 @@ class Group implements \Iterator
 		if(isset(self::$groups[$publicName]))
 		{
 			$group = self::$groups[$publicName];
-			Window::Erase($group->internalName);
+			Window::Erase($group);
 			unset(self::$groups[$publicName]);
 		}
 	}
@@ -71,8 +71,9 @@ class Group implements \Iterator
 		{
 			$this->logins[$login] = $login;
 			if($showWindows)
-				foreach(Window::Get($this->internalName) as $window)
-					$window->show($login);
+				foreach(Window::Get($this) as $window)
+					if($window->isVisible())
+						$window->show($login);
 		}
 	}
 	
@@ -91,7 +92,7 @@ class Group implements \Iterator
 		if(isset($this->logins[$login]))
 		{
 			unset($this->logins[$login]);
-			foreach(Window::Get($this->internalName) as $window)
+			foreach(Window::Get($this) as $window)
 				$window->hide($login);
 		}
 	}

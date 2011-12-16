@@ -15,6 +15,8 @@ use ManiaLib\Gui\Elements\Bgs1;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
+use ManiaLive\Data\Listener as PlayerListener;
+use ManiaLive\Data\Event as PlayerEvent;
 use ManiaLive\DedicatedApi\Callback\Listener as ServerListener;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 use ManiaLive\DedicatedApi\Connection;
@@ -28,7 +30,7 @@ use ManiaLive\Gui\Windows\Thumbnail;
 /**
  * Description of GuiHandler
  */
-final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener, ServerListener
+final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener, PlayerListener, ServerListener
 {
 	const MAX_THUMBNAILS = 5;
 	const NEXT_IS_MODAL = 0xFA15EADD;
@@ -43,6 +45,11 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	private $currentWindows = array();
 	private $nextWindows = array();
 	private $modalBg;
+	
+	private $groupAll;
+	private $groupAllLogin;
+	private $groupPlayers;
+	private $groupSpectators;
 	
 	private $nextLoop;
 	
@@ -59,6 +66,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$this->modalBg->setScriptEvents();
 		$this->nextLoop = microtime(true);
 		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_RUN | AppEvent::ON_PRE_LOOP);
+		Dispatcher::register(PlayerEvent::getClass(), $this, PlayerEvent::ON_PLAYER_CHANGE_SIDE);
 		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
 	}
 	
@@ -299,6 +307,10 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	
 	function onRun()
 	{
+		$this->groupAll = Group::Create('all');
+		$this->groupPlayers = Group::Create('players');
+		$this->groupSpectators = Group::Create('spectators');
+		
 		foreach(Storage::getInstance()->players as $login => $player)
 			$this->onPlayerConnect($login, false);
 
@@ -335,17 +347,17 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 				$stackByPlayer[implode(',', $hiding)][] = $windowId;
 			}
 		}
-		// Second loop to add dialogs and regroup identical custom UIs
+		// Second loop to add modals and regroup identical custom UIs
 		$loginsByDiff = array();
 		$customUIsByDiff = array();
 		foreach($playersShowingGui as $login)
 		{
-			$dialog = $this->getNextModal($login);
-			if($dialog)
+			$modal = $this->getNextModal($login);
+			if($modal)
 			{
 				$stackByPlayer[$login][] = self::NEXT_IS_MODAL;
-				$stackByPlayer[$login][] = $dialog;
-				$this->modalShown[$login] = $dialog;
+				$stackByPlayer[$login][] = $modal;
+				$this->modalShown[$login] = $modal;
 			}
 			
 			$customUI = CustomUI::Create($login);
@@ -372,7 +384,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 					$this->drawModal($toDraw);
 					$nextIsDialog = false;
 				}
-				else if($toDraw === self::NEXT_IS_MODAL) // special delimiter for dialogs
+				else if($toDraw === self::NEXT_IS_MODAL) // special delimiter for modals
 					$nextIsDialog = true;
 				else if(is_string($toDraw)) // a window's id alone means it has to be hidden
 					$this->drawHidden($toDraw);
@@ -385,7 +397,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 				else // else it can only be a window to show
 					$this->drawWindow($toDraw);
 			}
-			$connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false, true);
+			$connection->sendDisplayManialinkPage($login == $this->groupAllLogin ? null : $login, Manialinks::getXml(), 0, false, true);
 		}
 		$connection->executeMulticall();
 		
@@ -447,9 +459,31 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	function onPostLoop() {}
 	function onTerminate() {}
 	
+	// Storage Listener
+	
+	function onPlayerNewBestTime($player, $oldBest, $newBest) {}
+	function onPlayerNewRank($player, $oldRank, $newRank) {}
+	function onPlayerNewBestScore($player, $oldScore, $newScore) {}
+	
+	function onPlayerChangeSide($player, $oldSide)
+	{
+		if($player->spectator)
+		{
+			$this->groupPlayers->remove($player->login);
+			$this->groupSpectators->add($player->login, true);
+		}
+		else
+		{
+			$this->groupSpectators->remove($player->login);
+			$this->groupPlayers->add($player->login, true);
+		}
+	}
+	
+	function onPlayerFinishLap($player, $timeOrScore, $checkpoints, $nbLap) {}
+	
 	// Dedicated Listener
 	
-	function onPlayerConnect($login, $IsSpectator)
+	function onPlayerConnect($login, $isSpectator)
 	{
 		$this->hidingGui[$login] = false;
 		$this->modals[$login] = array();
@@ -460,10 +494,23 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$sk = Shortkey::Create($login);
 		$sk->addCallback(Shortkey::F8, array($this, 'toggleGui'));
 		$sk->show();
+		
+		$this->groupAll->add($login, true);
+		$allLogins = $this->groupAll->toArray();
+		sort($allLogins);
+		$this->groupAllLogin = implode(',', $allLogins);
+		if($isSpectator)
+			$this->groupSpectators->add($login, true);
+		else
+			$this->groupPlayers->add($login, true);
 	}
 	
 	function onPlayerDisconnect($login)
 	{
+		$this->groupAll->remove($login);
+		$this->groupPlayers->remove($login);
+		$this->groupSpectators->remove($login);
+		
 		Window::Erase($login);
 		CustomUI::Erase($login);
 		

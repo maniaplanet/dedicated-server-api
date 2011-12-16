@@ -28,6 +28,10 @@ abstract class Window extends Container implements TickListener
 	const Z_MAX = 50;
 	const Z_OFFSET = .1;
 	
+	const RECIPIENT_ALL        = null;
+	const RECIPIENT_PLAYERS    = true;
+	const RECIPIENT_SPECTATORS = false;
+	
 	static private $singletons = array();
 	static private $instancesByClass = array();
 	static private $instancesByLoginAndClass = array();
@@ -47,8 +51,15 @@ abstract class Window extends Container implements TickListener
 	 * @param bool $singleton
 	 * @return \ManiaLive\Gui\Windowing\Window
 	 */
-	static function Create($recipient = null, $singleton = true)
+	static function Create($recipient = self::RECIPIENT_ALL, $singleton = true)
 	{
+		if($recipient === self::RECIPIENT_ALL)
+			$recipient = Group::Get('all');
+		else if($recipient === self::RECIPIENT_PLAYERS)
+			$recipient = Group::Get('players');
+		else if($recipient === self::RECIPIENT_SPECTATORS)
+			$recipient = Group::Get('spectators');
+		
 		$className = get_called_class();
 		$args = array_slice(func_get_args(), 2);
 		$login = strval($recipient);
@@ -112,7 +123,7 @@ abstract class Window extends Container implements TickListener
 		if(isset(self::$instancesByLoginAndClass[$login]))
 			foreach(self::$instancesByLoginAndClass[$login] as $class => $windows)
 				if($class == $className || is_subclass_of($class, $className))
-					array_splice($instances, count($instances), 0, self::$instancesByLoginAndClass[$login][$className]);
+					array_splice($instances, count($instances), 0, self::$instancesByLoginAndClass[$login][$class]);
 		return $instances;
 	}
 	
