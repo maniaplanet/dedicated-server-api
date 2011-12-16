@@ -12,14 +12,11 @@
 $php_ok = (function_exists('version_compare') && version_compare(phpversion(), '5.3.1', '>='));
 $json_ok = (extension_loaded('json') && function_exists('json_encode') && function_exists('json_decode'));
 $spl_ok = extension_loaded('spl');
-if (function_exists('curl_version'))
+$curl_ok = function_exists('curl_version');
+if($curl_ok)
 {
 	$curl_version = curl_version();
-	$curl_ok = (function_exists('curl_exec') && in_array('https', $curl_version['protocols'], true));
-}
-else
-{
-    $curl_ok = false;
+	$curl_ssl_ok = (function_exists('curl_exec') && in_array('https', $curl_version['protocols'], true));
 }
 $sqlite2_ok = extension_loaded('sqlite');
 $sqlite3_ok = extension_loaded('sqlite3');
@@ -37,27 +34,21 @@ function failure($s = 'No ')
 }
 echo
 '
-  ##################################     ###################################
-  ##################################     ###################################
-                                                                         ###
-  ################  ################     ###  ############  ###########  ###
-  ################  ################     ###  ############  ###########  ###
-               ###  ###                  ###  ###      ###  ###     ###  ###
-               ###  ###                  ###  ###      ###  ###     ###  ###
-               ###  ###                  ###  ###      ###  ###     ###  ###
-               ###  ###                  ###  ###      ###  ###     ###  ###
-               ###  ###                  ###  ###      ###  ###     ###  ###
-               ###  ###                  ###  ###      ###  ###     ###  ###
+ _|      _|                      _|            _|        _|                        
+ _|_|  _|_|    _|_|_|  _|_|_|          _|_|_|  _|            _|    _|    _|_|
+ _|  _|  _|  _|    _|  _|    _|  _|  _|    _|  _|        _|  _|    _|  _|_|_|_|
+ _|      _|  _|    _|  _|    _|  _|  _|    _|  _|        _|  _|  _|    _|
+ _|      _|    _|_|_|  _|    _|  _|    _|_|_|  _|_|_|_|  _|    _|        _|_|_|
 ';
-echo 'ManiaLive' . PHP_EOL;
-echo 'PHP Environment Compatibility Test' . PHP_EOL;
-echo '-----------------------------------------------------' . PHP_EOL;
-echo 'PHP 5.3.1 or newer    -> required  -> ' . ($php_ok ? (success() . ' ' . phpversion()) : failure()) . PHP_EOL;
-echo 'Standard PHP Library  -> required  -> ' . ($spl_ok ? success() : failure()) . PHP_EOL;
-echo 'JSON                  -> required  -> ' . ($json_ok ? success() : failure()) . PHP_EOL;
-echo 'cURL with SSL         -> required  -> ' . ($curl_ok ? (success() . ' ' . $curl_version['version'] . ' (' . $curl_version['ssl_version'] . ')' . (is_array($curl_version['protocols']) && in_array('https', $curl_version['protocols'], true) ? ' (with ' . $curl_version['ssl_version'] . ')' : ' (without SSL)')) : failure()) . PHP_EOL;
-echo 'SQLite                -> optional  -> ' . ($sqlite_ok ? success() : failure()) . PHP_EOL;
-echo '-----------------------------------------------------' . PHP_EOL;
+echo '-----------------------------------------------------'.PHP_EOL;
+echo 'PHP Environment Compatibility Test'.PHP_EOL;
+echo '-----------------------------------------------------'.PHP_EOL;
+echo 'PHP 5.3.1 or newer    -> required  -> ' . ($php_ok ? (success().' '.phpversion()) : failure()).PHP_EOL;
+echo 'Standard PHP Library  -> required  -> ' . ($spl_ok ? success() : failure()).PHP_EOL;
+echo 'JSON                  -> required  -> ' . ($json_ok ? success() : failure()).PHP_EOL;
+echo 'cURL with SSL         -> required  -> ' . ($curl_ok ? ($curl_ssl_ok ? success().' '.$curl_version['version'].' (with '.$curl_version['ssl_version'].')' : failure().' '.$curl_version['version'].' (without SSL)') : failure()).PHP_EOL;
+echo 'SQLite                -> optional  -> ' . ($sqlite_ok ? success() : failure()).PHP_EOL;
+echo '-----------------------------------------------------'.PHP_EOL;
 
 
 if(!$php_ok || !$curl_ok || !$spl_ok || !$json_ok)
@@ -67,9 +58,12 @@ if(!$php_ok || !$curl_ok || !$spl_ok || !$json_ok)
 }
 
 // better checking if timezone is set
-if(!ini_get('date.timezone')) {
-	echo 'Timezone is not set in php.ini. Please edit it and change/set "date.timezone" appropriately.';
-	date_default_timezone_set(date_default_timezone_get());
+if(!ini_get('date.timezone'))
+{
+	$timezone = @date_default_timezone_get();
+	echo 'Timezone is not set in php.ini. Please edit it and change/set "date.timezone" appropriately. '
+			.'Setting to default: \''.$timezone.'\''.PHP_EOL;
+	date_default_timezone_set($timezone);
 }
 
 if(!$sqlite_ok)
@@ -79,6 +73,7 @@ if(!$sqlite_ok)
 // enable error reporting
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+gc_enable();
 
 require_once __DIR__.DIRECTORY_SEPARATOR.'libraries'.DIRECTORY_SEPARATOR.'autoload.php';
 
