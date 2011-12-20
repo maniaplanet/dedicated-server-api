@@ -42,7 +42,7 @@ class Config extends \ManiaLib\Utils\Singleton
 		
 		$queryArgs = 'nickname='.rawurlencode($nickname);
 		if($channel || ($channel = $this->getPlayerDefaultChannel($player)) )
-			$queryArgs .= '&channel='.rawurlencode($channel);
+			$queryArgs .= '&channel='.rawurlencode($channel->serverPath);
 		if($this->password)
 			$queryArgs .= '&password='.rawurlencode($this->password);
 		
@@ -52,9 +52,17 @@ class Config extends \ManiaLib\Utils\Singleton
 	function getPlayerDefaultChannel($player)
 	{
 		if($this->useLangChannels)
-			return $this->dedicatedChannelName.'/'.Connection::$languages[substr($player->language, 0, 2)];
+		{
+			$channel = Structures\Channel::GetByPath($this->dedicatedChannelName.'/'.Connection::$languages[substr($player->language, 0, 2)]);
+			if($channel)
+				return $channel;
+		}
 		if($this->useDedicatedChannel)
-			return $this->dedicatedChannelName;
+		{
+			$channel = Structures\Channel::GetByPath($this->dedicatedChannelName);
+			if($channel)
+				return $channel;
+		}
 		return null;
 	}
 }

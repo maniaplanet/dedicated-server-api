@@ -131,9 +131,9 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 					{
 						$main = Main::Create($client->login);
 						$main->setNotConnected();
-						$defaultChannelName = Config::getInstance()->getPlayerDefaultChannel($this->storage->getPlayerObject($client->login));
-						if($defaultChannelName)
-							$main->setDefaultButtonText($defaultChannelName);
+						$defaultChannel = Config::getInstance()->getPlayerDefaultChannel($this->storage->getPlayerObject($client->login));
+						if($defaultChannel)
+							$main->setDefaultButtonText($defaultChannel->name);
 						else
 							$main->setDefaultButtonText('Connect');
 						$main->hideClientList($client->login);
@@ -207,9 +207,9 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 		}
 		else
 		{
-			$defaultChannelName = Config::getInstance()->getPlayerDefaultChannel($this->storage->getPlayerObject($login));
-			if($defaultChannelName)
-				$main->setDefaultButtonText($defaultChannelName);
+			$defaultChannel = Config::getInstance()->getPlayerDefaultChannel($this->storage->getPlayerObject($login));
+			if($defaultChannel)
+				$main->setDefaultButtonText($defaultChannel->name);
 			if($this->tsConnection->isConnected())
 				$main->setNotConnected();
 			else

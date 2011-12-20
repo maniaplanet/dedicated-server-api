@@ -20,7 +20,7 @@ use ManiaLivePlugins\Standard\TeamSpeak\Config;
 class Channel extends Observable
 {
 	static private $instances = array();
-	static private $instancesByName = array();
+	static private $instancesByPath = array();
 	static private $defaultChannelId = 0;
 	
 	public $channelId;
@@ -42,7 +42,7 @@ class Channel extends Observable
 		$channel->update($channelInfo);
 
 		self::$instances[$channelId] = $channel;
-		self::$instancesByName[$channel->name] = $channel;
+		self::$instancesByPath[$channel->serverPath] = $channel;
 		return $channel;
 	}
 	
@@ -53,10 +53,10 @@ class Channel extends Observable
 		return null;
 	}
 	
-	static function GetByName($channelName)
+	static function GetByPath($path)
 	{
-		if(isset(self::$instancesByName[$channelName]))
-			return self::$instancesByName[$channelName];
+		if(isset(self::$instancesByPath[$path]))
+			return self::$instancesByPath[$path];
 		return null;
 	}
 	
@@ -93,7 +93,7 @@ class Channel extends Observable
 				unset($parentChannel->subChannels[$channel->channelId]);
 		}
 		self::$instances = array();
-		self::$instancesByName = array();
+		self::$instancesByPath = array();
 	}
 	
 	private function __construct() {}
