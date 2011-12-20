@@ -65,7 +65,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$this->modalBg->setPosZ(Window::Z_MODAL);
 		$this->modalBg->setScriptEvents();
 		$this->nextLoop = microtime(true);
-		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_RUN | AppEvent::ON_PRE_LOOP);
+		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ALL & ~AppEvent::ON_POST_LOOP);
 		Dispatcher::register(PlayerEvent::getClass(), $this, PlayerEvent::ON_PLAYER_CHANGE_SIDE);
 		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
 	}
@@ -106,41 +106,32 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	
 	function addtoShow(Window $window, $recipients)
 	{
+		$windowId = $window->getId();
+		
 		if($window instanceof ManagedWindow)
 		{
-			if($this->managedWindow[$recipients] && $this->managedWindow[$recipients] !== $window && !$this->sendToTaskbar($recipients))
-				return false;
-			$this->managedWindow[$recipients] = $window;
+			if($this->managedWindow[$recipients[0]] && $this->managedWindow[$recipients[0]] !== $window && !$this->sendToTaskbar($recipients[0]))
+				return;
+			$this->managedWindow[$recipients[0]] = $window;
 			if(($thumbnail = $this->getThumbnail($window)))
 				$thumbnail->hide();
 		}
 		
-		$windowId = $window->getId();
-		if(!is_array($recipients) && !($recipients instanceof Group))
-			$recipients = array($recipients);
-		
 		foreach($recipients as $login)
 		{
-			if(Storage::getInstance()->getPlayerObject($login))
-			{
-				if(isset($this->nextWindows[$windowId]))
-					$this->nextWindows[$windowId][$login] = $window;
-				else
-					$this->nextWindows[$windowId] = array($login => $window);
-			}
+			if(isset($this->nextWindows[$windowId]))
+				$this->nextWindows[$windowId][$login] = $window;
+			else
+				$this->nextWindows[$windowId] = array($login => $window);
 		}
-		
-		return true;
 	}
 	
 	function addToHide(Window $window, $recipients)
 	{
-		if($window instanceof ManagedWindow && $this->managedWindow[$recipients] === $window)
-			$this->managedWindow[$recipients] = null;
-		
 		$windowId = $window->getId();
-		if(!is_array($recipients) && !($recipients instanceof Group))
-			$recipients = array($recipients);
+		
+		if($window instanceof ManagedWindow && $this->managedWindow[$recipients[0]] === $window)
+			$this->managedWindow[$recipients[0]] = null;
 		
 		if(isset($this->currentWindows[$windowId]))
 		{
@@ -176,11 +167,9 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		}
 		else
 			unset($this->nextWindows[$windowId]);
-		
-		return true;
 	}
 	
-	function addToRedraw(Window $window, $recipients = null)
+	function addToRedraw(Window $window, $recipients)
 	{
 		$windowId = $window->getId();
 		
@@ -188,9 +177,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 			$thumbnail->enableHighlight();
 		else if(isset($this->currentWindows[$windowId]))
 		{
-			if(!is_array($recipients) && !($recipients instanceof Group))
-				$recipients = array($recipients);
-			
 			foreach($recipients as $login)
 				if(isset($this->currentWindows[$windowId][$login]))
 				{
@@ -203,8 +189,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 						$this->nextWindows[$windowId] = array($login => $window);
 				}
 		}
-		
-		return true;
 	}
 	
 	function sendToTaskbar($login)
@@ -281,14 +265,14 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$modal->addCloseCallback(array($this, 'onModalClosed'));
 	}
 	
-	function onModalClosed($login, Window $dialog)
+	function onModalClosed($login, Window $window)
 	{
-		$dialogId = $dialog->getId();
-		unset($this->modalsRecipients[$dialogId][$login]);
-		if(empty($this->modalsRecipients[$dialogId]))
+		$windowId = $window->getId();
+		unset($this->modalsRecipients[$windowId][$login]);
+		if(empty($this->modalsRecipients[$windowId]))
 		{
-			$dialog->destroy();
-			unset($this->modalsRecipients[$dialogId]);
+			$window->destroy();
+			unset($this->modalsRecipients[$windowId]);
 		}
 		$this->modalShown[$login] = null;
 	}
@@ -305,6 +289,11 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	
 	// Application Listener
 	
+	function onInit()
+	{
+		Connection::getInstance()->sendHideManialinkPage();
+	}
+	
 	function onRun()
 	{
 		$this->groupAll = Group::Create('all');
@@ -318,8 +307,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 			$this->onPlayerConnect($login, true);
 	}
 	
-	function onInit() {}
-	
 	function onPreLoop()
 	{
 		// Before loops (stopping if too soon)
@@ -329,8 +316,9 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		
 		$connection = Connection::getInstance();
 		$stackByPlayer = array();
+		$playersOnServer = array_merge(array_keys(Storage::getInstance()->players), array_keys(Storage::getInstance()->spectators));
 		$playersHidingGui = array_keys(array_filter($this->hidingGui));
-		$playersShowingGui = array_diff(array_keys($this->hidingGui), $playersHidingGui);
+		$playersShowingGui = array_diff(array_keys($this->hidingGui), $playersHidingGui, $playersOnServer);
 		// First loop to prepare player stacks
 		foreach($this->nextWindows as $windowId => $visibilityByLogin)
 		{
@@ -373,19 +361,19 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 			$stackByPlayer[implode(',', $logins)][] = $customUIsByDiff[$diff];
 		
 		// Final loop to send manialinks
-		$nextIsDialog = false;
+		$nextIsModal = false;
 		foreach($stackByPlayer as $login => $data)
 		{
 			Manialinks::load();
 			foreach($data as $toDraw)
 			{
-				if($nextIsDialog) // this element can't be anything else than a window
+				if($nextIsModal) // this element can't be anything else than a window
 				{
 					$this->drawModal($toDraw);
-					$nextIsDialog = false;
+					$nextIsModal = false;
 				}
 				else if($toDraw === self::NEXT_IS_MODAL) // special delimiter for modals
-					$nextIsDialog = true;
+					$nextIsModal = true;
 				else if(is_string($toDraw)) // a window's id alone means it has to be hidden
 					$this->drawHidden($toDraw);
 				else if(is_array($toDraw)) // custom ui's special case
@@ -457,7 +445,11 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	}
 	
 	function onPostLoop() {}
-	function onTerminate() {}
+	
+	function onTerminate()
+	{
+		Connection::getInstance()->sendHideManialinkPage();
+	}
 	
 	// Storage Listener
 	

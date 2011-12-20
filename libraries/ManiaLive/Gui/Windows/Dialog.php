@@ -60,28 +60,25 @@ final class Dialog extends \ManiaLive\Gui\Panel
 		$this->addComponent($this->options);
 	}
 	
-	function onShow()
+	protected function onResize($oldX, $oldY)
 	{
+		parent::onResize($oldX, $oldY);
+		
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 		
 		$this->options->setSizeX($this->sizeX);
 		$this->options->getLayout()->setSizeX($this->sizeX);
 		$this->options->setPosition($this->sizeX / 2, 8 - $this->sizeY);
-		$this->options->clearComponents();
 		
-		$buttons = array();
-		for($i = 1; $i <= $this->buttons; $i <<= 1)
-			if($this->buttons & $i)
-				$buttons[] = $i;
-		$buttonsSizeX = ($this->sizeX - 2.5) / count($buttons);
-		
-		foreach($buttons as $button)
+		$options = $this->options->getComponents();
+		if(count($options))
 		{
-			$ui = new ButtonResizable($buttonsSizeX, 7);
-			$ui->setPosX(1.25);
-			$ui->setText(self::$labels[$button]);
-			$ui->setAction($this->createAction(array($this, 'onButton'), $button));
-			$this->options->addComponent($ui);
+			$optionSizeX = ($this->sizeX - 2.5) / count($options);
+			foreach($options as $ui)
+			{
+				$ui->setSizeX($optionSizeX);
+				$ui->setPosX(1.25);
+			}
 		}
 	}
 	
@@ -104,6 +101,22 @@ final class Dialog extends \ManiaLive\Gui\Panel
 	function setButtons($buttons)
 	{
 		$this->buttons = $buttons;
+		$this->options->clearComponents();
+		
+		$options = array();
+		for($i = 1; $i <= $this->buttons; $i <<= 1)
+			if($this->buttons & $i)
+				$options[] = $i;
+		$optionSizeX = ($this->sizeX - 2.5) / count($options);
+		
+		foreach($options as $option)
+		{
+			$ui = new ButtonResizable($optionSizeX, 7);
+			$ui->setPosX(1.25);
+			$ui->setText(self::$labels[$option]);
+			$ui->setAction($this->createAction(array($this, 'onButton'), $option));
+			$this->options->addComponent($ui);
+		}
 	}
 	
 	function destroy()

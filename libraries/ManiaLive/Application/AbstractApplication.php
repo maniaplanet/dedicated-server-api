@@ -41,6 +41,11 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	protected function __construct()
 	{
 		set_error_handler('\ManiaLive\Application\ErrorHandling::createExceptionFromError');
+		if(extension_loaded('pcntl'))
+		{
+			pcntl_signal(SIGTERM, array($this, 'kill'));  
+			pcntl_signal(SIGINT, array($this, 'kill'));
+		}
 		
 		try 
 		{
@@ -59,15 +64,8 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
 			if($manialiveConfig->logsPrefix != null)
 			{
-				$ip = str_replace('.', '-', $serverConfig->host);
-				
-				$manialiveConfig->logsPrefix = str_replace('%ip%',
-					$ip,
-					$manialiveConfig->logsPrefix);
-					
-				$manialiveConfig->logsPrefix = str_replace('%port%',
-					$serverConfig->port,
-					$manialiveConfig->logsPrefix);
+				$manialiveConfig->logsPrefix = str_replace('%ip%', str_replace('.', '-', $serverConfig->host), $manialiveConfig->logsPrefix);
+				$manialiveConfig->logsPrefix = str_replace('%port%', $serverConfig->port, $manialiveConfig->logsPrefix);
 			}
 				
 			// disable logging?
@@ -93,7 +91,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		GuiHandler::getInstance();
 		
 		$pool = ThreadPool::getInstance();
-		if ($pool->getDatabase() != null)
+		if($pool->getDatabase() != null)
 		{
 			Tools::setData($pool->getDatabase(), 'config', \ManiaLive\Config\Config::getInstance());
 			Tools::setData($pool->getDatabase(), 'database', \ManiaLive\Database\Config::getInstance());
@@ -103,30 +101,28 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			Tools::setData($pool->getDatabase(), 'threading', \ManiaLive\Threading\Config::getInstance());
 		}
 		
-		$this->connection->sendHideManialinkPage();
-		
 		Dispatcher::dispatch(new Event(Event::ON_INIT));
 	}
 	
-	function run()
+	final function run()
 	{
 		try
 		{
 			$this->init();
 			
 			Dispatcher::dispatch(new Event(Event::ON_RUN));
-			ThreadPool::getInstance()->run();
+			ThreadPool::getInstance()->start();
 			self::$startTime = microtime(true);
 			
 			while($this->running)
 			{
 				Dispatcher::dispatch(new Event(Event::ON_PRE_LOOP));
 				$this->connection->executeCallbacks();
-				$this->connection->executeMultiCall();
+				$this->connection->executeMulticall();
 				Dispatcher::dispatch(new Event(Event::ON_POST_LOOP));
 				usleep(static::USLEEP_DELAY);
 			}
-			$this->terminate();
+			Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 		}
 		catch (\Exception $e)
 		{
@@ -136,13 +132,9 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	
 	function kill()
 	{
-		$this->connection->manualFlowControlEnable(false);
+		if($this->connection)
+			$this->connection->manualFlowControlEnable(false);
 		$this->running = false;
-	}
-	
-	protected function terminate()
-	{
-		Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 	}
 }
 

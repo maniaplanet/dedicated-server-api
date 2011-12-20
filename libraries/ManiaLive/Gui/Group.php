@@ -77,9 +77,16 @@ class Group implements \Iterator
 		}
 	}
 	
-	function contains($login)
+	function contains($logins)
 	{
-		return isset($this->logins[$login]);
+		if($logins instanceof Group || is_array($logins))
+		{
+			foreach($logins as $login)
+				if(!isset($this->logins[$login]))
+					return false;
+			return true;
+		}
+		return isset($this->logins[$logins]);
 	}
 	
 	function count()

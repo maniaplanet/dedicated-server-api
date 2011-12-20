@@ -44,7 +44,7 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListener
 	final function __construct()
 	{
 		$this->plugins = array();
-		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT | AppEvent::ON_TERMINATE);
+		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT);
 	}
 
 	final function addPlugin($classname)
@@ -281,14 +281,10 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListener
 		$this->loadPlugins();
 	}
 
-	function onTerminate()
-	{
-		unset($this->plugins);
-	}
-
 	function onRun() {}
 	function onPreLoop() {}
 	function onPostLoop() {}
+	function onTerminate() {}
 }
 
 class Exception extends \Exception {}

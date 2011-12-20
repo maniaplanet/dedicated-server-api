@@ -31,7 +31,7 @@ final class Info extends \ManiaLive\Gui\Panel
 		$this->addComponent($this->text);
 	}
 	
-	protected function onShow()
+	protected function onResize($oldX, $oldY)
 	{
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 	}

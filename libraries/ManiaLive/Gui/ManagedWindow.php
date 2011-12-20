@@ -136,7 +136,7 @@ class ManagedWindow extends Panel
 		$this->buttonMin->setPosX($maximizable ? 18 : 9);
 	}
 	
-	public function onDraw()
+	function onDraw()
 	{
 		if($this->maximized)
 		{
@@ -163,7 +163,7 @@ class ManagedWindow extends Panel
 	/**
 	 * Unmaximize window if needed
 	 */
-	public function onHide()
+	protected function onHide()
 	{
 		if($this->maximized)
 		{

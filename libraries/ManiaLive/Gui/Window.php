@@ -37,6 +37,7 @@ abstract class Window extends Container implements TickListener
 	static private $instancesByLoginAndClass = array();
 	
 	private $recipient;
+	private $visibilities = array();
 	private $timeout = false;
 	private $linksDisabled = false;
 	private $closeCallbacks = array();
@@ -183,7 +184,11 @@ abstract class Window extends Container implements TickListener
 	{
 		$this->recipient = $recipient;
 		$this->id = spl_object_hash($this);
-		$this->visible = false;
+		if($this->recipient instanceof Group)
+			foreach($this->recipient as $login)
+				$this->visibilities[$login] = false;
+		else
+			$this->visibilities[$this->recipient] = false;
 		
 		if(empty($args))
 			$this->onConstruct();
@@ -323,11 +328,18 @@ abstract class Window extends Container implements TickListener
 	 */
 	final public function show($recipient = null)
 	{
-		$wasVisible = $this->visible;
-		$this->visible = true;
-		
-		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+		if(!($this->recipient instanceof Group && $this->recipient->contains($recipient)))
 			$recipient = $this->recipient;
+		
+		$wasVisible = true;
+		if(!($recipient instanceof Group || is_array($recipient)))
+			$recipient = array($recipient);
+		foreach($recipient as $login)
+		{
+			$wasVisible = $wasVisible && $this->visibilities[$login];
+			$this->visibilities[$login] = true;
+		}
+		
 		GuiHandler::getInstance()->addToShow($this, $recipient);
 		
 		if(!$wasVisible)
@@ -337,11 +349,19 @@ abstract class Window extends Container implements TickListener
 	final public function showModal($recipient = null)
 	{
 		$this->centerOnScreen();
-		$wasVisible = $this->visible;
-		$this->visible = true;
 		
-		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+		if(!($this->recipient instanceof Group && $this->recipient->contains($recipient)))
 			$recipient = $this->recipient;
+		
+		$wasVisible = true;
+		if(!($recipient instanceof Group || is_array($recipient)))
+			$recipient = array($recipient, 'blabla');
+		foreach($recipient as $login)
+		{
+			$wasVisible = $wasVisible && $this->visibilities[$login];
+			$this->visibilities[$login] = true;
+		}
+		
 		GuiHandler::getInstance()->addModal($this, $recipient);
 		
 		if(!$wasVisible)
@@ -354,25 +374,40 @@ abstract class Window extends Container implements TickListener
 	 */
 	final public function hide($recipient = null)
 	{
-		$wasVisible = $this->visible;
-		$this->visible = false;
-		
-		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+		if(!($this->recipient instanceof Group && $this->recipient->contains($recipient)))
 			$recipient = $this->recipient;
+		
+		$oldVisibilities = array();
+		if(!($recipient instanceof Group || is_array($recipient)))
+			$recipient = array($recipient);
+		foreach($recipient as $login)
+		{
+			$oldVisibilities[$login] = $this->visibilities[$login];
+			$this->visibilities[$login] = false;
+		}
+		
 		GuiHandler::getInstance()->addToHide($this, $recipient);
 		
-		if($wasVisible)
+		$onHideCalled = false;
+		foreach($oldVisibilities as $login => $wasVisible)
 		{
-			$this->onHide();
-			foreach($this->closeCallbacks as $callback)
-				call_user_func($callback, $recipient, $this);
+			if(!$onHideCalled && $wasVisible)
+			{
+				$this->onHide();
+				$onHideCalled = true;
+			}
+			if($wasVisible)
+				foreach($this->closeCallbacks as $callback)
+					call_user_func($callback, $login, $this);
 		}
 	}
 	
 	final public function redraw($recipient = null)
 	{
-		if($this->recipient && !($this->recipient instanceof Group && $this->recipient->contains($recipient)))
+		if(!($this->recipient instanceof Group && $this->recipient->contains($recipient)))
 			$recipient = $this->recipient;
+		if(!($recipient instanceof Group || is_array($recipient)))
+			$recipient = array($recipient);
 		GuiHandler::getInstance()->addToRedraw($this, $recipient);
 	}
 	
