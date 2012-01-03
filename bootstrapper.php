@@ -22,18 +22,7 @@ $sqlite2_ok = extension_loaded('sqlite');
 $sqlite3_ok = extension_loaded('sqlite3');
 $sqlite_ok = ($sqlite2_ok || $sqlite3_ok);
 
-
-function success($s = 'Yes')
-{
-	return "[ " . $s . " ]";
-}
-
-function failure($s = 'No ')
-{
-	return "[ " . $s . " ]";
-}
-echo
-'
+echo '
  _|      _|                      _|            _|        _|                        
  _|_|  _|_|    _|_|_|  _|_|_|          _|_|_|  _|            _|    _|    _|_|
  _|  _|  _|  _|    _|  _|    _|  _|  _|    _|  _|        _|  _|    _|  _|_|_|_|
@@ -43,17 +32,17 @@ echo
 echo '-----------------------------------------------------'.PHP_EOL;
 echo 'PHP Environment Compatibility Test'.PHP_EOL;
 echo '-----------------------------------------------------'.PHP_EOL;
-echo 'PHP 5.3.1 or newer    -> required  -> ' . ($php_ok ? (success().' '.phpversion()) : failure()).PHP_EOL;
-echo 'Standard PHP Library  -> required  -> ' . ($spl_ok ? success() : failure()).PHP_EOL;
-echo 'JSON                  -> required  -> ' . ($json_ok ? success() : failure()).PHP_EOL;
-echo 'cURL with SSL         -> required  -> ' . ($curl_ok ? ($curl_ssl_ok ? success().' '.$curl_version['version'].' (with '.$curl_version['ssl_version'].')' : failure().' '.$curl_version['version'].' (without SSL)') : failure()).PHP_EOL;
-echo 'SQLite                -> optional  -> ' . ($sqlite_ok ? success() : failure()).PHP_EOL;
+echo 'PHP 5.3.1 or newer    -> required  -> ' . ($php_ok ? ('[ Yes ] '.phpversion()) : '[ No  ]').PHP_EOL;
+echo 'Standard PHP Library  -> required  -> ' . ($spl_ok ? '[ Yes ]' : '[ No  ]').PHP_EOL;
+echo 'JSON                  -> required  -> ' . ($json_ok ? '[ Yes ]' : '[ No  ]').PHP_EOL;
+echo 'cURL with SSL         -> required  -> ' . ($curl_ok ? ($curl_ssl_ok ? '[ Yes ] '.$curl_version['version'].' (with '.$curl_version['ssl_version'].')' : '[ No  ] '.$curl_version['version'].' (without SSL)') : '[ No  ]').PHP_EOL;
+echo 'SQLite                -> optional  -> ' . ($sqlite_ok ? '[ Yes ]' : '[ No  ]').PHP_EOL;
 echo '-----------------------------------------------------'.PHP_EOL;
 
 
 if(!$php_ok || !$curl_ok || !$spl_ok || !$json_ok)
 {
-    echo 'Your system is not compatible, check your php configuration.';
+    echo 'Your system is not compatible, check your php configuration.'.PHP_EOL;
     exit;
 }
 
@@ -78,4 +67,5 @@ gc_enable();
 require_once __DIR__.DIRECTORY_SEPARATOR.'libraries'.DIRECTORY_SEPARATOR.'autoload.php';
 
 ManiaLiveApplication\Application::getInstance()->run();
+
 ?>

@@ -11,22 +11,13 @@
 
 namespace ManiaLive\Application;
 
-use ManiaLive\Cache\Cache;
 use ManiaLive\Config\Loader;
-use ManiaLive\Data\Storage;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Event\Dispatcher;
-use ManiaLive\Gui\GuiHandler;
-use ManiaLive\Features\ChatCommand\Interpreter;
-use ManiaLive\Features\Tick\Ticker;
-use ManiaLive\PluginHandler\PluginHandler;
-use ManiaLive\Threading\Tools;
-use ManiaLive\Threading\ThreadPool;
-use ManiaLive\Utilities\Logger;
 
 abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 {
-	const USLEEP_DELAY = 15000;
+	const CYCLES_PER_SECOND = 60;
 	static $startTime;
 	/**
 	 * @var bool
@@ -70,7 +61,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				
 			// disable logging?
 			if(!$manialiveConfig->runtimeLog)
-				Logger::getLog('Runtime')->disableLog();
+				\ManiaLive\Utilities\Logger::getLog('Runtime')->disableLog();
 		}
 		catch (\Exception $e)
 		{
@@ -81,25 +72,14 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	
 	protected function init()
 	{
-		new Ticker();
+		new \ManiaLive\Features\Tick\Ticker();
 		$this->connection = Connection::getInstance();
 		$this->connection->enableCallbacks(true);
-		Cache::getInstance();
-		Storage::getInstance();
-		Interpreter::getInstance();
-		PluginHandler::getInstance();
-		GuiHandler::getInstance();
-		
-		$pool = ThreadPool::getInstance();
-		if($pool->getDatabase() != null)
-		{
-			Tools::setData($pool->getDatabase(), 'config', \ManiaLive\Config\Config::getInstance());
-			Tools::setData($pool->getDatabase(), 'database', \ManiaLive\Database\Config::getInstance());
-			Tools::setData($pool->getDatabase(), 'wsapi', \ManiaLive\Features\WebServices\Config::getInstance());
-			Tools::setData($pool->getDatabase(), 'manialive', \ManiaLive\Application\Config::getInstance());
-			Tools::setData($pool->getDatabase(), 'server', \ManiaLive\DedicatedApi\Config::getInstance());
-			Tools::setData($pool->getDatabase(), 'threading', \ManiaLive\Threading\Config::getInstance());
-		}
+		\ManiaLive\Data\Storage::getInstance();
+		\ManiaLive\Features\ChatCommand\Interpreter::getInstance();
+		\ManiaLive\PluginHandler\PluginHandler::getInstance();
+		\ManiaLive\Gui\GuiHandler::getInstance();
+		\ManiaLive\Threading\ThreadHandler::getInstance();
 		
 		Dispatcher::dispatch(new Event(Event::ON_INIT));
 	}
@@ -111,8 +91,9 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			$this->init();
 			
 			Dispatcher::dispatch(new Event(Event::ON_RUN));
-			ThreadPool::getInstance()->start();
 			self::$startTime = microtime(true);
+			$nextCycleStart = self::$startTime;
+			$cycleTime = 1 / static::CYCLES_PER_SECOND;
 			
 			while($this->running)
 			{
@@ -120,7 +101,13 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				$this->connection->executeCallbacks();
 				$this->connection->executeMulticall();
 				Dispatcher::dispatch(new Event(Event::ON_POST_LOOP));
-				usleep(static::USLEEP_DELAY);
+				
+				$endCycleTime = microtime(true) + $cycleTime / 10;
+				do
+				{
+					$nextCycleStart += $cycleTime;
+				} while($nextCycleStart < $endCycleTime);
+				@time_sleep_until($nextCycleStart);
 			}
 			Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 		}

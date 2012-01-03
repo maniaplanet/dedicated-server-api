@@ -8,17 +8,16 @@
  * @author      $Author$:
  * @date        $Date$:
  */
-define('APP_ROOT',__DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
 
-function manialib_autoload($className)
-{
-	$className = str_replace('\\', DIRECTORY_SEPARATOR, $className);
-	$path = APP_ROOT.'libraries'.DIRECTORY_SEPARATOR.$className.'.php';
-	if(file_exists($path))
-	{
-		require_once $path;
-	}
-}
+define('APP_ROOT', __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
 
-spl_autoload_register('manialib_autoload');
+spl_autoload_register(
+		function ($className)
+		{
+			$className = str_replace('\\', DIRECTORY_SEPARATOR, $className);
+			$path = APP_ROOT.'libraries'.DIRECTORY_SEPARATOR.$className.'.php';
+			if(file_exists($path))
+				require_once $path;
+		}
+);
 ?>
