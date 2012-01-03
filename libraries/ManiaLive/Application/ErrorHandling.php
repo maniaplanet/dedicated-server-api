@@ -42,7 +42,8 @@ abstract class ErrorHandling
 	 */
 	public static function createExceptionFromError($errno, $errstr, $errfile, $errline)
 	{
-		throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+		if(error_reporting())
+			throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
 	}
 
 	/**
