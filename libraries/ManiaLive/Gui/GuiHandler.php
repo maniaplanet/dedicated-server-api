@@ -250,9 +250,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	
 	function addModal(Window $modal, $recipients)
 	{
-		if(!is_array($recipients) && !($recipients instanceof Group))
-			$recipients = array($recipients);
-		
 		foreach($recipients as $login)
 		{
 			if(isset($this->modals[$login]) && !isset($this->modalsRecipients[$modal->getId()][$login]))
@@ -318,7 +315,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$stackByPlayer = array();
 		$playersOnServer = array_merge(array_keys(Storage::getInstance()->players), array_keys(Storage::getInstance()->spectators));
 		$playersHidingGui = array_keys(array_filter($this->hidingGui));
-		$playersShowingGui = array_diff(array_keys($this->hidingGui), $playersHidingGui, $playersOnServer);
+		$playersShowingGui = array_intersect(array_diff(array_keys($this->hidingGui), $playersHidingGui), $playersOnServer);
 		// First loop to prepare player stacks
 		foreach($this->nextWindows as $windowId => $visibilityByLogin)
 		{
@@ -406,7 +403,10 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		
 		// After loops
 		$endTime = microtime(true);
-		$this->nextLoop += 0.2;
+		do
+		{
+			$this->nextLoop += 0.2;
+		} while($this->nextLoop < $endTime);
 		// Profiling
 		$this->sendingTimes[] = $endTime - $startTime;
 		if (count($this->sendingTimes) >= 10)

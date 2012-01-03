@@ -355,7 +355,7 @@ abstract class Window extends Container implements TickListener
 		
 		$wasVisible = true;
 		if(!($recipient instanceof Group || is_array($recipient)))
-			$recipient = array($recipient, 'blabla');
+			$recipient = array($recipient);
 		foreach($recipient as $login)
 		{
 			$wasVisible = $wasVisible && $this->visibilities[$login];
