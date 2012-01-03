@@ -39,14 +39,14 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 	
 	function onLoad()
 	{
+		$this->enterQueueAction = ActionHandler::getInstance()->createAction(array($this, 'queue'));
+		$this->leaveQueueAction = ActionHandler::getInstance()->createAction(array($this, 'unqueue'));
+		Queue::Initialize($this->enterQueueAction, $this->leaveQueueAction);
+		
 		foreach($this->storage->players as $player)
 			$this->onPlayerConnect($player->login, false);
 		foreach($this->storage->spectators as $spectator)
 			$this->onPlayerConnect($spectator->login, true);
-		
-		$this->enterQueueAction = ActionHandler::getInstance()->createAction(array($this, 'queue'));
-		$this->leaveQueueAction = ActionHandler::getInstance()->createAction(array($this, 'unqueue'));
-		Queue::Initialize($this->enterQueueAction, $this->leaveQueueAction);
 		
 		$this->registerChatCommand('queue', 'queue', 0, true);
 		$this->registerChatCommand('unqueue', 'unqueue', 0, true);
