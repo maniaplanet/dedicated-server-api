@@ -18,9 +18,7 @@ use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
 use ManiaLive\Features\Tick\Listener as TickListener;
 use ManiaLive\Features\Tick\Event as TickEvent;
-use ManiaLive\Threading\ThreadPool;
-use ManiaLive\Threading\Tools;
-use ManiaLive\Threading\Commands\RunCommand;
+use ManiaLive\Threading\ThreadHandler;
 use ManiaLivePlugins\Standard\TeamSpeak\Structures\Client;
 use ManiaLivePlugins\Standard\TeamSpeak\Structures\Channel;
 use ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\TeamSpeak3;
@@ -60,8 +58,8 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 	);
 	
 	private $server;
-	private $threadPool;
-	private $threadId;
+	private $processHandler;
+	private $processId;
 	
 	private $tick = 0;
 	
@@ -79,8 +77,8 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		}
 		
 		// Threading is really useful for this plugin !!!
-		$this->threadPool = ThreadPool::getInstance();
-		$this->threadId = $this->threadPool->createThread();
+		$this->processHandler = ThreadHandler::getInstance();
+		$this->processId = $this->processHandler->launchThread();
 		
 		// Enable events (from ML and from TS)
 		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_PRE_LOOP);
@@ -97,9 +95,9 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		if($config->useDedicatedChannel)
 		{
 			if( !($defaultChannel = Channel::GetDefault()) )
-				$this->threadPool->addCommand(
-						new RunCommand(new Tasks\ChannelCreate($config, $config->dedicatedChannelName)),
-						$this->threadId
+				$this->processHandler->addTask(
+						$this->processId,
+						new Tasks\ChannelCreate($config, $config->dedicatedChannelName)
 				);
 			else if($config->useLangChannels)
 				$this->createLangChannels($defaultChannel);
@@ -116,9 +114,9 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		$wantedChannels = array_values(self::$languages);
 		$existingChannels = array_map(function ($subChannel) { return $subChannel->name; }, $parentChannel->subChannels);
 		foreach(array_diff($wantedChannels, $existingChannels) as $channelName)
-			$this->threadPool->addCommand(
-					new RunCommand(new Tasks\ChannelCreate(Config::getInstance(), $channelName, $parentChannel->channelId)),
-					$this->threadId
+			$this->processHandler->addTask(
+					$this->processId,
+					new Tasks\ChannelCreate(Config::getInstance(), $channelName, $parentChannel->channelId)
 			);
 		
 	}
@@ -126,9 +124,9 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 	function movePlayer($login, $channelId)
 	{
 		if( ($client = Client::GetByLogin($login)) )
-			$this->threadPool->addCommand(
-					new RunCommand(new Tasks\ClientMove(Config::getInstance(), $client->clientId, $channelId)),
-					$this->threadId
+			$this->processHandler->addTask(
+					$this->processId,
+					new Tasks\ClientMove(Config::getInstance(), $client->clientId, $channelId)
 			);
 	}
 	
@@ -138,18 +136,18 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		$defaultId = Channel::GetDefault() ? Channel::GetDefault()->channelId : -1;
 		foreach(Channel::GetAll() as $channel)
 			if($channel->hasToBeListed)
-				$this->threadPool->addCommand(
-						new RunCommand(new Tasks\ChannelToggleComment(Config::getInstance(), $channel->channelId, $enable)),
-						$this->threadId
+				$this->processHandler->addTask(
+						$this->processId,
+						new Tasks\ChannelToggleComment(Config::getInstance(), $channel->channelId, $enable)
 				);
 	}
 	
 	function toggleChannelComment($login, $channelId, $enable)
 	{
 		if( ($channel = Channel::Get($channelId)) )
-			$this->threadPool->addCommand(
-					new RunCommand(new Tasks\ChannelToggleComment(Config::getInstance(), $channelId, $enable)),
-					$this->threadId
+			$this->processHandler->addTask(
+					$this->processId,
+					new Tasks\ChannelToggleComment(Config::getInstance(), $channelId, $enable)
 			);
 	}
 	
@@ -160,9 +158,9 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 			$client->isCommentator = $enable;
 			$client->notifyObservers();
 			if( ($channel = Channel::Get($client->channelId)) && $channel->commentatorEnabled)
-				$this->threadPool->addCommand(
-						new RunCommand(new Tasks\ClientToggleComment(Config::getInstance(), $clientId, $enable)),
-						$this->threadId
+				$this->processHandler->addTask(
+						$this->processId,
+						new Tasks\ClientToggleComment(Config::getInstance(), $clientId, $enable)
 				);
 		}
 	}
@@ -177,10 +175,10 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 			$this->server->channelListReset();
 			$this->server = null;
 		}
-		if($this->threadPool && $this->threadId)
+		if($this->processHandler && $this->processId)
 		{
-			$this->threadPool->removeThread($this->threadId);
-			$this->threadId = null;
+			$this->processHandler->killThread($this->processId);
+			$this->processId = null;
 		}
 		Dispatcher::unregister(AppEvent::getClass(), $this);
 		Dispatcher::unregister(TickEvent::getClass(), $this);
@@ -213,9 +211,9 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 				if($this->tick % 60 == 0)
 				{
 					$this->server->request('whoami');
-					$this->threadPool->addCommand(
-							new RunCommand(new Tasks\ConnectionKeepAlive(Config::getInstance())),
-							$this->threadId
+					$this->processHandler->addTask(
+							$this->processId,
+							new Tasks\ConnectionKeepAlive(Config::getInstance())
 					);
 				}
 			}

@@ -15,23 +15,25 @@ use ManiaLib\Gui\Elements\Icons128x128_1;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\PluginHandler\PluginHandler;
-use ManiaLive\Threading\Commands\Command;
+use ManiaLive\Threading\Command;
+use ManiaLive\Threading\ThreadHandler;
 use ManiaLivePlugins\Standard\PluginManager\Gui\Controls\Plugin;
 use ManiaLivePlugins\Standard\PluginManager\Gui\Windows\Manager;
 
 class PluginManager extends \ManiaLive\PluginHandler\Plugin
 {
 	private $connectedAdmins = array();
+	private $threadId;
 
 	function onInit()
 	{
-		$this->setVersion(0.1);
+		$this->setVersion(0.5);
 	}
 
 	function onLoad()
 	{
-		$this->createThread();
-		$this->sendWorkToOwnThread(new PluginParser(), 'pluginsParsed');
+		$this->threadId = ThreadHandler::getInstance()->launchThread();
+		ThreadHandler::getInstance()->addTask($this->threadId, new PluginParser(), array($this, 'pluginsParsed'));
 		
 		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
 	}
@@ -48,7 +50,10 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 
 	function pluginsParsed(Command $command)
 	{
-		foreach($command->result as $pluginClass)
+		ThreadHandler::getInstance()->killThread($this->threadId);
+		$this->threadId = null;
+		
+		foreach($command->getResult() as $pluginClass)
 			Manager::AddPlugin($pluginClass, $this);
 		
 		$this->registerChatCommand('pluginManager', 'openWindow', 0, true, AdminGroup::get());
@@ -127,6 +132,8 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 	{
 		parent::onUnload();
 		Manager::ErasePlugins();
+		if($this->threadId)
+			ThreadHandler::getInstance()->killThread($this->threadId);
 	}
 }
 

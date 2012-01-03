@@ -16,8 +16,7 @@ use ManiaLive\Database\Connection;
 use ManiaLive\DedicatedApi\Xmlrpc\Client;
 use ManiaLive\Gui\GuiHandler;
 use ManiaLive\PluginHandler\PluginHandler;
-use ManiaLive\Threading\ThreadPool;
-use ManiaLive\Threading\Thread;
+use ManiaLive\Threading\ThreadHandler;
 use ManiaLive\Event\Dispatcher;
 use ManiaLivePlugins\Standard\Profiler\Listener as MonitorListener;
 use ManiaLivePlugins\Standard\Profiler\Event as MonitorEvent;
@@ -91,9 +90,10 @@ class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 		
 		// threading
 		$text .= '$oThreading$z'."\n";
-		if(ThreadPool::$threadingEnabled)
-			$text .= 'Enabled; Running:'.ThreadPool::getInstance()->getThreadCount().'; Restarted:'.ThreadPool::$threadsDiedCount."\n"
-					.count(Thread::$responseTimes).' commands finished at avg '.round(Thread::$responseTimeAverage, 3).' sec';
+		$processHandler = ThreadHandler::getInstance();
+		if($processHandler->isEnabled())
+			$text .= 'Enabled; Running:'.$processHandler->countThreads().'; Restarted:'.$processHandler->countRestartedThreads()."\n"
+					.$processHandler->countFinishedCommands().' commands finished at avg '.round($processHandler->getAverageResponseTime(), 3).' sec';
 		else
 			$text .= "Disabled\n";
 		
@@ -103,13 +103,13 @@ class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 		// database
 		$text = '$oDatabase$z'."\n";
 		
-		$times = Connection::getMeasuredAvgTimes();
+		$times = Connection::getMeasuredAverageTimes();
 		if(count($times))
 		{
 			$i = 0;
 			foreach($times as $time)
 				$text .= 'Connection #'.++$i.":\n"
-						.'Avg Query Time: '.round($time, 4).' sec'."\n";
+						.'Avg Query Time: '.round($time, 3).' sec'."\n";
 		}
 		else
 			$text .= "No Database connections running.\n";
