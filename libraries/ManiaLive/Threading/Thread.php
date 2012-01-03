@@ -11,422 +11,135 @@
 
 namespace ManiaLive\Threading;
 
-use ManiaLive\Event\Dispatcher;
-use ManiaLive\Threading\Commands\Command;
-use ManiaLive\Threading\Commands\QuitCommand;
-use ManiaLive\Threading\Commands\PingCommand;
-use ManiaLive\Utilities\Logger;
+use ManiaLive\Database\Connection;
+use ManiaLive\Utilities\Console;
 
 /**
- * Each Thread represents its own process.
- * Infact this is not multithreading, but multitasking
- * using the OS' abilities.
- * This is why performance and stability can vary depending
- * on your system-type.
- *
- * @author Florian Schnell
+ * This class is running in it's own process and is being instanciated by the thread_ignitor.php.
+ * It's a Singleton so tasks executed on it can use setData() and getData()
  */
-class Thread
+class Thread extends \ManiaLib\Utils\Singleton
 {
-	const STATE_UNKNOWN = 0;
-	const STATE_READY   = 1;
-	const STATE_PENDING = 2;
-	const STATE_CLOSED  = 3;
-	const STATE_DEAD    = 4;
-	
-	static $responseTimes = array();
-	static $responseTimeAverage = 0;
-	
-	/**
-	 * database connection the thread needs to
-	 * communicate with the process.
-	 * @var \ManiaLive\Database\SQLite\Connection
-	 */
-	static private $db;
-	/**
-	 * Counts Process instances
-	 * @var integer
-	 */
-	static private $pcounter = 0;
-	/**
-	 * Counts thread instances
-	 * @var integer
-	 */
-	static private $tcounter = 0;
-	/**
-	 * @var int
-	 */
-	private $state;
-	/**
-	 * ID of the Thread.
-	 * @var integer
-	 */
-	private $id;
-	/**
-	 * ID of the Process behind the Thread.
-	 * @var integer
-	 */
-	private $pid;
-	/**
-	 * Helps to write thread logfile
-	 * @var Logger
-	 */
-	private $log;
-	/**
-	 * Intern list of which commands are currently
-	 * executed on the Process.
-	 * @var array[Command]
-	 */
-	private $commands = array();
-	/**
-	 * Commands that were sent to the server, but
-	 * of which we didn't get any response yet.
-	 * @var array[Command]
-	 */
-	private $commandsSent = array();
-	/**
-	 * When has the ping signal been sent to the
-	 * process?
-	 * @var integer
-	 */
-	private $pingStarted;
-	/**
-	 * When did the thread enter busy state?
-	 * @var integer
-	 */
-	private $busyStarted;
+	private $threadId;
+	private $parentId;
+	private $database;
+	private $taskBuffer = array();
 
-	function __construct($id)
+	protected function __construct()
 	{
-		$this->id = $id;
-		$this->log = Logger::getLog($this->getPid(), 'threading');
+		global $argv;
+		$this->threadId = intval($argv[1]);
+		$this->parentId = intval($argv[2]);
+		$this->initDatabase();
 
-		// database stuff ...
-		if(ThreadPool::$threadingEnabled)
-		{
-			// start process and get its id ...
-			$this->pid = self::LaunchProcess();
+		Console::println('Thread started successfully!');
 
-			// create thread in database ...
-			self::$db = Tools::getDb();
-			self::$db->execute('INSERT INTO threads(proc_id, last_beat) VALUES(%d, %s);', $this->pid, time());
-		}
-
-		// dispatch event for starting thread ...
-		Dispatcher::dispatch(new Event(Event::ON_THREAD_START, $this));
+		if($this->database->isConnected())
+			Console::println('DB is connected, waiting for jobs ...');
 	}
-
-	/**
-	 * Factory function that creates new Threads for us.
-	 * - and this means also starting the linked process -
-	 * @return Thread
-	 */
-	static function Create()
+	
+	private function initDatabase()
 	{
-		$t = new Thread(++self::$tcounter);
-		$t->ping();
+		$this->database = Connection::getConnection('threading_'.$this->parentId, null, null, null, 'SQLite');
+
+		// load configs from DB
+		$configs = array(
+			'config'    => \ManiaLive\Config\Config::getInstance(),
+			'database'  => \ManiaLive\Database\Config::getInstance(),
+			'wsapi'     => \ManiaLive\Features\WebServices\Config::getInstance(),
+			'manialive' => \ManiaLive\Application\Config::getInstance(),
+			'server'    => \ManiaLive\DedicatedApi\Config::getInstance(),
+			'threading' => Config::getInstance()
+		);
+		foreach($configs as $dbName => $instance)
+		{
+			$data = $this->getData($dbName);
+			if($data)
+				foreach((array)$data as $key => $value)
+					$instance->$key = $value;
+		}
+	}
+	
+	function setData($key, $value)
+	{
+		$this->database->execute(
+				'INSERT INTO data (name, value) VALUES (%s, %s)',
+				$this->database->quote($key),
+				$this->database->quote(serialize($value)));
 		
-		return $t;
+		return $this->database->affectedRows() > 0;
 	}
-
-	/**
-	 * This launches a new process with the given id.
-	 * @param integer $id
-	 * @throws Exception
-	 */
-	static function LaunchProcess()
+	
+	function getData($key, $default=null)
 	{
-		$pid = ++self::$pcounter;
-		$log = Logger::getLog($pid, 'threading');
-		$config = \ManiaLive\Config\Config::getInstance();
-
-		$command =
-			// add path to the php executeable ...
-			'"'.Config::getInstance()->phpPath.'" '.
-			// add thread_ignitor.php as argument ...
-			'"'.__DIR__.DIRECTORY_SEPARATOR.'thread_ignitor.php" '.
-			// forward output stream to file ...
-			'>"'.$config->logsPath.DIRECTORY_SEPARATOR.$config->logsPrefix.'_threading_proc_'.$pid.'.txt" '.
-			// add id and this process id as arguments for thread_ignitor.php ...
-			$pid.' '.getmypid();
-			// this will launch a new process on windows ...
-
-		if(stripos(PHP_OS, 'WIN') === 0)
-			// start command, run in background and asign processid on Windows...
-			$command = 'start /B "manialive_thread_'. $pid. '" '.$command;
+		$result = $this->database->query('SELECT value FROM data WHERE name=%s', $this->database->quote($key));
+			
+		if($result->recordAvailable())
+			return unserialize($result->fetchScalar());
 		else
-			// start in background on Linux...
-			$command .= '&';
-
-		$log->write('Trying to start process using command:'.PHP_EOL.$command);
-
-		// try to start process ...
-		$phandle = popen($command, 'r');
-		if($phandle === false)
-			throw new Exception('Process with ID #' . $pid . ' could not be started!');
-		pclose($phandle);
-
-		return $pid;
+			return $default;
 	}
-
-	/**
-	 * This tells us depending on the last
-	 * response of the Process whether it is still running.
-	 * @return bool
-	 */
-	function isActive ()
+	
+	function run()
 	{
-        return $this->state == self::STATE_READY;
-	}
-
-	/**
-	 * Method to check whether a Process is currently
-	 * busy or if it can take a new task.
-	 * @return bool
-	 */
-	function isBusy()
-	{
-		return count($this->commandsSent) > 0;
-	}
-
-	/**
-	 * Instantly sends the Command with least
-	 * reliability.
-	 * @param $command
-	 */
-	function sendCommand(Command $command)
-	{
-		$command->timeSent = microtime(true);
-		self::$db->execute(
-				'INSERT INTO cmd(proc_id, thread_id, cmd, cmd_id, param, done, datestamp) VALUES(%d, %d, %s, %d, %s, 0, %s);',
-				$this->pid, $this->id, self::$db->quote($command->name), $command->getId(),
-				self::$db->quote(base64_encode(serialize($command->param))), time());
-
-		$this->commandsSent[$command->getId()] = $command;
-	}
-
-	/**
-	 * Adds Command to an intern queue that will
-	 * be sent as soon as possible, but with high reliability!
-	 * @param $command
-	 */
-	function addCommandToBuffer(Command $command)
-	{
-		$command->threadId = $this->id;
-		$this->commands[$command->getId()] = $command;
-	}
-
-	/**
-	 * Processes the queue of buffered Commands.
-	 * Only if possible and if the Thread/Process is available.
-	 * change: send a chunk only.
-	 */
-	function sendBufferedCommands()
-	{
-		// start running checks to see whether the server is able
-		// to process any commands at the moment!
-
-		// dont send commands if thread state is unkown
-		// maybe it got killed? ping!
-		$config = Config::getInstance();
-		if($this->getState() == self::STATE_PENDING)
+		while(true)
 		{
-			if(time() - $this->pingStarted > $config->pingTimeout)
+			$task = $this->nextTask();
+			
+			if($task)
 			{
-				$this->setState(self::STATE_DEAD);
-				Dispatcher::dispatch(new Event(Event::ON_THREAD_DIES, $this));
-				throw new ThreadDiedException('Thread has timed out!');
+				$startTime = microtime(true);
+				$result = $task['task']->run();
+				$timeTaken = microtime(true) - $startTime;
+				echo $this->database->quote(serialize($result))."\n";
+				
+				$this->database->execute(
+						'UPDATE commands SET result=%s, timeTaken=%f WHERE commandId=%d',
+						$this->database->quote(serialize($result)), $timeTaken, $task['commandId']);
 			}
-			return;
+			else
+				sleep(1);
+			
+			if(!$this->isParentRunning())
+				exit();
 		}
-
-		// dont send commands if thread is busy
-		// maybe it hung up, you can only wait and see ...
-		if($this->isBusy())
+	}
+	
+	private function nextTask()
+	{
+		if(empty($this->taskBuffer))
 		{
-			if(time() - $this->busyStarted > $config->busyTimeout)
+			$tasks = $this->database->query('SELECT commandId, task FROM commands WHERE threadId=%d AND result IS NULL ORDER BY commandId ASC', $this->threadId);
+			Console::println('Incoming Tasks: '.$tasks->recordCount());
+			while( ($task = $tasks->fetchAssoc()) )
 			{
-				$this->setState(self::STATE_DEAD);
-				Dispatcher::dispatch(new Event(Event::ON_THREAD_TIMES_OUT, $this));
-				throw new ThreadTimedOutException('Thread is busy for too long!');
+				$task['task'] = unserialize($task['task']);
+				$this->taskBuffer[] = $task;
 			}
-			return;
 		}
-
-		// only continue if there are commands to be processed ...
-		if($this->getCommandCount() == 0)
+		
+		return array_shift($this->taskBuffer);
+	}
+	
+	private function isParentRunning()
+	{
+		// Unix case
+		if(stripos(PHP_OS, 'WIN') !== 0)
 		{
-			// state is now unknown, next send will require a ping
-			// to see whether process is still running.
-			if($this->getState() == self::STATE_READY)
-				$this->setState(self::STATE_UNKNOWN);
-			return;
-		}
+			exec('ps '.$this->parentId, $output, $result);
 
-		// if the thread is not ready then check
-		if($this->getState() == self::STATE_UNKNOWN)
+			if(count($output) >= 2)
+				return strpos($output[1], 'bootstrapper.php') !== false;
+			return false;
+		}
+		// Windows case
+		else
 		{
-			$this->ping();
-			return;
+			exec('tasklist /FI "PID eq '.$this->parentId.'"', $output, $result);
+
+			if(count($output) >= 4)
+				return strpos($output[3], 'php.exe') !== false;
+			return false;
 		}
-
-		// anything other than state 1 is not accepted.
-		if($this->getState() != self::STATE_READY)
-			return;
-
-		// build query ...
-		$query = '';
-		$i = 0;
-
-		foreach($this->commands as $command)
-		{
-			if(++$i > $config->chunkSize)
-				break;
-
-			$command->timeSent = microtime(true);
-			self::$db->execute(
-					'INSERT INTO cmd(proc_id, thread_id, cmd, cmd_id, param, done, datestamp) VALUES(%d, %d, %s, %d, %s, 0, %s);',
-					$this->pid, $this->id, self::$db->quote($command->name), $command->getId(),
-					self::$db->quote(base64_encode(serialize($command->param))), time());
-			$this->commandsSent[$command->id] = $command;
-			unset($this->commands[$command->id]);
-		}
-
-		// thread is busy now
-		$this->busyStarted = time();
-
-		// current state is unkown ...
-		$this->setState(self::STATE_UNKNOWN);
-	}
-
-	/**
-	 * Command completed.
-	 * @param integer $cmdId
-	 * @param mixed $result
-	 */
-	function receiveResponse($cmdId, $result)
-	{
-		if(!isset($this->commandsSent[$cmdId]))
-			return;
-
-		$command = $this->commandsSent[$cmdId];
-		$command->result = $result;
-		$callback = $command->callback;
-		unset($this->commandsSent[$cmdId]);
-
-		$this->busyStarted = $this->isBusy() ? time() : null;
-		$this->setState(self::STATE_READY);
-
-		// callback
-		if(is_callable($callback))
-			call_user_func($callback, $command);
-
-		// calculate average response time
-		self::$responseTimes[] = microtime(true) - $command->timeSent;
-		self::$responseTimeAverage = array_sum(self::$responseTimes) / count(self::$responseTimes);
-	}
-
-	/**
-	 * Sends a ping to the server to check its
-	 * State.
-	 */
-	function ping()
-	{
-		// track time needed until there's a response ...
-		$this->pingStarted = time();
-
-		$this->setState(self::STATE_PENDING);
-		$ping = new PingCommand();
-
-		// send directly without check ...
-		$this->sendCommand($ping);
-	}
-
-	/**
-	 * Restarts thread in case of a timeout or
-	 * any other purpose.
-	 */
-	function restart()
-	{
-		// tell current process to quit ...
-		$command = new QuitCommand();
-		$command->callback = array($this, 'exitDone');
-		$this->sendCommand($command);
-
-		// restart new process with new id ...
-		$this->pid = self::LaunchProcess();
-		$this->log = Logger::getLog($this->getPid(), 'threading');
-		$this->busyStarted = time();
-		$this->pingStarted = null;
-		$this->commandsSent = array();
-		$this->setState(self::STATE_UNKNOWN);
-		$this->ping();
-
-		// dispatch restart event ...
-		Dispatcher::dispatch(new Event(Event::ON_THREAD_RESTART, $this));
-
-		return $this->pid;
-	}
-
-	/**
-	 * Sets the intern state of the Thread.
-	 * @param integer $state
-	 */
-	function setState($state)
-	{
-		if($state >= self::STATE_UNKNOWN && $state <= self::STATE_DEAD)
-			$this->state = $state;
-	}
-
-	/**
-	 * @return integer
-	 */
-	function getState()
-	{
-		return $this->state;
-	}
-
-	/**
-	 * Return the current amount of Commands that
-	 * haven't been sent to the Process yet.
-	 * @return integer
-	 */
-	function getCommandCount()
-	{
-		return count($this->commands);
-	}
-
-	/**
-	 * Return the first Command waiting in the queue
-	 * and removes it.
-	 */
-	function shiftCommand()
-	{
-		return array_shift($this->commands);
-	}
-
-	/**
-	 * Return the Process' ID.
-	 * @return integer
-	 */
-	function getPid()
-	{
-		return $this->pid;
-	}
-
-	/**
-	 * Returns the ID of the Thread.
-	 * @return integer
-	 */
-	function getId()
-	{
-		return $this->id;
 	}
 }
-
-// thread does not respond to a ping, though it is not busy
-class ThreadDiedException extends \Exception {};
-
-// a thread is busy and did not respond for a given amount of seconds
-class ThreadTimedOutException extends \Exception {};
-?>

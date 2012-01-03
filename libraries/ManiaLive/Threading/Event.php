@@ -17,23 +17,25 @@ class Event extends \ManiaLive\Event\Event
 	const ON_THREAD_RESTART   = 2;
 	const ON_THREAD_DIES      = 4;
 	const ON_THREAD_TIMES_OUT = 8;
+	const ON_THREAD_KILLED    = 16;
 	
-	protected $thread;
+	private $threadId;
 	
-	function __construct($onWhat, $thread)
+	function __construct($onWhat, $threadId)
 	{
 		parent::__construct($onWhat);
-		$this->thread = $thread;
+		$this->threadId = $threadId;
 	}
 	
 	function fireDo($listener)
 	{
 		switch($this->onWhat)
 		{
-			case self::ON_THREAD_START: $listener->onThreadStart($this->thread); break;
-			case self::ON_THREAD_RESTART: $listener->onThreadRestart($this->thread); break;
-			case self::ON_THREAD_DIES: $listener->onThreadDies($this->thread); break;
-			case self::ON_THREAD_TIMES_OUT: $listener->onThreadTimesOut($this->thread); break;
+			case self::ON_THREAD_START: $listener->onThreadStart($this->threadId); break;
+			case self::ON_THREAD_RESTART: $listener->onThreadRestart($this->threadId); break;
+			case self::ON_THREAD_DIES: $listener->onThreadDies($this->threadId); break;
+			case self::ON_THREAD_TIMES_OUT: $listener->onThreadTimesOut($this->threadId); break;
+			case self::ON_THREAD_KILLED: $listener->onThreadKilled($this->threadId); break;
 		}
 	}
 }

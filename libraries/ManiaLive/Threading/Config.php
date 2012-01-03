@@ -19,9 +19,8 @@ class Config extends \ManiaLib\Utils\Singleton
 	public $phpPath;
 	public $enabled = false;
 	public $busyTimeout = 20;
-	public $pingTimeout = 2;
+	public $maxTries = 3;
 	public $sequentialTimeout = 1;
-	public $chunkSize = 10;
 
 	function __construct()
 	{
