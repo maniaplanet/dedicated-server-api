@@ -24,28 +24,6 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 		$this->result = $result;
 	}
 	
-	function fetchArray()
-	{
-		return sqlite_fetch_array($this->result);
-	}
-	
-	function fetchAssoc()
-	{
-		return sqlite_fetch_array($this->result, self::FETCH_ASSOC);
-	}
-	
-	function fetchObject($className, array $params=array() )
-	{
-		if (count($params) > 0)
-		{
-			return sqlite_fetch_object($this->result, $className, $params);
-		}
-		else
-		{
-			return sqlite_fetch_object($this->result, $className);
-		}
-	}
-	
 	function fetchScalar()
 	{
 		$row = $this->fetchRow();
@@ -57,9 +35,24 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 		return sqlite_fetch_array($this->result, self::FETCH_NUM);
 	}
 	
+	function fetchAssoc()
+	{
+		return sqlite_fetch_array($this->result, self::FETCH_ASSOC);
+	}
+	
+	function fetchArray($resultType = self::FETCH_ASSOC)
+	{
+		return sqlite_fetch_array($this->result, $resultType);
+	}
+	
 	function fetchStdObject()
 	{
 		return sqlite_fetch_object($this->result);
+	}
+	
+	function fetchObject($className, array $params=array())
+	{
+		return sqlite_fetch_object($this->result, $className, $params);
 	}
 	
 	function recordCount()
@@ -69,7 +62,7 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	
 	function recordAvailable()
 	{
-		return $this->recordCount() > 0;
+		return sqlite_num_rows($this->result) > 0;
 	}
 }
 ?>

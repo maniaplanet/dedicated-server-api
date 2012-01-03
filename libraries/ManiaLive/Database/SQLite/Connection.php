@@ -30,12 +30,12 @@ class Connection extends \ManiaLive\Database\Connection
 	function __construct($host, $username, $password, $database, $port)
 	{
 		// create the data subfolder in root directory ...
-		$datapath = APP_ROOT . 'data';
-		if (!file_exists($datapath))
-		mkdir($datapath);
+		$datapath = APP_ROOT.'data';
+		if(!file_exists($datapath))
+			mkdir($datapath);
 
 		// move the database file in data subfolder ...
-		$this->filename = $datapath.'/'.$host . '.db';
+		$this->filename = $datapath.'/'.$host.'.db';
 
 		// create new connection ...
 		$this->connection = sqlite_open($this->filename);
@@ -45,8 +45,6 @@ class Connection extends \ManiaLive\Database\Connection
 		{
 			throw new ConnectionException;
 		}
-
-		// don't need to set utf8 ...
 	}
 
 	function getHandle()
@@ -140,9 +138,9 @@ class Connection extends \ManiaLive\Database\Connection
 		throw new NotSupportedException;
 	}
 
-	function tableExists($table_name)
+	function tableExists($tableName)
 	{
-		$table = $this->query("SELECT name FROM sqlite_master WHERE name='" . $table_name . "' AND type='table'");
+		$table = $this->query('SELECT name FROM sqlite_master WHERE name='.$this->quote($tableName).' AND type=\'table\'');
 		return ($table->recordCount() > 0);
 	}
 }

@@ -213,13 +213,9 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 		return $this->database;
 	}
 
-	function tableExists($table_name)
+	function tableExists($tableName)
 	{
-		if(!$this->isConnected())
-		{
-			$this->connect($this->database);
-		}
-		$table = $this->query("SHOW TABLES LIKE '".$table_name."'");
+		$table = $this->query('SHOW TABLES LIKE '.$this->quote($tableName));
 		return ($table->recordCount() > 0);
 	}
 }

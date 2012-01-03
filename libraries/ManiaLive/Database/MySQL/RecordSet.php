@@ -24,6 +24,12 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 		$this->result = $result;
 	}
 	
+	function fetchScalar()
+	{
+		$row = mysql_fetch_row($this->result);
+		return $row[0];
+	}
+	
 	function fetchRow()
 	{
 		return mysql_fetch_row($this->result);
@@ -44,22 +50,9 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 		return mysql_fetch_object($this->result);
 	}
 	
-	function fetchObject($className, array $params=array() )
+	function fetchObject($className, array $params=array())
 	{
-		if($params)
-		{
-			return mysql_fetch_object($this->result, $className, $params);
-		}	
-		else
-		{
-			return mysql_fetch_object($this->result, $className);
-		}	
-	}
-	
-	function fetchScalar()
-	{
-		$row = mysql_fetch_row($this->result);
-		return $row[0];
+		return mysql_fetch_object($this->result, $className, $params);
 	}
 	
 	function recordCount()

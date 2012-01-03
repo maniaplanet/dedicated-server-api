@@ -15,6 +15,8 @@ interface RecordSet
 {
 	function __construct($result);
 	
+	function fetchScalar();
+	
 	/**
 	 * Get a result row as an enumerated array
 	 * Returns an numerical array of strings that corresponds to the fetched row
@@ -58,8 +60,6 @@ interface RecordSet
 	function recordCount();
 	
 	function recordAvailable();
-	
-	function fetchScalar();
 }
 
 ?>
