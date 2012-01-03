@@ -14,8 +14,6 @@ namespace ManiaLive\PluginHandler;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
-use ManiaLive\Cache\Listener as CacheListener;
-use ManiaLive\Cache\Event as CacheEvent;
 use ManiaLive\Data\Listener as PlayerListener;
 use ManiaLive\Data\Event as PlayerEvent;
 use ManiaLive\DedicatedApi\Callback\Adapter as ServerAdapter;
@@ -27,8 +25,6 @@ use ManiaLive\PluginHandler\Event as PluginEvent;
 use ManiaLive\Threading\Listener as ThreadListener;
 use ManiaLive\Threading\Event as ThreadEvent;
 
-use ManiaLive\Cache\Entry;
-use ManiaLive\Cache\Cache;
 use ManiaLive\Data\Storage;
 use ManiaLive\Database\Connection as DbConnection;
 use ManiaLive\DedicatedApi\Connection;
@@ -47,7 +43,7 @@ use ManiaLive\Utilities\Logger;
  * 
  * @author Florian Schnell
  */
-abstract class Plugin extends ServerAdapter implements ThreadListener, TickListener, AppListener, PlayerListener, PluginListener, CacheListener
+abstract class Plugin extends ServerAdapter implements ThreadListener, TickListener, AppListener, PlayerListener, PluginListener
 {
 	/**
 	 * @var string
@@ -78,7 +74,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	private $eventsServer = 0;
 	private $eventsStorage = 0;
 	private $eventsPlugins = 0;
-	private $eventsCaching = 0;
 	/**
 	 * @var ManiaLive\PluginHandler\PluginHandler
 	 */
@@ -87,14 +82,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	 * @var array[\ReflectionMethod]
 	 */
 	private $methods;
-	/**
-	 * @var \ManiaLive\Threading\ThreadPool
-	 */
-	private $threadPool;
-	/**
-	 * @var integer
-	 */
-	private $threadId;
 	/**
 	 * @var array[\ManiaLive\Features\ChatCommand\Command]
 	 */
@@ -126,8 +113,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		$this->connection = Connection::getInstance();
 		$this->pluginHandler = PluginHandler::getInstance();
 		$this->storage = Storage::getInstance();
-		$this->threadPool = \ManiaLive\Threading\ThreadPool::getInstance();
-		$this->threadId = false;
 		$this->chatCommands = array();
 	}
 
@@ -256,8 +241,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		$methods = array();
 		foreach($this->methods as $name => $method)
 		{
-			$info = array
-				(
+			$info = array(
 				'name' => $name,
 				'parameter_count' => $method->getNumberOfParameters(),
 				'parameters' => array()
@@ -473,121 +457,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	}
 
 	/**
-	 * Start listen for cache events like
-	 * onStore, onModify and onDestroy
-	 */
-	final protected function enableCachingEvents($events = CacheEvent::ALL)
-	{
-		$this->restrictIfUnloaded();
-		
-		Dispatcher::register(CacheEvent::getClass(), $this, $events & ~$this->eventsCaching);
-		$this->eventsCaching |= $events;
-	}
-
-	/**
-	 * Stop listen for cache events.
-	 */
-	final protected function disableCachingEvents($events = CacheEvent::ALL)
-	{
-		$this->restrictIfUnloaded();
-		
-		Dispatcher::unregister(CacheEvent::getClass(), $this, $events & $this->eventsCaching);
-		$this->eventsCaching &= ~$events;
-	}
-
-	/**
-	 * @param string $key
-	 * @param mixed $value
-	 * @param integer $timeToLive
-	 */
-	final protected function store($key, $value, $timeToLive = null)
-	{
-		return Cache::storeInModuleCache($this, $key, $value, $timeToLive);
-	}
-
-	/**
-	 * Fetches data from the cache.
-	 * @param string $key
-	 */
-	final protected function fetch($key)
-	{
-		return Cache::fetchFromModuleCache($this, $key);
-	}
-
-	/**
-	 * Checks whether there is a cache entry with
-	 * the given key.
-	 * @param string $pluginId
-	 * @param string $key
-	 * @return bool If the plugin is not found it will return NULL
-	 */
-	final protected function exists($key)
-	{
-		return Cache::existsInModuleCache($this, $key);
-	}
-
-	/**
-	 * Creates a new Thread.
-	 * @return integer
-	 */
-	protected function createThread()
-	{
-		if($this->threadId === false)
-			$this->threadId = $this->threadPool->createThread();
-		return $this->threadId;
-	}
-
-	/**
-	 * Gets the thread that belongs to this
-	 * plugin and returns its id.
-	 * @return integer
-	 */
-	function getThreadId()
-	{
-		return $this->threadId;
-	}
-
-	/**
-	 * Kills the plugin's thread.
-	 * @return bool
-	 */
-	function killThread()
-	{
-		if($this->threadId !== false)
-			return $this->threadPool->removeThread($this->threadId);
-		return false;
-	}
-
-	/**
-	 * Assigns work only to the thread that has been created by this plugin.
-	 * @param \ManiaLive\Threading\Runnable $work
-	 */
-	protected function sendWorkToOwnThread(\ManiaLive\Threading\Runnable $work, $callback = null)
-	{
-		if($callback != null)
-			$callback = array($this, $callback);
-		if($this->threadId !== false)
-			$this->threadPool->addCommand(new \ManiaLive\Threading\Commands\RunCommand($work, $callback), $this->threadId);
-	}
-
-	/**
-	 * Assign work to a thread.
-	 * @param \ManiaLive\Threading\Runnable $work
-	 */
-	protected function sendWorkToThread(\ManiaLive\Threading\Runnable $work, $callback = null)
-	{
-		$command = null;
-		if($callback != null)
-			$callback = array($this, $callback);
-		if($this->threadPool->getThreadCount() > 0)
-		{
-			$command = new \ManiaLive\Threading\Commands\RunCommand($work, $callback);
-			$this->threadPool->addCommand($command);
-		}
-		return $command;
-	}
-
-	/**
 	 * Registers a chatcommand at the Interpreter.
 	 * @param string $name
 	 * @param integer $parameterCount
@@ -663,7 +532,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		$this->disableThreadingEvents();
 		$this->disableTickerEvent();
 		$this->disablePluginEvents();
-		$this->disableCachingEvents();
 
 		// unregister chat commands
 		$this->unregisterAllChatCommands();
@@ -713,10 +581,11 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	function onRulesScriptCallback($param1, $param2) {}
 
 	// threading events
-	function onThreadDies($thread) {}
-	function onThreadRestart($thread) {}
-	function onThreadStart($thread) {}
-	function onThreadTimesOut($thread) {}
+	function onThreadDies($threadId) {}
+	function onThreadRestart($threadId) {}
+	function onThreadStart($threadId) {}
+	function onThreadTimesOut($threadId) {}
+	function onThreadKilled($threadId) {}
 
 	// ticker event
 	function onTick() {}
@@ -731,10 +600,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	// plugin events
 	function onPluginLoaded($pluginId) {}
 	function onPluginUnloaded($pluginId) {}
-	
-	// caching events
-	function onStore(Entry $entry) {}
-	function onEvict(Entry $entry) {}
 }
 
 ?>
