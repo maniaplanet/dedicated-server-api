@@ -36,6 +36,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		{
 			pcntl_signal(SIGTERM, array($this, 'kill'));  
 			pcntl_signal(SIGINT, array($this, 'kill'));
+			declare(ticks=1);
 		}
 		
 		try 
