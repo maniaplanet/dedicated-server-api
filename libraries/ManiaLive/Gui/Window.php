@@ -21,8 +21,7 @@ use ManiaLive\Features\Tick\Listener as TickListener;
  */
 abstract class Window extends Container implements TickListener
 {
-	// Don't ask why these sizes, there's something weird ingame >.<
-	const Z_MIN = -100;
+	const Z_MIN = -60;
 	const Z_MAXIMIZED = 0;
 	const Z_MODAL = 25;
 	const Z_MAX = 50;

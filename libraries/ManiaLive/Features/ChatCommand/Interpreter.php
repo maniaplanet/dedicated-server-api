@@ -154,7 +154,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		
 		$cmdAndArgs = explode(' ', $text, 2);
 		$command = substr($cmdAndArgs[0], 1);
-		$parameters = count($cmdAndArgs) > 1 ? $cmdAndArgs[1] : null;
+		$parameters = count($cmdAndArgs) > 1 ? $cmdAndArgs[1] : '';
 		
 		if($command === 'version')
 			return;
@@ -168,7 +168,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 					$login, true);
 		else
 		{
-			if($parameters)
+			if(strlen($parameters))
 			{
 				$matches = array();
 				preg_match_all('/(?!\\\\)"((?:\\\\"|[^"])+)"?|([^\s]+)/', $parameters, $matches);
