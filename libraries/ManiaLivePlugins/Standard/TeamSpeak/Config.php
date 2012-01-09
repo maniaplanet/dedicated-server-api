@@ -12,7 +12,7 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak;
 
-use ManiaLib\Utils\TMStrings;
+use ManiaLib\Utils\Formatting;
 
 /**
  * @method \ManiaLivePlugins\Standard\TeamSpeak\Config getInstance()
@@ -38,7 +38,7 @@ class Config extends \ManiaLib\Utils\Singleton
 	function getConnectUrl($channel, $login)
 	{
 		$player = \ManiaLive\Data\Storage::getInstance()->getPlayerObject($login);
-		$nickname = substr(TMStrings::stripAllTmStyle($player->nickName), 0, 27 - strlen($login)).' ('.$login.')';
+		$nickname = substr(Formatting::stripStyles($player->nickName), 0, 27 - strlen($login)).' ('.$login.')';
 		
 		$queryArgs = 'nickname='.rawurlencode($nickname);
 		if($channel || ($channel = $this->getPlayerDefaultChannel($player)) )

@@ -12,7 +12,7 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak;
 
-use ManiaLib\Utils\TMStrings;
+use ManiaLib\Utils\Formatting;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Gui\Group;
 use ManiaLive\Application\Event as AppEvent;
@@ -47,7 +47,7 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 		if($config->useLangChannels || !$config->listAllChannels)
 			$config->useDedicatedChannel = true;
 		if(!$config->dedicatedChannelName)
-			$config->dedicatedChannelName = substr('ManiaPlanet> '.TMStrings::stripAllTmStyle($this->storage->server->name), 0, 40);
+			$config->dedicatedChannelName = substr('ManiaPlanet> '.Formatting::stripStyles($this->storage->server->name), 0, 40);
 		
 		$this->tsConnection = Connection::getInstance();
 		$this->tsConnection->open();

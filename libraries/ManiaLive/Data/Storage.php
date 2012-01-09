@@ -11,7 +11,7 @@
 
 namespace ManiaLive\Data;
 
-use ManiaLib\Utils\TMStrings;
+use ManiaLib\Utils\Formatting;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
@@ -29,8 +29,8 @@ use ManiaLive\Application\CriticalEventException;
 /**
  * Contain every important data about the server
  */
-class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppListener {
-
+class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppListener
+{
 	private $disconnectedPlayers = array();
 	/**
 	 * Player's checkpoints
@@ -129,7 +129,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		$this->gameInfos = $connection->getCurrentGameInfo();
 		$this->serverLogin = $connection->getMainServerPlayerInfo()->login;
 
-		Console::printlnFormatted('Current map: ' . TMStrings::stripAllTmStyle($this->currentMap->name));
+		Console::printlnFormatted('Current map: '.Formatting::stripStyles($this->currentMap->name));
 	}
 
 	function onPostLoop()
@@ -215,7 +215,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 		$oldMap = $this->currentMap;
 		$this->currentMap = Map::fromArray($map);
-		Console::printlnFormatted('Map change: ' . TMStrings::stripAllTmStyle($oldMap->name) . ' -> ' . TMStrings::stripAllTmStyle($this->currentMap->name));
+		Console::printlnFormatted('Map change: '.Formatting::stripStyles($oldMap->name).' -> '.Formatting::stripStyles($this->currentMap->name));
 
 		$this->resetScores();
 
