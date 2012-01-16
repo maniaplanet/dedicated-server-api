@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -40,7 +40,7 @@ use ManiaLive\Utilities\Logger;
  * dependency handling and the possibility of Plugin communication.
  * To have a Plugin loaded, just attach it to the pluginhandler.xml which is
  * located in the config folder.
- * 
+ *
  * @author Florian Schnell
  */
 abstract class Plugin extends ServerAdapter implements ThreadListener, TickListener, AppListener, PlayerListener, PluginListener
@@ -311,7 +311,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 				$config->port
 		);
 	}
-	
+
 	final protected function disableDatabase()
 	{
 		$this->db = null;
@@ -324,7 +324,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function enableApplicationEvents($events = AppEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::register(AppEvent::getClass(), $this, $events & ~$this->eventsApplication);
 		$this->eventsApplication |= $events;
 	}
@@ -335,7 +335,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function disableApplicationEvents($events = AppEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::unregister(AppEvent::getClass(), $this, $events & $this->eventsApplication);
 		$this->eventsApplication &= ~$events;
 	}
@@ -346,7 +346,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function enableTickerEvent()
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::register(TickEvent::getClass(), $this);
 		$this->eventsTick = true;
 	}
@@ -357,7 +357,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function disableTickerEvent()
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::unregister(TickEvent::getClass(), $this);
 		$this->eventsTick = false;
 	}
@@ -371,7 +371,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function enableDedicatedEvents($events = ServerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::register(ServerEvent::getClass(), $this, $events & ~$this->eventsServer);
 		$this->eventsServer |= $events;
 	}
@@ -382,7 +382,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function disableDedicatedEvents($events = ServerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::unregister(ServerEvent::getClass(), $this, $events & $this->eventsServer);
 		$this->eventsServer &= ~$events;
 	}
@@ -394,7 +394,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function enableStorageEvents($events = PlayerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::register(PlayerEvent::getClass(), $this, $events & ~$this->eventsStorage);
 		$this->eventsStorage |= $events;
 	}
@@ -405,7 +405,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function disableStorageEvents($events = PlayerEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::unregister(PlayerEvent::getClass(), $this, $events & $this->eventsStorage);
 		$this->eventsStorage &= ~$events;
 	}
@@ -417,7 +417,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function enableThreadingEvents($events = ThreadEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::register(ThreadEvent::getClass(), $this, $events & ~$this->eventsThreading);
 		$this->eventsThreading |= $events;
 	}
@@ -428,7 +428,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function disableThreadingEvents($events = ThreadEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::unregister(ThreadEvent::getClass(), $this, $events & $this->eventsThreading);
 		$this->eventsThreading &= ~$events;
 	}
@@ -440,7 +440,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function enablePluginEvents($events = PluginEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::register(PluginEvent::getClass(), $this, $events & ~$this->eventsPlugins);
 		$this->eventsPlugins |= $events;
 	}
@@ -451,7 +451,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	final protected function disablePluginEvents($events = PluginEvent::ALL)
 	{
 		$this->restrictIfUnloaded();
-		
+
 		Dispatcher::unregister(PluginEvent::getClass(), $this, $events & $this->eventsPlugins);
 		$this->eventsPlugins &= ~$events;
 	}
@@ -500,7 +500,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 
 	/**
 	 * Write message onto the commandline.
-	 * Prefix with Plugin's name and 
+	 * Prefix with Plugin's name and
 	 * @param string $text
 	 */
 	final protected function writeConsole($text)
@@ -537,7 +537,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		$this->unregisterAllChatCommands();
 
 		// kill the plugin's thread!
-		$this->killThread();
+//		$this->killThread();
 
 		$this->threadpool = null;
 		$this->storage = null;
@@ -553,7 +553,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	function onPreLoop() {}
 	function onPostLoop() {}
 	function onTerminate() {}
-	
+
 	// dedicated callbacks
 	function onPlayerConnect($login, $isSpectator) {}
 	function onPlayerDisconnect($login) {}
