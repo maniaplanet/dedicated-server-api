@@ -159,12 +159,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array((bool) $enable), $multicall);
 	}
-	
+
 	/**
 	 * Define the wanted api.
 	 * @param string $version
 	 * @param bool $multicall
-	 * @return bool 
+	 * @return bool
 	 */
 	protected function setApiVersion($version, $multicall = false)
 	{
@@ -700,7 +700,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
 			else
 				$params[] = $login;
-			
+
 			$method .= 'ToLogin';
 		}
 
@@ -733,7 +733,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 				throw new InvalidArgumentException('players = '.print_r($players,true));
 			else
 				$params[] = $login;
-			
+
 			$method .= 'ToLogin';
 		}
 
@@ -774,7 +774,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 				throw new InvalidArgumentException('players = '.print_r($players,true));
 			else
 				$params[] = $login;
-			
+
 			$method .= 'ToLogin';
 		}
 
@@ -1698,7 +1698,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
 	 * Allow clients to download maps from the server.
 	 * @param bool $allow
@@ -1925,14 +1925,34 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		if (!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment', $options)
 		|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
-		|| !array_key_exists('NextMaxPlayers', $options) || !array_key_exists('NextMaxSpectators', $options)
-		|| !array_key_exists('IsP2PUpload', $options) || !array_key_exists('IsP2PDownload', $options)
-		|| !array_key_exists('NextLadderMode', $options) || !array_key_exists('NextVehicleNetQuality', $options)
 		|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
-		|| !array_key_exists('AllowMapDownload', $options) || !array_key_exists('AutoSaveReplays', $options)
 		)
 		{
 			throw  new InvalidArgumentException('options = '.print_r($options,true));
+		}
+
+		if(array_key_exists('IsP2PUpload') || array_key_exists('IsP2PDownload'))
+		{
+			if(!array_key_exists('IsP2PUpload') || !array_key_exists('IsP2PDownload'))
+			{
+				throw  new InvalidArgumentException('options = '.print_r($options,true));
+			}
+		}
+
+		if(array_key_exists('NextMaxPlayer') || array_key_exists('NextMaxSpectator'))
+		{
+			if(!array_key_exists('NextMaxPlayer') || !array_key_exists('NextMaxSpectator'))
+			{
+				throw  new InvalidArgumentException('options = '.print_r($options,true));
+			}
+		}
+
+		if(array_key_exists('RefereePassword') || array_key_exists('RefereeMode'))
+		{
+			if(!array_key_exists('RefereePassword') || !array_key_exists('RefereeMode'))
+			{
+				throw  new InvalidArgumentException('options = '.print_r($options,true));
+			}
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($options), $multicall);
@@ -2289,7 +2309,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 	    return $this->execute(ucfirst(__FUNCTION__), array($name), $multicall);
 	}
-	
+
 	/**
 	 * Restarts the map, with an optional boolean parameter DontClearCupScores (only available in cup mode).
 	 * @param bool $dontClearCupScores
@@ -2934,7 +2954,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
 	 * Sets the number of rounds before going to next map in Cup mode.
 	 * Requires a map restart to be taken into account.
@@ -3020,7 +3040,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
 	 * Returns the current map index in the selection, or -1 if the map is no longer in the selection.
 	 * @return int
@@ -3694,14 +3714,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function startServerInternet(array $ids, $multicall = false)
+	function startServerInternet($multicall = false)
 	{
-		if (!is_array($ids) && !array_key_exists('Login', $ids) && !array_key_exists('Password', $ids))
-		{
-			throw new InvalidArgumentException('ids = '.print_r($ids,true));
-		}
-
-		return $this->execute(ucfirst(__FUNCTION__), array($ids), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
 	}
 
 	/**
@@ -3749,7 +3764,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
 	 * Returns the login of the given player
 	 * @param mixed $player Player or string
@@ -3763,7 +3778,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			return $player->login;
 		return null;
 	}
-	
+
 	/**
 	 * Returns logins of given players
 	 * @param mixed $player Player or string or array
@@ -3781,7 +3796,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 				else
 					return null;
 			}
-			
+
 			return implode(',', $logins);
 		}
 		return $this->getLogin($players);
