@@ -16,6 +16,11 @@ use ManiaLive\Utilities\Logger;
 
 class ChatLogger extends \ManiaLive\PluginHandler\Plugin
 {
+	function onInit()
+	{
+		$this->setVersion('1');
+	}
+	
 	function onLoad()
 	{
 		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CHAT);

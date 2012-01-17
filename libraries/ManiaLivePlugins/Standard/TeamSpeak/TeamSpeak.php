@@ -38,7 +38,7 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	
 	function onInit()
 	{
-		$this->setVersion('0.1');
+		$this->setVersion('1');
 	}
 	
 	function onLoad()

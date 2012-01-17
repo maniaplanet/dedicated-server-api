@@ -46,7 +46,7 @@ class Plugin extends \ManiaLive\Gui\Control
 		
 		$this->loadAction = $this->createAction(array($manager, 'loadPlugin'), $pluginClass);
 		$this->unloadAction = $this->createAction(array($manager, 'unloadPlugin'), $pluginClass);
-		$this->setIsLoaded(PluginHandler::getInstance()->isPluginLoaded($pluginName));
+		$this->setIsLoaded(PluginHandler::getInstance()->isLoaded($pluginName));
 	}
 	
 	function setIsLoaded($isLoaded)

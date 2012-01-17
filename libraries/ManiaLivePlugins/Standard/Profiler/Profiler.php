@@ -32,6 +32,11 @@ class Profiler extends \ManiaLive\PluginHandler\Plugin
 	
 	public static $me;
 	
+	function onInit()
+	{
+		$this->setVersion('0.5');
+	}
+	
 	function onLoad()
 	{
 		$this->isProfiling = false;

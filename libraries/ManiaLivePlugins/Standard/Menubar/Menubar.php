@@ -27,7 +27,7 @@ class Menubar extends \ManiaLive\PluginHandler\Plugin
 	public function onInit()
 	{
 		$this->menu = array();
-		$this->setVersion(1.1);
+		$this->setVersion('1.1');
 		$this->setPublicMethod('addButton');
 		$this->setPublicMethod('initMenu');
 	}

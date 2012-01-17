@@ -21,7 +21,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 {
 	function onInit()
 	{
-		$this->setVersion(1);
+		$this->setVersion('1');
 	}
 	
 	function onLoad()

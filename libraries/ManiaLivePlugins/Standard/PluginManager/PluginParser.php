@@ -15,7 +15,6 @@ class PluginParser implements \ManiaLive\Threading\Runnable
 {
 	function run()
 	{
-		sleep(10);
 		$availablePlugins = array();
 
 		foreach($this->searchFolderForPlugin(APP_ROOT.'libraries'.DIRECTORY_SEPARATOR.'ManiaLivePlugins') as $plugin)

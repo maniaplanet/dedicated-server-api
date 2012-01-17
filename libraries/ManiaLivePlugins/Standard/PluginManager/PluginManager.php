@@ -27,7 +27,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 
 	function onInit()
 	{
-		$this->setVersion(0.5);
+		$this->setVersion(1);
 	}
 
 	function onLoad()
@@ -58,7 +58,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 		
 		$this->registerChatCommand('pluginManager', 'openWindow', 0, true, AdminGroup::get());
 		$this->setPublicMethod('openWindow');
-		if($this->isPluginLoaded('Standard\Menubar', 1.0))
+		if($this->isPluginLoaded('Standard\Menubar', 1))
 			$this->buildMenu();
 	}
 

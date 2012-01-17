@@ -23,7 +23,7 @@ class Manager extends \ManiaLive\Gui\ManagedWindow
 	
 	static function AddPlugin($pluginClass, $manager)
 	{
-		$pluginId = PluginHandler::getPluginIdFromClass($pluginClass);
+		$pluginId = implode('\\', array_slice(explode('\\', $pluginClass), 1, 2));
 		if($pluginId == 'Standard\PluginManager' || isset(self::$plugins[$pluginId]))
 			return;
 		
