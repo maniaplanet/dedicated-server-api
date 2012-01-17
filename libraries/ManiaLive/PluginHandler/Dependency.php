@@ -65,11 +65,7 @@ class DependencyNotFoundException extends DependencyException
 	 */
 	function __construct($plugin, $dependency)
 	{
-		// build message ...
-		$message = 'Plugin "' . $plugin->getId() . '" needs "' . $dependency->getPluginId();
-		$message .= '" to be installed!';
-		
-		parent::__construct($message);
+		parent::__construct('Plugin "'.$plugin->getId().'" needs "'.$dependency->getPluginId().'" to be installed!');
 	}
 }
 
@@ -81,11 +77,7 @@ class DependencyTooOldException extends DependencyException
 	 */
 	function __construct($plugin, $dependency)
 	{
-		// build message ...
-		$message = 'Plugin "' . $plugin->getId() . '" needs "' . $dependency->getPluginId();
-		$message .= '" to be at least version ' . $dependency->getMinVersion() . '!';
-		
-		parent::__construct($message);
+		parent::__construct('Plugin "'.$plugin->getId().'" needs "'.$dependency->getPluginId().'" to be at least version '.$dependency->getMinVersion().'!');
 	}
 }
 
@@ -97,11 +89,7 @@ class DependencyTooNewException extends DependencyException
 	 */
 	function __construct($plugin, $dependency)
 	{
-		// build message ...
-		$message = 'Plugin "' . $plugin->getId() . '" needs an older version of "' . $dependency->getPluginId();
-		$message .= '" to be installed, ' . $dependency->getMaxVersion() . ' at highest!';
-		
-		parent::__construct($message);
+		parent::__construct('Plugin "'.$plugin->getId().'" needs an older version of "'.$dependency->getPluginId().'" to be installed, '.$dependency->getMaxVersion().' at highest!');
 	}
 }
 ?>

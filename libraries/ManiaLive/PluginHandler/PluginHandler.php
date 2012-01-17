@@ -15,198 +15,135 @@ use ManiaLive\Event\Dispatcher;
 use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
 use ManiaLive\Application\ErrorHandling;
+use ManiaLive\Data\Storage;
+use ManiaLive\DedicatedApi\Callback\Listener as ServerListener;
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
+use ManiaLive\DedicatedApi\Structures\Status;
 use ManiaLive\Utilities\Console;
 
 /**
  * Load the plugins.
  * Manages dependencies and provides an interface to Plugins to communicate between each other.
- *
- * @author Florian Schnell
  */
-class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListener
+final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListener, ServerListener
 {
-	/**
-	 * @var array[Plugins]
-	 */
-	protected $plugins;
+	private $loadedPlugins = array();
+	private $delayedPlugins = array();
 
-	static function getClassFromPluginId($pluginId)
+	protected function __construct()
 	{
-		$parts = explode('\\', $pluginId);
-		return '\\ManiaLivePlugins\\'.$pluginId.'\\'.end($parts);
-	}
-
-	static function getPluginIdFromClass($class)
-	{
-		return implode('\\', array_slice(explode('\\', $class), -3, 2));
-	}
-
-	final function __construct()
-	{
-		$this->plugins = array();
 		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT);
+		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_SERVER_START | ServerEvent::ON_SERVER_STOP);
 	}
-
-	final function addPlugin($classname)
+	
+	function load($pluginId)
 	{
-		$plugin = $this->loadPlugin($classname);
-
 		try
 		{
-			$this->checkPluginDependency($plugin);
-			$plugin->onLoad();
-			Dispatcher::dispatch(new Event(Event::ON_PLUGIN_LOADED, $plugin->getId()));
+			if( !($plugin = $this->register($pluginId)) )
+				return false;
+			
+			$this->prepare($plugin);
+			$plugin->onReady();
+			return true;
 		}
 		catch(\Exception $e)
 		{
-			$this->unloadPlugin($classname);
+			$this->unload($pluginId);
 			ErrorHandling::processRuntimeException($e);
 			return false;
 		}
+	}
 
-		$plugin->onReady();
-		return true;
+	/**
+	 * Checks whether a specific Plugin has been loaded.
+	 * @param int $pluginId
+	 * @return bool Whether the Plugin is loaded or not.
+	 */
+	function isLoaded($pluginId, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
+	{
+		return isset($this->loadedPlugins[$pluginId])
+			&& ($min == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $min) >= 0)
+			&& ($max == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $max) <= 0);
+	}
+
+	/**
+	 * @return array[string]
+	 */
+	function getLoadedPluginsList()
+	{
+		return array_keys($this->loadedPlugins);
 	}
 	
-	final function deletePlugin($className)
+	function unload($pluginId)
 	{
-		$this->unloadPlugin($className);
-	}
-
-	/**
-	 * Retrieves a Plugin from the intern maintained list.
-	 * @param string $name
-	 * @return \ManiaLive\PluginHandler\Plugin
-	 */
-	final private function getPlugin($pluginId)
-	{
-		return (isset($this->plugins[$pluginId]) ? $this->plugins[$pluginId] : null);
-	}
-
-	/**
-	 * Tries to register the Plugin in the intern list.
-	 * Success depends on whether a Plugin with the current name has been registered yet.
-	 * @param \ManiaLive\Application\Plugin $plugin
-	 * @return bool
-	 */
-	final private function registerPlugin(Plugin $plugin)
-	{
-		$id = $plugin->getId();
-		if(!isset($this->plugins[$id]))
+		if(isset($this->loadedPlugins[$pluginId]))
 		{
-			$this->plugins[$id] = $plugin;
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Process of checking all plugin dependencies
-	 * and initializing the plugins.
-	 * @throws Exception
-	 */
-	final private function loadPlugins()
-	{
-		Console::println('[PluginHandler] Start plugin load process:');
-
-		foreach(\ManiaLive\Application\Config::getInstance()->plugins as $pluginId)
-		{
-			$className = self::getClassFromPluginId($pluginId);
-
-			if(!class_exists($className))
-				$className = '\\ManiaLivePlugins\\'.$pluginId.'\\Plugin';
-
-			$this->loadPlugin($className);
-		}
-
-		foreach($this->plugins as $id => $plugin)
-		{
-			try
-			{
-				$this->checkPluginDependency($plugin);
-				$plugin->onLoad();
-				Dispatcher::dispatch(new Event(Event::ON_PLUGIN_LOADED, $id));
-			}
-			catch(\Exception $e)
-			{
-				$this->unloadPlugin(self::getClassFromPluginId($id));
-				ErrorHandling::processRuntimeException($e);
-			}
-		}
-
-		foreach($this->plugins as $plugin)
-			$plugin->onReady();
-
-		Console::println('[PluginHandler] All registered plugins have been loaded');
-	}
-
-	final private function loadPlugin($className)
-	{
-		// check whether plugin could be loaded ...
-		if(class_exists($className))
-		{
-			$plugin = new $className();
-			
-			Console::println('[PluginHandler] is loading '.$plugin->getId().' ...');
-			$plugin->onInit();
-
-			if(!$this->registerPlugin($plugin))
-				throw new Exception("The plugin '{$plugin->getId()}' could not be registered, maybe there is a naming conflict!");
-
-			return $plugin;
-		}
-		else
-		{
-			throw new Exception("Could not load Plugin '$className' !");
-		}
-	}
-
-	final private function unloadPlugin($className)
-	{
-		$pluginId = self::getPluginIdFromClass($className);
-		if(isset($this->plugins[$pluginId]))
-		{
-			foreach($this->plugins as $plugin)
-			{
+			foreach($this->loadedPlugins as $plugin)
 				foreach($plugin->getDependencies() as $dependency)
-				{
 					if($dependency->getPluginId() == $pluginId)
-						throw new Exception('The plugin '.$className.' cannot be unloaded. It still has dependencies');
-				}
-			}
-			$this->plugins[$pluginId]->onUnload();
-			unset($this->plugins[$pluginId]);
+						throw new Exception('Plugin "'.$pluginId.'" cannot be unloaded. It is required by other plugins.');
+			
+			$this->loadedPlugins[$pluginId]->onUnload();
+			unset($this->loadedPlugins[$pluginId]);
 			
 			Dispatcher::dispatch(new Event(Event::ON_PLUGIN_UNLOADED, $pluginId));
 		}
+		else if(isset($this->delayedPlugins[$pluginId]))
+			unset($this->delayedPlugins[$pluginId]);
 	}
+	
+	private function register($pluginId)
+	{
+		if(isset($this->loadedPlugins[$pluginId]) || isset($this->delayedPlugins[$pluginId]))
+			throw new Exception('Plugin "'.$pluginId.'" cannot be loaded, maybe there is a naming conflict!');
+		
+		$parts = explode('\\', $pluginId);
+		$className = '\\ManiaLivePlugins\\'.$pluginId.'\\'.end($parts);
+		if(!class_exists($className))
+		{
+			$className = '\\ManiaLivePlugins\\'.$pluginId.'\\Plugin';
+			if(!class_exists($className))
+				throw new Exception('Plugin "'.$pluginId.'" not found!');
+		}
 
-	/**
-	 * Checks the dependencies for one plugin.
-	 * @param Plugin $plugin The Plugin to check for dependencies.
-	 * @throws DependencyTooOldException
-	 * @throws DependencyTooNewException
-	 * @throws DependencyNotFoundException
-	 */
-	final private function checkPluginDependency(Plugin $plugin)
+		$plugin = new $className();
+		$plugin->onInit();
+		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING || $plugin instanceof WaitingCompliant)
+		{
+			Console::println('[PluginHandler] Loading plugin "'.$pluginId.'"...');
+			return $this->loadedPlugins[$pluginId] = $plugin;
+		}
+		Console::println('[PluginHandler] Server is waiting, plugin "'.$pluginId.'" will be loaded later...');
+		$this->delayedPlugins[$pluginId] = $plugin;
+		return null;
+	}
+	
+	private function prepare($plugin)
+	{
+		$this->checkDependencies($plugin);
+		$plugin->onLoad();
+		Dispatcher::dispatch(new Event(Event::ON_PLUGIN_LOADED, $plugin->getId()));
+	}
+	
+	private function checkDependencies($plugin)
 	{
 		foreach($plugin->getDependencies() as $dependency)
 		{
 			// look whether dependent plugin exists at all
-			$depPluginName = $dependency->getPluginId();
-			if(isset($this->plugins[$depPluginName]))
+			$name = $dependency->getPluginId();
+			if(isset($this->loadedPlugins[$name]))
 			{
-				$dependentPlugin = $this->plugins[$depPluginName];
+				$requiredPlugin = $this->loadedPlugins[$name];
 
-				if($dependency->getMinVersion() != Dependency::NO_LIMIT && version_compare($dependentPlugin->getVersion(), $dependency->getMinVersion()) < 0)
+				if($dependency->getMinVersion() != Dependency::NO_LIMIT && version_compare($requiredPlugin->getVersion(), $dependency->getMinVersion()) < 0)
 					throw new DependencyTooOldException($plugin, $dependency);
-				if($dependency->getMaxVersion() != Dependency::NO_LIMIT && version_compare($dependentPlugin->getVersion(), $dependency->getMaxVersion()) > 0)
+				if($dependency->getMaxVersion() != Dependency::NO_LIMIT && version_compare($requiredPlugin->getVersion(), $dependency->getMaxVersion()) > 0)
 					throw new DependencyTooNewException($plugin, $dependency);
 			}
 
 			// special case, check for core.
-			elseif($depPluginName == 'ManiaLive')
+			else if($name == 'ManiaLive')
 			{
 				if($dependency->getMinVersion() != Dependency::NO_LIMIT && version_compare(\ManiaLiveApplication\Version, $dependency->getMinVersion()) < 0)
 					throw new DependencyTooOldException($plugin, $dependency);
@@ -222,69 +159,128 @@ class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListener
 
 	/**
 	 * Get a list of the public methods for a registered Plugin.
-	 * @param int $pluginId Id of the Plugin.
+	 * @param string $pluginId Id of the Plugin.
 	 */
-	final public function getPublicMethods($pluginId)
+	function getPublicMethods($pluginId)
 	{
-		$plugin = $this->getPlugin($pluginId);
-
-		return ($plugin == null ? null : $plugin->getPublicMethods());
+		return isset($this->loadedPlugins[$pluginId]) ? $this->loadedPlugins[$pluginId]->getPublicMethods() : null;
 	}
 
 	/**
 	 * Call a public method of a registered Plugin.
-	 * @param Plugin $pluginCalling
-	 * @param int $pluginId
+	 * @param Plugin $caller
+	 * @param string $pluginId
 	 * @param string $pluginMethod
 	 * @param array $methodArgs
 	 * @throws Exception
 	 */
-	final public function callPublicMethod(Plugin $pluginCalling, $pluginId, $pluginMethod, $methodArgs)
+	function callPublicMethod(Plugin $caller, $pluginId, $pluginMethod, $methodArgs)
 	{
-		$plugin = $this->getPlugin($pluginId);
-
-		if($plugin == null)
-			throw new Exception("The plugin '$pluginId' which you want to call a method from, does not exist!");
-
-		// add calling plugin as first parameter ...
-		array_push($methodArgs, $pluginCalling->getId());
-
-		// try to get the method we want to call from the owner-plugin
+		if(!isset($this->loadedPlugins[$pluginId]))
+			throw new Exception('Plugin "'.$pluginId.'" which you want to call a method from, does not exist!');
+		
+		$plugin = $this->loadedPlugins[$pluginId];
+		array_push($methodArgs, $caller->getId());
 		$method = $plugin->getPublicMethod($pluginMethod);
-
-		// invoke it ...
 		return $method->invokeArgs($plugin, $methodArgs);
-	}
-
-	/**
-	 * Checks whether a specific Plugin has been loaded.
-	 * @param int $pluginId
-	 * @return bool Whether the Plugin is loaded or not.
-	 */
-	final public function isPluginLoaded($pluginId, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
-	{
-		return isset($this->plugins[$pluginId])
-			&& ($min == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $min) >= 0)
-			&& ($max == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $max) <= 0);
-	}
-
-	/**
-	 * @return array[\ManiaLive\PLuginHandler\Plugin]
-	 */
-	final public function getLoadedPluginsList()
-	{
-		return array_keys($this->plugins);
 	}
 
 	function onInit()
 	{
-		$this->loadPlugins();
+		Console::println('[PluginHandler] Start plugin load process:');
+
+		foreach(\ManiaLive\Application\Config::getInstance()->plugins as $pluginId)
+		{
+			try
+			{
+				$this->register($pluginId);
+			}
+			catch(\Exception $e)
+			{
+				$this->unload($pluginId);
+				ErrorHandling::processRuntimeException($e);
+			}
+		}
+		
+		foreach($this->loadedPlugins as $pluginId => $plugin)
+		{
+			try
+			{
+				$this->prepare($plugin);
+			}
+			catch(\Exception $e)
+			{
+				$this->unload($pluginId);
+				ErrorHandling::processRuntimeException($e);
+			}
+		}
+		
+		foreach($this->loadedPlugins as $plugin)
+			$plugin->onReady();
+
+		Console::println('[PluginHandler] All registered plugins have been loaded');
 	}
 
 	function onRun() {}
 	function onPreLoop() {}
 	function onPostLoop() {}
 	function onTerminate() {}
+	
+	function onServerStart()
+	{
+		foreach($this->delayedPlugins as $pluginId => $plugin)
+		{
+			try
+			{
+				$this->loadedPlugins[$pluginId] = $plugin;
+				$this->prepare($plugin);
+			}
+			catch(\Exception $e)
+			{
+				$this->unload($pluginId);
+				unset($this->delayedPlugins[$pluginId]);
+				ErrorHandling::processRuntimeException($e);
+			}
+		}
+		
+		foreach($this->delayedPlugins as $plugin)
+			$plugin->onReady();
+		
+		$this->delayedPlugins = array();
+	}
+	
+	function onServerStop()
+	{
+		foreach($this->loadedPlugins as $pluginId => $plugin)
+			if(!($plugin instanceof WaitingCompliant))
+			{
+				$this->unload($pluginId);
+				$this->delayedPlugins[$pluginId] = $plugin;
+			}
+	}
+	
+	function onPlayerConnect($login, $isSpectator) {}
+	function onPlayerDisconnect($login) {}
+	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
+	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
+	function onEcho($internal, $public) {}
+	function onBeginMatch($map) {}
+	function onEndMatch($rankings, $map) {}
+	function onBeginMap($map, $warmUp, $matchContinuation) {}
+	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
+	function onBeginRound() {}
+	function onEndRound() {}
+	function onStatusChanged($statusCode, $statusName) {}
+	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
+	function onPlayerFinish($playerUid, $login, $timeOrScore) {}
+	function onPlayerIncoherence($playerUid, $login) {}
+	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
+	function onTunnelDataReceived($playerUid, $login, $data) {}
+	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {}
+	function onPlayerInfoChanged($playerInfo) {}
+	function onManualFlowControlTransition($transition) {}
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
+	function onRulesScriptCallback($param1, $param2) {}
 }
 
 class Exception extends \Exception {}

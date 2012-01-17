@@ -21,6 +21,7 @@ use ManiaLive\DedicatedApi\Callback\Listener as ServerListener;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\DedicatedApi\Structures\Player;
+use ManiaLive\DedicatedApi\Structures\Status;
 use ManiaLive\Data\Storage;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Windows\Info;
@@ -288,11 +289,8 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 
 	function onInit()
 	{
-		$status = Connection::getInstance()->getStatus();
-		if($status->code > 3)
-		{
+		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING)
 			Connection::getInstance()->sendHideManialinkPage();
-		}
 	}
 
 	function onRun()
@@ -310,6 +308,9 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 
 	function onPreLoop()
 	{
+		// If server is stopped, we don't need to send manialinks
+		if(Storage::getInstance()->serverStatus->code <= Status::LAUNCHING)
+			return;
 		// Before loops (stopping if too soon)
 		$startTime = microtime(true);
 		if($startTime < $this->nextLoop)
@@ -454,7 +455,8 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 
 	function onTerminate()
 	{
-		Connection::getInstance()->sendHideManialinkPage();
+		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING)
+			Connection::getInstance()->sendHideManialinkPage();
 	}
 
 	// Storage Listener

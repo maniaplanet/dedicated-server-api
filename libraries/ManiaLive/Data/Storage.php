@@ -31,68 +31,56 @@ use ManiaLive\Application\CriticalEventException;
  */
 class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppListener
 {
-
 	private $disconnectedPlayers = array();
-
 	/**
 	 * Player's checkpoints
 	 */
 	private $checkpoints = array();
-
 	/**
 	 * Contains Player object. It represents the player connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $players = array();
-
 	/**
 	 * Contains Player object. It represents the spectators connected to the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Player[]
 	 */
 	public $spectators = array();
-
 	/**
 	 * Contains Map objects. It represents the current maps available on the server
 	 * @var \ManiaLive\DedicatedApi\Structures\Map[]
 	 */
 	public $maps;
-
 	/**
 	 * Represents the current Map object
 	 * @var \ManiaLive\DedicatedApi\Structures\Map
 	 */
 	public $currentMap;
-
 	/**
 	 * Represents the next Map object
 	 * @var \ManiaLive\DedicatedApi\Structures\Map
 	 */
 	public $nextMap;
-
 	/**
 	 * Represents the Current Server Options
 	 * @var \ManiaLive\DedicatedApi\Structures\ServerOptions
 	 */
 	public $server;
-
 	/**
 	 * Represents the Current Game Infos
 	 * @var \ManiaLive\DedicatedApi\Structures\GameInfos
 	 */
 	public $gameInfos;
-
 	/**
 	 * Represents the current Server Status
 	 * @var \ManiaLive\DedicatedApi\Structures\Status
 	 */
 	public $serverStatus;
-
 	/**
 	 * Contains the server login
 	 * @var string
 	 */
 	public $serverLogin;
-
 	/**
 	 * Contains the current vote
 	 * @var Vote
@@ -102,8 +90,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	protected function __construct()
 	{
-		Dispatcher::register(AppEvent::getClass(), $this,
-				AppEvent::ON_INIT | AppEvent::ON_POST_LOOP);
+		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT | AppEvent::ON_POST_LOOP);
 		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ALL);
 	}
 
@@ -122,30 +109,27 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 				$details = $connection->getDetailedPlayerInfo($player->login);
 
 				foreach($details as $key => $value)
-					if($value) $player->$key = $value;
+					if($value)
+						$player->$key = $value;
 
 				if($player->spectatorStatus % 10 == 0)
-						$this->players[$player->login] = $player;
-				else $this->spectators[$player->login] = $player;
+					$this->players[$player->login] = $player;
+				else
+					$this->spectators[$player->login] = $player;
 			}
-			catch(\Exception $e)
-			{
-
-			}
+			catch(\Exception $e) {}
 		}
 
 		try
 		{
 			$this->maps = $connection->getMapList(-1, 0);
-			$nextIndex = $connection->getNextMapIndex();
-			$this->nextMap = $this->maps[$nextIndex];
+			$this->nextMap = $this->maps[$connection->getNextMapIndex()];
 			$this->currentMap = $connection->getCurrentMapInfo();
 			Console::printlnFormatted('Current map: '.Formatting::stripStyles($this->currentMap->name));
 		}
 		catch(\Exception $e)
 		{
 			$this->maps = array();
-			$nextIndex = null;
 			$this->nextMap = null;
 			$this->currentMap = null;
 		}
@@ -166,30 +150,19 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		foreach($this->disconnectedPlayers as $login)
 		{
 			if(isset($this->spectators[$login]) && !$this->spectators[$login]->isConnected)
-					unset($this->spectators[$login]);
+				unset($this->spectators[$login]);
 			else if(isset($this->players[$login]) && !$this->players[$login]->isConnected)
-					unset($this->players[$login]);
+				unset($this->players[$login]);
 		}
 		$this->disconnectedPlayers = array();
 
 		if($this->currentVote instanceof Vote && $this->currentVote->status != Vote::STATE_NEW)
-				$this->currentVote = null;
+			$this->currentVote = null;
 	}
 
-	function onRun()
-	{
-
-	}
-
-	function onPreLoop()
-	{
-
-	}
-
-	function onTerminate()
-	{
-
-	}
+	function onRun() {}
+	function onPreLoop() {}
+	function onTerminate() {}
 
 	#endRegion
 	#region Implementation of DedicatedApi\Listener
@@ -202,18 +175,22 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$details = Connection::getInstance()->getDetailedPlayerInfo($login);
 
 			foreach($details as $key => $value)
-				if($value) $playerInfos->$key = $value;
+				if($value)
+					$playerInfos->$key = $value;
 
-			if($isSpectator) $this->spectators[$login] = $playerInfos;
-			else $this->players[$login] = $playerInfos;
+			if($isSpectator)
+				$this->spectators[$login] = $playerInfos;
+			else
+				$this->players[$login] = $playerInfos;
 		}
 
 		// if player can not be added to array, then we stop the onPlayerConnect event!
 		catch(\Exception $e)
 		{
 			if($e->getCode() == -1000 && $e->getMessage() == 'Login unknown.')
-					throw new SilentCriticalEventException($e->getMessage());
-			else throw new CriticalEventException($e->getMessage());
+				throw new SilentCriticalEventException($e->getMessage());
+			else
+				throw new CriticalEventException($e->getMessage());
 		}
 	}
 
@@ -221,40 +198,30 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	{
 		$this->disconnectedPlayers[] = $login;
 
-		if(isset($this->players[$login])) $this->players[$login]->isConnected = false;
+		if(isset($this->players[$login]))
+			$this->players[$login]->isConnected = false;
 		else if(isset($this->spectators[$login]))
-				$this->spectators[$login]->isConnected = false;
+			$this->spectators[$login]->isConnected = false;
 	}
 
-	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
-	{
-
-	}
-
-	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries)
-	{
-
-	}
-
-	function onEcho($internal, $public)
-	{
-
-	}
-
+	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
+	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
+	function onEcho($internal, $public) {}
+	
 	function onServerStart()
 	{
-
+		try
+		{
+			$this->serverLogin = Connection::getInstance()->getMainServerPlayerInfo()->login;
+		}
+		catch(\Exception $e)
+		{
+			$this->serverLogin = null;
+		}
 	}
-
-	function onServerStop()
-	{
-
-	}
-
-	function onBeginMatch($map)
-	{
-
-	}
+	
+	function onServerStop() {}
+	function onBeginMatch($map) {}
 
 	function onEndMatch($rankings, $map)
 	{
@@ -263,7 +230,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$this->resetScores();
 			$this->isWarmUp = false;
 		}
-		else $this->updateRanking(Player::fromArrayOfArray($rankings));
+		else
+			$this->updateRanking(Player::fromArrayOfArray($rankings));
 	}
 
 	function onBeginMap($map, $warmUp, $matchContinuation)
@@ -278,16 +246,17 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		}
 		$this->resetScores();
 
-		if($warmUp) $this->isWarmUp = true;
+		if($warmUp)
+			$this->isWarmUp = true;
 
 		$gameInfos = Connection::getInstance()->getCurrentGameInfo();
 		if($gameInfos != $this->gameInfos)
-				foreach($gameInfos as $key => $value)
+			foreach($gameInfos as $key => $value)
 				$this->gameInfos->$key = $value;
 
 		$serverOptions = Connection::getInstance()->getServerOptions();
 		if($serverOptions != $this->server)
-				foreach($serverOptions as $key => $value)
+			foreach($serverOptions as $key => $value)
 				$this->server->$key = $value;
 	}
 
@@ -305,10 +274,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		}
 	}
 
-	function onBeginRound()
-	{
-
-	}
+	function onBeginRound() {}
 
 	function onEndRound()
 	{
@@ -316,28 +282,15 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		try
 		{
 			if(count($this->players) || count($this->spectators))
-			{
 				$this->updateRanking(Connection::getInstance()->getCurrentRanking(-1, 0));
-			}
 		}
-		catch(\Exception $ex)
-		{
-
-		}
+		catch (\Exception $ex) {}
 	}
 
 	function onStatusChanged($statusCode, $statusName)
 	{
 		$this->serverStatus->code = $statusCode;
 		$this->serverStatus->name = $statusName;
-		try
-		{
-			$this->serverLogin = Connection::getInstance()->getMainServerPlayerInfo()->login;
-		}
-		catch(\Exception $e)
-		{
-			$this->serverLogin = null;
-		}
 	}
 
 	function getLapCheckpoints($player)
@@ -359,18 +312,21 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 			return $checks;
 		}
-		else return array();
+		else
+			return array();
 	}
 
 	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex)
 	{
 		// reset all checkpoints on first checkpoint
-		if($checkpointIndex == 0) $this->checkpoints[$login] = array();
+		if($checkpointIndex == 0)
+			$this->checkpoints[$login] = array();
 		// sanity check
 		else if($checkpointIndex > 0 &&
 				(!isset($this->checkpoints[$login])
 				|| !isset($this->checkpoints[$login][$checkpointIndex - 1])
-				|| $timeOrScore < $this->checkpoints[$login][$checkpointIndex - 1])) return;
+				|| $timeOrScore < $this->checkpoints[$login][$checkpointIndex - 1]))
+			return;
 
 		// store current checkpoint score in array
 		$this->checkpoints[$login][$checkpointIndex] = $timeOrScore;
@@ -382,8 +338,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			if($player)
 			{
 				// get the checkpoints for current lap
-				$checkpoints = array_slice($this->checkpoints[$login],
-						-$this->currentMap->nbCheckpoints);
+				$checkpoints = array_slice($this->checkpoints[$login], -$this->currentMap->nbCheckpoints);
 
 				// if we're at least in second lap we need to strip times from previous laps
 				if($checkpointIndex >= $this->currentMap->nbCheckpoints)
@@ -398,7 +353,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 				}
 
 				// last checkpoint has to be equal to finish time
-				if(end($checkpoints) != $timeOrScore) return;
+				if(end($checkpoints) != $timeOrScore)
+					return;
 
 				// finally we tell everyone of the new lap time
 				Dispatcher::dispatch(new Event(Event::ON_PLAYER_FINISH_LAP, $player, end($checkpoints), $checkpoints, $curLap));
@@ -408,7 +364,8 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onPlayerFinish($playerUid, $login, $timeOrScore)
 	{
-		if(!isset($this->players[$login])) return;
+		if(!isset($this->players[$login]))
+			return;
 		$player = $this->players[$login];
 
 		switch($this->gameInfos->gameMode)
@@ -456,9 +413,9 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 							case GameInfos::GAMEMODE_ROUNDS:
 							case GameInfos::GAMEMODE_CUP:
 								if($this->currentMap->nbLaps > 0)
-										$totalChecks = $this->currentMap->nbCheckpoints * ($this->gameInfos->roundsForcedLaps ?
-														: $this->currentMap->nbLaps);
-								else $totalChecks = $this->currentMap->nbCheckpoints;
+									$totalChecks = $this->currentMap->nbCheckpoints * ($this->gameInfos->roundsForcedLaps ?: $this->currentMap->nbLaps);
+								else
+									$totalChecks = $this->currentMap->nbCheckpoints;
 								break;
 							default:
 								$totalChecks = $this->currentMap->nbCheckpoints;
@@ -480,20 +437,9 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		}
 	}
 
-	function onPlayerIncoherence($playerUid, $login)
-	{
-
-	}
-
-	function onBillUpdated($billId, $state, $stateName, $transactionId)
-	{
-
-	}
-
-	function onTunnelDataReceived($playerUid, $login, $data)
-	{
-
-	}
+	function onPlayerIncoherence($playerUid, $login) {}
+	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
+	function onTunnelDataReceived($playerUid, $login, $data) {}
 
 	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified)
 	{
@@ -504,25 +450,27 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			foreach($maps as $key => $map)
 			{
 				$storageKey = array_search($map, $this->maps);
-				if($storageKey !== false) $maps[$key] = $this->maps[$storageKey];
-				else $this->maps[$storageKey] = null;
+				if($storageKey !== false)
+					$maps[$key] = $this->maps[$storageKey];
+				else
+					$this->maps[$storageKey] = null;
 			}
 			$this->maps = $maps;
 		}
-		$this->nextMap = isset($this->maps[$nextMapIndex]) ? $this->maps[$nextMapIndex]
-					: null;
+		$this->nextMap = isset($this->maps[$nextMapIndex]) ? $this->maps[$nextMapIndex] : null;
 	}
 
 	function onPlayerInfoChanged($playerInfo)
 	{
 		$playerInfo = Player::fromArray($playerInfo);
 		$player = $this->getPlayerObject($playerInfo->login);
-		if(!$player) return;
-
+		if(!$player)
+			return;
+		
 		$wasSpectator = $player->spectator;
 		foreach($playerInfo as $key => $value)
 			$player->$key = $value;
-
+		
 		if($wasSpectator && !$player->spectator)
 		{
 			unset($this->spectators[$player->login]);
@@ -537,24 +485,18 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		}
 	}
 
-	function onManualFlowControlTransition($transition)
-	{
+	function onManualFlowControlTransition($transition) {}
 
-	}
-
-	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam)
-	{
-		if(!($this->currentVote instanceof Vote)) $this->currentVote = new Vote();
+	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {
+		if(!($this->currentVote instanceof Vote))
+			$this->currentVote = new Vote();
 		$this->currentVote->status = $stateName;
 		$this->currentVote->callerLogin = $login;
 		$this->currentVote->cmdName = $cmdName;
 		$this->currentVote->cmdParam = $cmdParam;
 	}
 
-	function onRulesScriptCallback($param1, $param2)
-	{
-
-	}
+	function onRulesScriptCallback($param1, $param2) {}
 
 	#endRegion
 
@@ -565,20 +507,25 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	 */
 	function getPlayerObject($login)
 	{
-		if(isset($this->players[$login])) return $this->players[$login];
-		else if(isset($this->spectators[$login])) return $this->spectators[$login];
-		else return null;
+		if(isset($this->players[$login]))
+			return $this->players[$login];
+		else if(isset($this->spectators[$login]))
+			return $this->spectators[$login];
+		else
+			return null;
 	}
 
 	protected function updateRanking($rankings)
 	{
 		foreach($rankings as $ranking)
 		{
-			if($ranking->rank == 0) continue;
-
+			if($ranking->rank == 0)
+				continue;
+			
 			$player = $this->getPlayerObject($ranking->login);
-			if(!$player) continue;
-
+			if(!$player)
+				continue;
+			
 			$rankOld = $player->rank;
 			$player->rank = $ranking->rank;
 			$player->bestTime = $ranking->bestTime;
@@ -588,7 +535,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$player->ladderScore = $ranking->ladderScore;
 
 			if(!$player->isSpectator && $rankOld != $player->rank)
-					Dispatcher::dispatch(new Event(Event::ON_PLAYER_NEW_RANK, $player, $rankOld, $player->rank));
+				Dispatcher::dispatch(new Event(Event::ON_PLAYER_NEW_RANK, $player, $rankOld, $player->rank));
 		}
 	}
 
@@ -608,7 +555,6 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			$spectator->point = 0;
 		}
 	}
-
 }
 
 ?>

@@ -31,11 +31,6 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @var
 	 */
 	protected $xmlrpcClient;
-	/**
-	 * Id to recognize the echo we are waiting for
-	 * @var integer
-	 */
-	static protected $voteId = 0;
 
 	/**
 	 * @return Connection
@@ -69,7 +64,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function terminate()
 	{
-		$this->xmlrpcClient->Terminate();
+		$this->xmlrpcClient->terminate();
 	}
 
 	/**

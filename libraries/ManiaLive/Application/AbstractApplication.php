@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
  * 
@@ -28,29 +28,29 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	 * @todo Connection is not the best name here. $dedicatedApi ? $api? $apiConnection ? etc.
 	 */
 	protected $connection;
-	
+
 	protected function __construct()
 	{
 		set_error_handler('\ManiaLive\Application\ErrorHandling::createExceptionFromError');
 		if(extension_loaded('pcntl'))
 		{
-			pcntl_signal(SIGTERM, array($this, 'kill'));  
+			pcntl_signal(SIGTERM, array($this, 'kill'));
 			pcntl_signal(SIGINT, array($this, 'kill'));
 			declare(ticks=1);
 		}
-		
-		try 
+
+		try
 		{
 			$configFile = CommandLineInterpreter::preConfigLoad();
-			
+
 			// load configuration file
 			$loader = Loader::getInstance();
 			$loader->setConfigFilename(APP_ROOT.'config'.DIRECTORY_SEPARATOR.$configFile);
 			$loader->run();
-			
+
 			// load configureation from the command line ...
 			CommandLineInterpreter::postConfigLoad();
-		
+
 			// add logfile prefix ...
 			$manialiveConfig = \ManiaLive\Config\Config::getInstance();
 			$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
@@ -59,18 +59,18 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				$manialiveConfig->logsPrefix = str_replace('%ip%', str_replace('.', '-', $serverConfig->host), $manialiveConfig->logsPrefix);
 				$manialiveConfig->logsPrefix = str_replace('%port%', $serverConfig->port, $manialiveConfig->logsPrefix);
 			}
-				
+
 			// disable logging?
 			if(!$manialiveConfig->runtimeLog)
 				\ManiaLive\Utilities\Logger::getLog('Runtime')->disableLog();
 		}
-		catch (\Exception $e)
+		catch(\Exception $e)
 		{
 			// exception on startup ...
 			ErrorHandling::processStartupException($e);
 		}
 	}
-	
+
 	protected function init()
 	{
 		new \ManiaLive\Features\Tick\Ticker();
@@ -81,28 +81,28 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		\ManiaLive\PluginHandler\PluginHandler::getInstance();
 		\ManiaLive\Gui\GuiHandler::getInstance();
 		\ManiaLive\Threading\ThreadHandler::getInstance();
-		
+
 		Dispatcher::dispatch(new Event(Event::ON_INIT));
 	}
-	
+
 	final function run()
 	{
 		try
 		{
 			$this->init();
-			
+
 			Dispatcher::dispatch(new Event(Event::ON_RUN));
 			self::$startTime = microtime(true);
 			$nextCycleStart = self::$startTime;
 			$cycleTime = 1 / static::CYCLES_PER_SECOND;
-			
+
 			while($this->running)
 			{
 				Dispatcher::dispatch(new Event(Event::ON_PRE_LOOP));
 				$this->connection->executeCallbacks();
 				$this->connection->executeMulticall();
 				Dispatcher::dispatch(new Event(Event::ON_POST_LOOP));
-				
+
 				$endCycleTime = microtime(true) + $cycleTime / 10;
 				do
 				{
@@ -112,12 +112,12 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			}
 			Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 		}
-		catch (\Exception $e)
+		catch(\Exception $e)
 		{
 			ErrorHandling::processRuntimeException($e);
 		}
 	}
-	
+
 	function kill()
 	{
 		if($this->connection)

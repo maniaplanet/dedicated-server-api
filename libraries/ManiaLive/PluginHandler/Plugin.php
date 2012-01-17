@@ -34,14 +34,9 @@ use ManiaLive\Utilities\Console;
 use ManiaLive\Utilities\Logger;
 
 /**
- * Extend this class to create a Plugin that can be used with the
- * PluginHandler.
+ * Extend this class to create a Plugin that can be used with the PluginHandler.
  * This will also provide function shortcuts for registering chat commands,
  * dependency handling and the possibility of Plugin communication.
- * To have a Plugin loaded, just attach it to the pluginhandler.xml which is
- * located in the config folder.
- *
- * @author Florian Schnell
  */
 abstract class Plugin extends ServerAdapter implements ThreadListener, TickListener, AppListener, PlayerListener, PluginListener
 {
@@ -119,7 +114,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	/**
 	 * Sets the current version number for this Plugin.
 	 * Can only be used during initialization!
-	 * @param integer $version
+	 * @param mixed $version
 	 * @throws \InvalidArgumentException
 	 */
 	final protected function setVersion($version)
@@ -129,7 +124,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 
 	/**
 	 * Returns the version number of the Plugin.
-	 * @return integer
+	 * @return mixed
 	 */
 	final public function getVersion()
 	{
@@ -199,7 +194,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		}
 		catch(\ReflectionException $ex)
 		{
-			throw new Exception('The method "'.$name.'" does not exist and therefor can not be exposed!');
+			throw new Exception('The method "'.$name.'" does not exist and therefore can not be exposed!');
 		}
 	}
 
@@ -229,7 +224,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		if(isset($this->methods[$method]))
 			return $this->methods[$method];
 		else
-			throw new Exception("The method '$method' does not exist or has not been set public for plugin '{$this->name}'!");
+			throw new Exception('The method "'.$method.'" does not exist or has not been set public in plugin "'.$this->id.'"!');
 	}
 
 	/**
@@ -295,7 +290,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	 */
 	final public function isPluginLoaded($pluginId, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
 	{
-		return $this->pluginHandler->isPluginLoaded($pluginId, $min, $max);
+		return $this->pluginHandler->isLoaded($pluginId, $min, $max);
 	}
 
 	// Helpers
@@ -525,7 +520,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	 */
 	function onUnload()
 	{
-		// disable all events
 		$this->disableApplicationEvents();
 		$this->disableDedicatedEvents();
 		$this->disableStorageEvents();
@@ -533,19 +527,9 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		$this->disableTickerEvent();
 		$this->disablePluginEvents();
 
-		// unregister chat commands
 		$this->unregisterAllChatCommands();
 
-		// kill the plugin's thread!
-//		$this->killThread();
-
-		$this->threadpool = null;
-		$this->storage = null;
-		$this->pluginHandler = null;
-		$this->connection = null;
-		$this->dependencies = null;
-		$this->methods = null;
-		unset($this->chatCommands);
+		$this->methods = array();
 	}
 
 	// application events
@@ -553,32 +537,6 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	function onPreLoop() {}
 	function onPostLoop() {}
 	function onTerminate() {}
-
-	// dedicated callbacks
-	function onPlayerConnect($login, $isSpectator) {}
-	function onPlayerDisconnect($login) {}
-	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
-	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
-	function onEcho($internal, $public) {}
-	function onServerStart() {}
-	function onServerStop() {}
-	function onBeginMatch($map) {}
-	function onEndMatch($rankings, $map) {}
-	function onBeginMap($map, $warmUp, $matchContinuation) {}
-	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
-	function onBeginRound() {}
-	function onEndRound() {}
-	function onStatusChanged($statusCode, $statusName) {}
-	function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
-	function onPlayerFinish($playerUid, $login, $timeOrScore) {}
-	function onPlayerIncoherence($playerUid, $login) {}
-	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
-	function onTunnelDataReceived($playerUid, $login, $data) {}
-	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {}
-	function onPlayerInfoChanged($playerInfo) {}
-	function onManualFlowControlTransition($transition) {}
-	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
-	function onRulesScriptCallback($param1, $param2) {}
 
 	// threading events
 	function onThreadDies($threadId) {}
