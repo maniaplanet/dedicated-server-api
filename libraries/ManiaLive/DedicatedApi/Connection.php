@@ -1923,36 +1923,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerOptions(array $options, $multicall = false)
 	{
-		if (!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment', $options)
-		|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
-		|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
-		)
+		if(!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment', $options)
+				|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
+				|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
+				|| (array_key_exists('IsP2PUpload', $options) xor array_key_exists('IsP2PDownload', $options))
+				|| (array_key_exists('NextMaxPlayer', $options) xor array_key_exists('NextMaxSpectator', $options))
+				|| (array_key_exists('RefereePassword', $options) xor array_key_exists('RefereeMode', $options)))
 		{
-			throw  new InvalidArgumentException('options = '.print_r($options,true));
-		}
-
-		if(array_key_exists('IsP2PUpload') || array_key_exists('IsP2PDownload'))
-		{
-			if(!array_key_exists('IsP2PUpload') || !array_key_exists('IsP2PDownload'))
-			{
-				throw  new InvalidArgumentException('options = '.print_r($options,true));
-			}
-		}
-
-		if(array_key_exists('NextMaxPlayer') || array_key_exists('NextMaxSpectator'))
-		{
-			if(!array_key_exists('NextMaxPlayer') || !array_key_exists('NextMaxSpectator'))
-			{
-				throw  new InvalidArgumentException('options = '.print_r($options,true));
-			}
-		}
-
-		if(array_key_exists('RefereePassword') || array_key_exists('RefereeMode'))
-		{
-			if(!array_key_exists('RefereePassword') || !array_key_exists('RefereeMode'))
-			{
-				throw  new InvalidArgumentException('options = '.print_r($options,true));
-			}
+			throw new InvalidArgumentException('options = '.print_r($options,true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($options), $multicall);
