@@ -110,12 +110,13 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				} while($nextCycleStart < $endCycleTime);
 				@time_sleep_until($nextCycleStart);
 			}
-			Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 		}
 		catch(\Exception $e)
 		{
 			ErrorHandling::processRuntimeException($e);
 		}
+		
+		Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 	}
 
 	function kill()

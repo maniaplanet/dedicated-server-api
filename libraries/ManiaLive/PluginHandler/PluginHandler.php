@@ -32,7 +32,7 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 
 	protected function __construct()
 	{
-		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT);
+		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_INIT | AppEvent::ON_TERMINATE);
 		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_SERVER_START | ServerEvent::ON_SERVER_STOP);
 	}
 	
@@ -224,7 +224,12 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 	function onRun() {}
 	function onPreLoop() {}
 	function onPostLoop() {}
-	function onTerminate() {}
+	
+	function onTerminate()
+	{
+		foreach($this->loadedPlugins as $pluginId => $plugin)
+			$this->unload($pluginId);
+	}
 	
 	function onServerStart()
 	{
