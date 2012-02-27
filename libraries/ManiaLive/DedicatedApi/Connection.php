@@ -1162,23 +1162,41 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('localFilename = '.print_r($localFilename,true));
 		}
-		if (filesize($localFilename) > 512 * 1024 - 8)
+
+		$inputData = file_get_contents($localFilename);
+
+		$data = new Xmlrpc\Base64($inputData);
+
+		if(strlen($data->getXml()) > 1024 * 1024 - 15)
 		{
 			throw new InvalidArgumentException('file is too big');
 		}
 
-		$inputStream = fopen($localFilename, 'r');
-		$inputData = '' ;
-		$streamSize = 0;
+		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
+	}
 
-		while(!feof($inputStream))
+
+	/**
+	 * Write the data to the specified file. The filename is relative to the Tracks path
+	 * @param string $filename The file to be written
+	 * @param string $data the data to be written
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function writeFileFromString($filename, $data, $multicall = false)
+	{
+		if (!is_string($filename))
 		{
-			$inputData .= fread($inputStream, 8192);
-			$streamSize += 8192;
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
-		fclose($inputStream);
 
-		$data = new Xmlrpc\Base64($inputData);
+		$data = new Xmlrpc\Base64($data);
+
+		if(strlen($data->getXml()) > 1024 * 1024 - 15)
+		{
+			throw new InvalidArgumentException('data are too big');
+		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
 	}
@@ -1207,18 +1225,30 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('file is too big');
 		}
 
-		$inputStream = fopen($filename, 'r');
-		$inputData = '' ;
-		$streamSize = 0;
-
-		while(!feof($inputStream))
-		{
-			$inputData .= fread($inputStream, 8192);
-			$streamSize += 8192;
-		}
-		fclose($inputStream);
+		$inputData = file_get_contents($filename);
 
 		$data = new Xmlrpc\Base64($inputData);
+
+		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
+	}
+
+	/**
+	 * Send the data to the specified player.
+	 * Login can be a single login or a list of comma-separated logins.
+	 * @param Player|string|array[Player|string] $players
+	 * @param string $data
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function tunnelSendDataFromString($players, $data, $multicall = false)
+	{
+		if (! ($login = $this->getLogins($players)))
+		{
+			throw new InvalidArgumentException('players = '.print_r($players,true));
+		}
+
+		$data = new Xmlrpc\Base64($data);
 
 		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
 	}
@@ -3726,10 +3756,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Returns the path of the tracks directory.
+	 * Returns the path of the maps directory.
 	 * @return string
 	 */
-	function getTracksDirectory()
+	function getMapsDirectory()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
