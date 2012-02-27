@@ -1198,7 +1198,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('data are too big');
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
+		return $this->execute('WriteFile', array($filename, $data), $multicall);
 	}
 
 	/**
