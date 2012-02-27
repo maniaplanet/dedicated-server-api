@@ -28,7 +28,7 @@ abstract class Console
 	{
 		$line = print_r($string, true);
 		Logger::getLog('Runtime')->write($line);
-		if(!Config::getInstance()->verbose)
+		if(Config::getInstance()->verbose)
 			echo $line.PHP_EOL;
 	}
 
