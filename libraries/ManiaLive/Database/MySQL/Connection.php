@@ -18,20 +18,14 @@ use ManiaLive\Database\DisconnectionException;
 use ManiaLive\Database\NotConnectedException;
 use ManiaLive\Database\Exception;
 use ManiaLive\Database\ConnectionException;
-use ManiaLive\Event\Dispatcher;
-use ManiaLive\Features\Tick\Listener as TickListener;
-use ManiaLive\Features\Tick\Event as TickEvent;
 
-class Connection extends \ManiaLive\Database\Connection implements TickListener
+class Connection extends \ManiaLive\Database\Connection
 {
 	protected $connection;
 	protected $host;
 	protected $user;
 	protected $password;
 	protected $database;
-
-	protected $connectionTimeout = 900;
-	protected $tick = 0;
 
 	function __construct($host, $username, $password, $database, $port)
 	{
@@ -42,15 +36,6 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 		$this->clientFlags = 0;
 		$this->referenceCount = 0;
 		$this->connect($database);
-	}
-
-	function onTick()
-	{
-		if(++$this->tick % $this->connectionTimeout == 0)
-		{
-			$this->tick = 0;
-			$this->disconnect();
-		}
 	}
 
 	protected function connect($database)
@@ -78,8 +63,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 		$this->select($database);
 
 		// Default Charset : UTF8
-		self::setCharset('utf8');
-		Dispatcher::register(TickEvent::getClass(), $this);
+		$this->setCharset('utf8');
 	}
 
 	/**
@@ -195,7 +179,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 
 	function isConnected()
 	{
-		return $this->connection;
+		return (bool)$this->connection;
 	}
 
 	function disconnect()
