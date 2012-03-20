@@ -17,20 +17,20 @@ use ManiaLive\Application\Event as AppEvent;
 
 class Ticker extends AppAdapter
 {
-	protected $microtime;
+	protected $time;
 	
 	function __construct()
 	{
-		$this->microtime = microtime(true);
+		$this->time = time();
 		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ON_PRE_LOOP);
 	}
 	
 	function onPreLoop()
 	{
-		$microtime = microtime(true);
-		if($microtime - $this->microtime > 1)
+		$time = time();
+		if($time - $this->time >= 1)
 		{
-			$this->microtime = $microtime;
+			$this->time = $time;
 			Dispatcher::dispatch(new Event());
 		}
 	}
