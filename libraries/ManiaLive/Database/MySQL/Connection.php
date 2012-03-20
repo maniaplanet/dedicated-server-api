@@ -33,8 +33,6 @@ class Connection extends \ManiaLive\Database\Connection
 		$this->host = $host;
 		$this->user = $username;
 		$this->password = $password;
-		$this->clientFlags = 0;
-		$this->referenceCount = 0;
 		$this->connect($database);
 	}
 
