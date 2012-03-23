@@ -2241,81 +2241,59 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Get the current gameplay script.
-	 * @return string type
+	 * Get the current rules script.
+	 * TODO Check if correct
+	 * @return string
+	 * @deprecated
 	 */
-	function getScript()
+	function getRulesScriptText()
 	{
 	    return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Set the gameplay script and restart.
+	 * Set the rules script and restart.
 	 * Only available to Admin.
+	 * TODO Check if correct
 	 * @param string $script
 	 * @param bool $multicall
-	 * @return bool type
+	 * @return bool
+	 * @deprecated
 	 */
-	function setScript($script, $multicall = false)
+	function setRulesScriptText($script, $multicall = false)
 	{
 	    return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
 	}
 
 	/**
-	 * Load the gameplay script from the filename and restart.
-	 * Only available to Admin.
-	 * @param filename $filename
-	 * @param bool $multicall
-	 * @return bool type
+	 * Returns the description of the current rules script,
+	 * as a structure containing: Name, CompatibleTypes,
+	 * Description and the settings available.
+	 * @return stdClass
 	 */
-	function loadScript($filename, $multicall = false)
+	function getRulesScriptInfo()
 	{
-	    return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
+		return (object) $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Returns the current parameters of the script.
-	 * @return ScriptParams
+	 * Returns the current parameters of the rules script.
+	 * @return StdClass
 	 */
-	function getScriptParams()
+	function getRulesScriptParams()
 	{
-	    $result = $this->execute(ucfirst(__FUNCTION__));
-	    return Structures\ScriptParams::fromArray($result);
+		return (object) $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Set the parameters of the script.
-	 * Only available to Admin.
-	 * @param Structures\ScriptParams $scriptParams
+	 * Set the parameters of the rules script. Only available to Admin.
+	 * @param stdClass $rules
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function setScriptParams(Structures\ScriptParams $scriptParams, $multicall = false)
+	function setRulesScriptParams($rules, $multicall = false)
 	{
-	    return $this->execute(ucfirst(__FUNCTION__), array($scriptParams), $multicall);
-	}
-
-	/**
-	 * Get the current and next rules script name for script mode.
-	 * The struct returned contains two fields CurrentValue and NextValue.
-	 * @return array
-	 */
-	function getScriptName()
-	{
-	    return (array) $this->execute(ucfirst(__FUNCTION__));
-	}
-
-	/**
-	 * Set a new rules script name for script mode.
-	 * Only available to Admin.
-	 * Requires a map restart to be taken into account.
-	 * @param string $name
-	 * @param bool $multicall
-	 * @return bool
-	 */
-	function setScriptName($name, $multicall = false)
-	{
-	    return $this->execute(ucfirst(__FUNCTION__), array($name), $multicall);
+		 return $this->execute(ucfirst(__FUNCTION__), array($rules), $multicall);
 	}
 
 	/**
@@ -2503,7 +2481,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Get the current and next chat time. The struct returned contains two fields CurrentValue and NextValue.
 	 * @return array
 	 */
-	function getChatTime($multicall = false)
+	function getChatTime()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -2616,6 +2594,28 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return array
 	 */
 	function getForceShowAllOpponents()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+
+	/**
+	 * Set a new rules script name for script mode. Only available to Admin.
+	 * Requires a map restart to be taken into account.
+	 * @param string $scriptName
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function setScriptName($scriptName, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array($scriptName), $multicall);
+	}
+
+	/**
+	 * Get the current and next rules script name for script mode.
+	 * The struct returned contains two fields CurrentValue and NextValue.
+	 * @return array
+	 */
+	function getScriptName()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}

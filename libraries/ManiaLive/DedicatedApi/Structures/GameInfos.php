@@ -2,7 +2,7 @@
 /**
  * Represents the Game Infos of a Dedicated TrackMania Server
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -23,8 +23,9 @@ class GameInfos extends AbstractStructure
 	const GAMEMODE_LAPS = 4;
 	const GAMEMODE_CUP = 5;
 	const GAMEMODE_STUNTS = 6;
-	
+
 	public $gameMode;
+	public $scriptName;
 	public $nbMaps;
 	public $chatTime;
 	public $finishTimeout;
@@ -42,7 +43,7 @@ class GameInfos extends AbstractStructure
 	public $timeAttackLimit;
 	public $timeAttackSynchStartPeriod;
 	public $lapsNbLaps;
-	public $lapsTimeLimit; 
+	public $lapsTimeLimit;
 	public $cupPointsLimit;
 	public $cupRoundsPerMap;
 	public $cupNbWinners;
