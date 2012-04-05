@@ -53,8 +53,8 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 		ThreadHandler::getInstance()->killThread($this->threadId);
 		$this->threadId = null;
 		
-		foreach($command->getResult() as $pluginClass)
-			Manager::AddPlugin($pluginClass, $this);
+		foreach($command->getResult() as $pluginId)
+			Manager::AddPlugin($pluginId, $this);
 		
 		$this->registerChatCommand('pluginManager', 'openWindow', 0, true, AdminGroup::get());
 		$this->setPublicMethod('openWindow');
@@ -79,7 +79,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 	function loadPlugin($login, $pluginClass)
 	{
 		$this->connection->chatSendServerMessage('Loading '.$pluginClass, $login);
-		if(!PluginHandler::getInstance()->addPlugin($pluginClass))
+		if(!PluginHandler::getInstance()->load($pluginClass))
 			$this->connection->chatSendServerMessage('$900failed to load '.$pluginClass."\nSee logs for more details", $login);
 	}
 
@@ -88,7 +88,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 		$this->connection->chatSendServerMessage('Unloading '.$classname, $login);
 		try
 		{
-			PluginHandler::getInstance()->deletePlugin($classname);
+			PluginHandler::getInstance()->unload($classname);
 		}
 		catch(\Exception $e)
 		{

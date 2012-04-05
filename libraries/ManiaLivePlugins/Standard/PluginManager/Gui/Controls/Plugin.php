@@ -26,7 +26,7 @@ class Plugin extends \ManiaLive\Gui\Control
 	private $loadAction;
 	private $unloadAction;
 	
-	function __construct($pluginName, $pluginClass, $manager)
+	function __construct($pluginName, $manager)
 	{
 		$this->sizeY = 6;
 		
@@ -44,8 +44,8 @@ class Plugin extends \ManiaLive\Gui\Control
 		$this->loadButton = new Icons64x64_1(7);
 		$this->addComponent($this->loadButton);
 		
-		$this->loadAction = $this->createAction(array($manager, 'loadPlugin'), $pluginClass);
-		$this->unloadAction = $this->createAction(array($manager, 'unloadPlugin'), $pluginClass);
+		$this->loadAction = $this->createAction(array($manager, 'loadPlugin'), $pluginName);
+		$this->unloadAction = $this->createAction(array($manager, 'unloadPlugin'), $pluginName);
 		$this->setIsLoaded(PluginHandler::getInstance()->isLoaded($pluginName));
 	}
 	

@@ -21,13 +21,12 @@ class Manager extends \ManiaLive\Gui\ManagedWindow
 	
 	private $pager;
 	
-	static function AddPlugin($pluginClass, $manager)
+	static function AddPlugin($pluginId, $manager)
 	{
-		$pluginId = implode('\\', array_slice(explode('\\', $pluginClass), 1, 2));
 		if($pluginId == 'Standard\PluginManager' || isset(self::$plugins[$pluginId]))
 			return;
 		
-		$plugin = new Plugin($pluginId, $pluginClass, $manager);
+		$plugin = new Plugin($pluginId, $manager);
 		self::$plugins[$pluginId] = $plugin;
 		
 		foreach(self::GetAll() as $window)

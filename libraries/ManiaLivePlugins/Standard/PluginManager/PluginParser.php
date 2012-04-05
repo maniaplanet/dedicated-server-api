@@ -32,8 +32,8 @@ class PluginParser implements \ManiaLive\Threading\Runnable
 		if(preg_match('/(ManiaLivePlugins.*)\.php/', $plugin, $matches))
 		{
 			$class = '\\'.str_replace('/', '\\', $matches[1]);
-			if(class_exists($class))
-				return is_subclass_of($class, '\ManiaLive\PluginHandler\Plugin') ? $class : false;
+			if(class_exists($class) && is_subclass_of($class, '\ManiaLive\PluginHandler\Plugin'))
+				return implode('\\', array_slice(explode('\\', $class), 2, 2));
 			else
 				return false;
 		}
