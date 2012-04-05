@@ -17,6 +17,7 @@ class Command
 	
 	private $commandId;
 	private $result = null;
+	private $resultSet = false;
 	private $timeTaken = null;
 	private $callback;
 	private $task;
@@ -55,10 +56,11 @@ class Command
 	
 	function setResult($result, $timeTaken)
 	{
-		if($result)
+		if($this->resultSet)
 			return;
 		
 		$this->result = $result;
+		$this->resultSet = true;
 		$this->timeTaken = $timeTaken;
 		if(is_callable($this->callback))
 			call_user_func($this->callback, $this);
