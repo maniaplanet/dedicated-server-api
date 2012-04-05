@@ -335,7 +335,7 @@ abstract class Window extends Container implements TickListener
 			$recipient = array($recipient);
 		foreach($recipient as $login)
 		{
-			$wasVisible = $wasVisible && $this->visibilities[$login];
+			$wasVisible = $wasVisible && isset($this->visibilities[$login]) && $this->visibilities[$login];
 			$this->visibilities[$login] = true;
 		}
 		
@@ -357,7 +357,7 @@ abstract class Window extends Container implements TickListener
 			$recipient = array($recipient);
 		foreach($recipient as $login)
 		{
-			$wasVisible = $wasVisible && $this->visibilities[$login];
+			$wasVisible = $wasVisible && isset($this->visibilities[$login]) && $this->visibilities[$login];
 			$this->visibilities[$login] = true;
 		}
 		
@@ -381,7 +381,7 @@ abstract class Window extends Container implements TickListener
 			$recipient = array($recipient);
 		foreach($recipient as $login)
 		{
-			$oldVisibilities[$login] = $this->visibilities[$login];
+			$oldVisibilities[$login] = !isset($this->visibilities[$login]) || $this->visibilities[$login];
 			$this->visibilities[$login] = false;
 		}
 		
