@@ -213,10 +213,12 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		try
 		{
 			$this->serverLogin = Connection::getInstance()->getMainServerPlayerInfo()->login;
+			$this->maps = Connection::getInstance()->getMapList(-1, 0);
 		}
 		catch(\Exception $e)
 		{
 			$this->serverLogin = null;
+			$this->maps = array();
 		}
 	}
 	
