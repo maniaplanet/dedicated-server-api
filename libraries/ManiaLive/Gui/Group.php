@@ -98,9 +98,9 @@ class Group implements \Iterator
 	{
 		if(isset($this->logins[$login]))
 		{
-			unset($this->logins[$login]);
 			foreach(Window::Get($this) as $window)
 				$window->hide($login);
+			unset($this->logins[$login]);
 		}
 	}
 	
