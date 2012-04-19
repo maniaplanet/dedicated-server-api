@@ -145,7 +145,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 					else
 						$this->nextWindows[$windowId] = array($login => false);
 				}
-				else
+				else if(isset($this->nextWindows[$windowId]))
 				{
 					unset($this->nextWindows[$windowId][$login]);
 					if(!$this->nextWindows[$windowId])
