@@ -21,7 +21,7 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 {
 	function onInit()
 	{
-		$this->setVersion('1');
+		$this->setVersion('1.0.1');
 	}
 	
 	function onLoad()
@@ -92,9 +92,9 @@ class Admin extends \ManiaLive\PluginHandler\Plugin
 	function displayWrongState($login)
 	{
 		$info = Info::Create($login, false);
-		$info->setSize(125, 40);
+		$info->setSize(100, 27);
 		$info->setTitle('Bad Server State!');
-		$info->setText("This can not be done at the current server state,\nwait a bit and try again!");
+		$info->setText("This cannot be done at the current server state.\nWait a bit and try again!");
 		$info->centerOnScreen();
 		$info->show();
 	}
