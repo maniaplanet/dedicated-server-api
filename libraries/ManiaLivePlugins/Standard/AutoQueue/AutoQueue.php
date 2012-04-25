@@ -26,6 +26,8 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 {
 	private $queueable = array();
 	private $queue = array();
+	private $lastWorst = array();
+	private $outThisMatch = 0;
 	private $lastActivityTime = array();
 	private $mapsPlayed = array();
 	
@@ -34,7 +36,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 	
 	function onInit()
 	{
-		$this->setVersion('1');
+		$this->setVersion('1.1');
 	}
 	
 	function onLoad()
@@ -58,11 +60,13 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 				| ServerEvent::ON_PLAYER_CHECKPOINT
 				| ServerEvent::ON_PLAYER_INCOHERENCE
 				| ServerEvent::ON_PLAYER_FINISH
-				| ServerEvent::ON_BEGIN_MATCH
-				| ServerEvent::ON_END_MATCH
+				| ServerEvent::ON_BEGIN_MAP
+				| ServerEvent::ON_END_MAP
 		);
 		$this->enableStorageEvents(PlayerEvent::ON_PLAYER_CHANGE_SIDE);
 		$this->enableTickerEvent();
+		$this->connection->setRoundPointsLimit(10);
+		$this->connection->setAllWarmUpDuration(1);
 	}
 	
 	function queue($login)
@@ -139,6 +143,8 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 	{
 		$player = $this->storage->getPlayerObject($login);
 		$this->queueable[$login] = $player->ladderScore >= $this->storage->server->ladderServerLimitMin;
+		if(!$this->queueable[$login])
+			$this->connection->kick($login);
 		$this->lastActivityTime[$login] = time();
 		if($isSpectator)
 		{
@@ -157,6 +163,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 		{
 			unset($this->mapsPlayed[$login]);
 			$this->letQueueFirstPlay();
+			++$this->outThisMatch;
 		}
 		else
 			$this->unqueue($login);
@@ -177,10 +184,15 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 				}
 				catch(\Exception $e)
 				{
+					if(in_array($player->login, $this->lastWorst))
+					{
+						$this->connection->kick($player->login);
+						return;
+					}
 					$dialog = Dialog::Create($player->login, false);
 					$dialog->setSize(80, 36);
 					$dialog->setTitle('AutoQueue Warning');
-					$dialog->setText("There is too much spectators already.\nYou'll be kicked so someone else can play.");
+					$dialog->setText("There are too many spectators already.\nYou'll be kicked so someone else can play.");
 					$dialog->setButtons(Dialog::OK | Dialog::CANCEL);
 					$dialog->addCloseCallback(array($this, 'onKickDialogClosed'));
 					$dialog->showModal();
@@ -197,7 +209,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 					$queue->show();
 					break;
 				case 1:
-					$this->queue($login);
+					$this->queue($player->login);
 					$queue->setIsQueued();
 					$queue->show();
 					break;
@@ -205,26 +217,33 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 		}
 	}
 	
-	function onBeginMatch($map)
+	function onBeginMap($map, $warmUp, $matchContinuation)
 	{
+		$this->lastWorst = array();
+		$this->outThisMatch = 0;
 		foreach($this->mapsPlayed as &$nbMaps)
 			++$nbMaps;
 	}
 	
-	function onEndMatch($rankings, $map)
+	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap)
 	{
+		if($wasWarmUp || $restartMap)
+			return;
+		
 		$config = Config::getInstance();
 		$freePlaces = $this->storage->server->nextMaxPlayers - count($this->mapsPlayed);
-		$nbToKick = max(0, min($config->lastToKick, count($this->queue)) - $freePlaces);
+		$nbToKick = max(0, min($config->lastToKick, count($this->queue)) - $this->outThisMatch - $freePlaces);
 		while($nbToKick > 0 && !empty($rankings))
 		{
 			$ranking = array_pop($rankings);
 			$login = $ranking['Login'];
-			if(isset($this->mapsPlayed[$login]) && $this->mapsPlayed[$login] > 0
-					&& (!AdminGroup::contains($login) || $config->kickAdmins))
+			if(isset($this->mapsPlayed[$login]) && $this->mapsPlayed[$login] > 0 && !($config->ignoreAdmins && AdminGroup::contains($login)))
 			{
 				if($config->queueInsteadOfKick)
+				{
 					$this->connection->forceSpectator($login, 1);
+					$this->lastWorst[] = $login;
+				}
 				else
 					$this->connection->kick($login);
 				--$nbToKick;
@@ -256,6 +275,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 	{
 		$this->queueable = array();
 		$this->queue = array();
+		$this->lastWorst = array();
 		$this->mapsPlayed = array();
 		$this->lastActivityTime = array();
 		
@@ -265,7 +285,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 		Queue::Clear();
 		FreeSpot::EraseAll();
 		
-		parent::onUnLoad();
+		parent::onUnload();
 	}
 }
 

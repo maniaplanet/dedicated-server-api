@@ -18,7 +18,8 @@ class Config extends \ManiaLib\Utils\Singleton
 {
 	public $lastToKick = 2;
 	public $queueInsteadOfKick = true;
-	public $kickAdmins = false;
+	public $ignoreAdmins = false;
+	public $allowTrueSpectators = false;
 	
 	public $playerIdleKick = 300;
 	public $spectatorIdleKick = 600;
