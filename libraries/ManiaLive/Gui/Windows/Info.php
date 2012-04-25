@@ -14,9 +14,6 @@ namespace ManiaLive\Gui\Windows;
 use ManiaLib\Gui\Elements\Bgs1InRace;
 use ManiaLib\Gui\Elements\Label;
 
-/**
- * @author Florian Schnell
- */
 final class Info extends \ManiaLive\Gui\Panel
 {
 	private $text;
@@ -33,6 +30,7 @@ final class Info extends \ManiaLive\Gui\Panel
 	
 	protected function onResize($oldX, $oldY)
 	{
+		parent::onResize($oldX, $oldY);
 		$this->text->setSize($this->sizeX - 4, $this->sizeY - 6);
 	}
 	
