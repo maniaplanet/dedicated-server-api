@@ -63,8 +63,8 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 	function isLoaded($pluginId, $min = Dependency::NO_LIMIT, $max = Dependency::NO_LIMIT)
 	{
 		return isset($this->loadedPlugins[$pluginId])
-			&& ($min == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $min) >= 0)
-			&& ($max == Dependency::NO_LIMIT || version_compare($this->plugins[$pluginId]->getVersion(), $max) <= 0);
+			&& ($min == Dependency::NO_LIMIT || version_compare($this->loadedPlugins[$pluginId]->getVersion(), $min) >= 0)
+			&& ($max == Dependency::NO_LIMIT || version_compare($this->loadedPlugins[$pluginId]->getVersion(), $max) <= 0);
 	}
 
 	/**
