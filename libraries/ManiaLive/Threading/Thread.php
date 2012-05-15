@@ -4,9 +4,9 @@
  *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
- * @version     $Revision$:
- * @author      $Author$:
- * @date        $Date$:
+ * @version     $Revision: 314 $:
+ * @author      $Author: martin.gwendal $:
+ * @date        $Date: 2012-01-03 14:16:20 +0100 (mar., 03 janv. 2012) $:
  */
 
 namespace ManiaLive\Threading;
@@ -91,7 +91,6 @@ class Thread extends \ManiaLib\Utils\Singleton
 				$startTime = microtime(true);
 				$result = $task['task']->run();
 				$timeTaken = microtime(true) - $startTime;
-				echo $this->database->quote(serialize($result))."\n";
 				
 				$this->database->execute(
 						'UPDATE commands SET result=%s, timeTaken=%f WHERE commandId=%d',
@@ -110,12 +109,12 @@ class Thread extends \ManiaLib\Utils\Singleton
 		if(empty($this->taskBuffer))
 		{
 			$tasks = $this->database->query('SELECT commandId, task FROM commands WHERE threadId=%d AND result IS NULL ORDER BY commandId ASC', $this->threadId);
-			Console::println('Incoming Tasks: '.$tasks->recordCount());
 			while( ($task = $tasks->fetchAssoc()) )
 			{
 				$task['task'] = unserialize($task['task']);
 				$this->taskBuffer[] = $task;
 			}
+			Console::println('Incoming Tasks: '.count($this->taskBuffer));
 		}
 		
 		return array_shift($this->taskBuffer);

@@ -60,7 +60,7 @@ class Logger
 	function write($text)
 	{
 		if($this->enabled)
-			error_log(date('Y.m.d_H:i ').$text.PHP_EOL, 3, $this->path);
+			error_log('['.date('Y.m.d H:i:s').'] '.$text.PHP_EOL, 3, $this->path);
 	}
 }
 

@@ -13,15 +13,20 @@ namespace ManiaLive\Database\SQLite;
 
 class RecordSet implements \ManiaLive\Database\RecordSet
 {
-	const FETCH_ASSOC = SQLITE_ASSOC;
-	const FETCH_NUM = SQLITE_NUM;
-	const FETCH_BOTH = SQLITE_BOTH;
+	const FETCH_ASSOC = SQLITE3_ASSOC;
+	const FETCH_NUM = SQLITE3_NUM;
+	const FETCH_BOTH = SQLITE3_BOTH;
 	
+	/** @var \SQLite3Result */
 	protected $result;
+	/** @var bool */
+	protected $recordAvailable;
 	
 	function __construct($result)
 	{
 		$this->result = $result;
+		$this->recordAvailable = $this->result->fetchArray() !== false;
+		$this->result->reset();
 	}
 	
 	function fetchScalar()
@@ -32,37 +37,67 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	
 	function fetchRow()
 	{
-		return sqlite_fetch_array($this->result, self::FETCH_NUM);
+		return $this->result->fetchArray(self::FETCH_NUM);
 	}
 	
 	function fetchAssoc()
 	{
-		return sqlite_fetch_array($this->result, self::FETCH_ASSOC);
+		return $this->result->fetchArray(self::FETCH_ASSOC);
 	}
 	
 	function fetchArray($resultType = self::FETCH_ASSOC)
 	{
-		return sqlite_fetch_array($this->result, $resultType);
+		return $this->result->fetchArray($resultType);
 	}
 	
 	function fetchStdObject()
 	{
-		return sqlite_fetch_object($this->result);
+		return $this->fetchObject(null);
 	}
 	
 	function fetchObject($className, array $params=array())
 	{
-		return sqlite_fetch_object($this->result, $className, $params);
+		$properties = $this->fetchAssoc();
+
+		if(is_null($className))
+		{
+			$object = new stdClass();
+		}
+		else
+		{
+			// call to class' constructor must be done after filling the fields
+			$object = unserialize(sprintf('O:%d:"%s":0:{}', strlen($className), $className));
+		}
+
+		$reflector = new \ReflectionObject($object);
+		foreach($properties as $key => $value)
+		{
+			try
+			{
+				$attribute = $reflector->getProperty($key);
+				$attribute->setAccessible(true);
+				$attribute->setValue($object, $value);
+			}
+			catch(\ReflectionException $e)
+			{
+				$object->$key = $value;
+			}
+		}
+		
+		// calling constructor
+		call_user_func_array(array($object, '__construct'), $params);
+		
+		return $object;
 	}
 	
 	function recordCount()
 	{
-		return sqlite_num_rows($this->result);
+		throw new \ManiaLive\Database\NotSupportedException;
 	}
 	
 	function recordAvailable()
 	{
-		return sqlite_num_rows($this->result) > 0;
+		return $this->recordAvailable;
 	}
 }
 ?>

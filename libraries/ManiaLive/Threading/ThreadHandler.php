@@ -42,7 +42,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 	{
 		$this->logger = Logger::getLog('Threading_'.getmypid());
 		
-		if(! (extension_loaded('SQLite') || extension_loaded('SQLite3')) )
+		if(!extension_loaded('SQLite3'))
 			$this->enabled = false;
 		else
 			$this->enabled = Config::getInstance()->enabled;
@@ -115,7 +115,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 					');');
 		
 		
-		sqlite_busy_timeout($this->database->getHandle(), 100);
+		$this->database->getHandle()->busyTimeout(100);
 		$this->logger->write('Database ready!');
 	}
 	
@@ -310,7 +310,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 			$threadId = (int) $result['threadId'];
 			$timeTaken = (float) $result['timeTaken'];
 			
-			Console::printDebug('Got response for Command #'.$commandId.' finished by Thread #'.$threadId.' in '.$timeTaken.'ms!');
+			Console::printDebug('Got response for Command #'.$commandId.' finished by Thread #'.$threadId.' in '.$timeTaken.'s!');
 			
 			if(isset($this->pendings[$threadId][$commandId]))
 			{
