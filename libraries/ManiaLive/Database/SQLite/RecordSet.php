@@ -17,16 +17,16 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	const FETCH_NUM = SQLITE3_NUM;
 	const FETCH_BOTH = SQLITE3_BOTH;
 	
-	/** @var \SQLite3Result */
-	protected $result;
-	/** @var bool */
-	protected $recordAvailable;
+	protected $result = array();
+	protected $recordCount;
 	
 	function __construct($result)
 	{
-		$this->result = $result;
-		$this->recordAvailable = $this->result->fetchArray() !== false;
-		$this->result->reset();
+		while( ($row = $result->fetchArray(self::FETCH_ASSOC)) )
+			$this->result[] = $row;
+		$result->finalize();
+		
+		$this->recordCount = count($this->result);
 	}
 	
 	function fetchScalar()
@@ -37,17 +37,29 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	
 	function fetchRow()
 	{
-		return $this->result->fetchArray(self::FETCH_NUM);
+		$row = array_shift($this->result);
+		if($row)
+			return array_values($row);
+		return null;
 	}
 	
 	function fetchAssoc()
 	{
-		return $this->result->fetchArray(self::FETCH_ASSOC);
+		return array_shift($this->result);
 	}
 	
 	function fetchArray($resultType = self::FETCH_ASSOC)
 	{
-		return $this->result->fetchArray($resultType);
+		switch($resultType)
+		{
+			case self::FETCH_ASSOC: return $this->fetchAssoc();
+			case self::FETCH_NUM: return $this->fetchRow();
+			case self::FETCH_NUM:
+				$row = array_shift($this->result);
+				if($row)
+					return array_merge($row, array_values($row));
+				return null;
+		}
 	}
 	
 	function fetchStdObject()
@@ -92,12 +104,12 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	
 	function recordCount()
 	{
-		throw new \ManiaLive\Database\NotSupportedException;
+		return $this->recordCount;
 	}
 	
 	function recordAvailable()
 	{
-		return $this->recordAvailable;
+		return $this->recordCount > 0;
 	}
 }
 ?>
