@@ -12,131 +12,80 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak\Structures;
 
-use ManiaLive\Data\Storage;
+use ManiaLivePlugins\Standard\TeamSpeak\Config;
+use ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak;
 
-/**
- * Description of Client
- */
-class Client extends Observable
+class Client
 {
-	static private $instances = array();
-	static private $instancesByLogin = array();
+	private static $byId = array();
+	private static $byLogin = array();
 	
 	public $clientId;
 	public $databaseId;
 	public $channelId;
-	public $nickname;
-	public $isAway;
+	public $isCommentator;
+	public $login;
 	
-	public $login = null;
-	public $nicknameToShow = null;
-	public $isCommentator = false;
-	
-	static function CreateFromTeamSpeak($clientInfo)
+	function __construct($clientData, $customData)
 	{
-		$clientId = (int) $clientInfo['clid'];
-		$client = new self();
-		$client->clientId = $clientId;
-		$client->databaseId = (int) $clientInfo['client_database_id'];
-		$client->update($clientInfo);
-
-		$matches = array();
-		if(preg_match('/ \(([^)]+)\)$/u', $client->nickname, $matches))
+		$this->clientId = (int) $clientData['clid'];
+		$this->databaseId = (int) $clientData['client_database_id'];
+		self::$byId[$this->clientId] = $this;
+		
+		if(isset($clientData['cid']))
+			$this->channelId = (int) $clientData['cid'];
+		else if(isset($clientData['ctid']))
+			$this->channelId = (int) $clientData['ctid'];
+		
+		if(isset($clientData['client_talk_power']))
+			$this->isCommentator = $clientData['client_talk_power'] == TeamSpeak::BASIC_POWER;
+		
+		if(isset($customData['maniaplanet_login']))
 		{
-			$client->login = $matches[1];
-			if( ($player = Storage::getInstance()->getPlayerObject($matches[1])) )
-				$client->nicknameToShow = $player->nickName;
-			else
-				$client->nicknameToShow = $client->nickname;
-			self::$instancesByLogin[$client->login] = $client;
+			$this->login = $customData['maniaplanet_login'];
+			$this->isCommentator = $this->isCommentator || in_array($this->login, Config::getInstance()->commentators);
+			self::$byLogin[$this->login] = $this;
 		}
-		else
-			$client->nicknameToShow = $client->nickname;
-		if(isset($clientInfo['client_is_talker']))
-			$client->isCommentator = (bool) $clientInfo['client_is_talker'];
-
-		self::$instances[$clientId] = $client;
-		return $client;
 	}
 	
-	static function Get($clientId)
+	static function GetById($clientId)
 	{
-		if(isset(self::$instances[$clientId]))
-			return self::$instances[$clientId];
+		if(isset(self::$byId[$clientId]))
+			return self::$byId[$clientId];
 		return null;
 	}
 	
 	static function GetByLogin($login)
 	{
-		if(isset(self::$instancesByLogin[$login]))
-			return self::$instancesByLogin[$login];
+		if(isset(self::$byLogin[$login]))
+			return self::$byLogin[$login];
 		return null;
 	}
 	
-	static function GetAll()
+	static function EraseById($clientId)
 	{
-		return self::$instances;
+		if( ($client = self::GetById($clientId)) )
+		{
+			unset(self::$byId[$clientId]);
+			if($client->login)
+				unset(self::$byLogin[$client->login]);
+		}
 	}
 	
-	static function Erase($clientId)
+	static function EraseByLogin($login)
 	{
-		if( ($client = self::Get($clientId)) )
+		if( ($client = self::GetByLogin($login)) )
 		{
-			$client->removeAllObservers();
-			if( ($channel = Channel::Get($client->channelId)) )
-			{
-				unset($channel->clients[$clientId]);
-				$channel->notifyObservers();
-			}
-			unset(self::$instances[$clientId]);
+			unset(self::$byLogin[$login]);
 			if($client->login)
-				unset(self::$instancesByLogin[$client->login]);
+				unset(self::$byId[$client->clientId]);
 		}
 	}
 	
 	static function EraseAll()
 	{
-		foreach(self::$instances as $client)
-		{
-			$client->removeAllObservers();
-			if( ($channel = Channel::Get($client->channelId)) )
-				unset($channel->clients[$client->clientId]);
-		}
-		self::$instances = array();
-		self::$instancesByLogin = array();
-	}
-	
-	private function __construct() {}
-	
-	function update($clientInfo)
-	{
-		if(isset($clientInfo['client_nickname']))
-			$this->nickname = $clientInfo['client_nickname'];
-		if(isset($clientInfo['client_away']))
-			$this->isAway = (bool) $clientInfo['client_away'];
-		
-		$newChannel = $this->channelId;
-		if(isset($clientInfo['cid']))
-			$newChannel = (int) $clientInfo['cid'];
-		else if(isset($clientInfo['ctid']))
-			$newChannel = (int) $clientInfo['ctid'];
-		
-		if($newChannel !== $this->channelId)
-		{
-			if( ($channel = Channel::Get($this->channelId)) )
-			{
-				unset($channel->clients[$this->clientId]);
-				$channel->notifyObservers();
-			}
-			$this->channelId = $newChannel;
-			if( ($channel = Channel::Get($this->channelId)) )
-			{
-				$channel->clients[$this->clientId] = $this;
-				$channel->notifyObservers();
-			}
-		}
-		
-		$this->notifyObservers();
+		self::$byId = array();
+		self::$byLogin = array();
 	}
 }
 

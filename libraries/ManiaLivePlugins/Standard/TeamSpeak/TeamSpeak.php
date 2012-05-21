@@ -13,13 +13,9 @@
 namespace ManiaLivePlugins\Standard\TeamSpeak;
 
 use ManiaLib\Utils\Formatting;
-use ManiaLive\Features\Admin\AdminGroup;
-use ManiaLive\Gui\Group;
 use ManiaLive\Application\Event as AppEvent;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
-use ManiaLivePlugins\Standard\TeamSpeak\Gui\Windows\ClientList;
-use ManiaLivePlugins\Standard\TeamSpeak\Gui\Windows\ChannelTree;
-use ManiaLivePlugins\Standard\TeamSpeak\Gui\Windows\Main;
+use ManiaLivePlugins\Standard\TeamSpeak\Windows\Main;
 use ManiaLivePlugins\Standard\TeamSpeak\Structures\Client;
 use ManiaLivePlugins\Standard\TeamSpeak\Structures\Channel;
 use ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\Adapter\ServerQuery\Event as TSEvent;
@@ -30,24 +26,21 @@ use ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\Helper\Signal;
  */
 class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 {
-	const COMMENTATOR = 0x1337;
+	const BASIC_POWER = 0x1337;
 	
 	private $tsConnection;
-	private $defaultChannelId;
 	private $tick = 0;
 	
 	function onInit()
 	{
-		$this->setVersion('1');
+		$this->setVersion('2.0.0');
 	}
 	
 	function onLoad()
 	{
 		$config = Config::getInstance();
-		if($config->useLangChannels || !$config->listAllChannels)
-			$config->useDedicatedChannel = true;
-		if(!$config->dedicatedChannelName)
-			$config->dedicatedChannelName = substr('ManiaPlanet> '.Formatting::stripStyles($this->storage->server->name), 0, 40);
+		if(!$config->serverChannelName)
+			$config->serverChannelName = substr('ManiaPlanet> '.Formatting::stripStyles($this->storage->server->name), 0, 40);
 		
 		$this->tsConnection = Connection::getInstance();
 		$this->tsConnection->open();
@@ -55,33 +48,22 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 			$this->enableTickerEvent();
 		
 		Signal::getInstance()->subscribe('notifyEvent', array($this, 'onTeamSpeakEvent'));
-		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
+		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT | ServerEvent::ON_PLAYER_INFO_CHANGED);
 	}
 	
 	function onReady()
 	{
-		foreach(Client::GetAll() as $client)
-			ClientList::Add($client);
-		$this->defaultChannelId = ($channel = Channel::GetDefault()) ? $channel->channelId : -1;
-		foreach(Channel::GetAll() as $channel)
-			if($channel->hasToBeListed)
-				ChannelTree::Add($channel);
-		
 		foreach($this->storage->players as $player)
 			$this->onPlayerConnect($player->login, true);
 		foreach($this->storage->spectators as $player)
 			$this->onPlayerConnect($player->login, false);
 		
 		if($this->tsConnection->isConnected())
-		{
-			ClientList::Create(Group::Create('admin', AdminGroup::get()));
 			$this->enableApplicationEvents(AppEvent::ON_PRE_LOOP);
-		}
 	}
 	
 	function onTeamSpeakEvent(TSEvent $event)
 	{
-		$config = Config::getInstance();
 		$data = $event->getData();
 		switch($event->getType()->toString())
 		{
@@ -90,108 +72,77 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 				if($data['client_type'])
 					break;
 				
-				$client = Client::CreateFromTeamSpeak($data);
-				ClientList::Add($client);
-				if($client->login)
+				$client = new Client($data, $this->tsConnection->getCustomInfo($data));
+				$this->tsConnection->useToken($client->login);
+				$player = $this->storage->getPlayerObject($client->login);
+				if(Channel::IsClientAllowed($client, $client->channelId))
 				{
-					if(!$client->isCommentator && in_array($client->login, Config::getInstance()->commentators))
-						$this->tsConnection->toggleClientComment(null, $client->clientId, true);
-					ClientList::Create($client->login, true, $client->channelId);
+					if($client->channelId == Channel::$serverIds[Channel::COMMENTS] && $client->isCommentator)
+						$this->tsConnection->toggleClientComment($client->clientId, true);
+				}
+				else
+				{
+					$teamId = $player ? $player->teamId : -1;
+					$this->tsConnection->moveClient($client->clientId, Channel::$serverIds[$teamId]);
+				}
+				
+				if($player)
+				{
 					$main = Main::Create($client->login);
-					$main->setConnected();
-					$main->setDefaultButtonText(Channel::Get($client->channelId)->name);
+					$main->setConnected($client->channelId, $player->teamId);
 					$main->show();
-					$main->toggleClientList($client->login);
 				}
 				break;
 			
 			case 'clientmoved':
-				if( ($client = Client::Get((int) $data['clid'])) )
+				if( ($client = Client::GetById((int) $data['clid'])) )
 				{
-					ClientList::Remove($client);
-					$client->update($data);
-					ClientList::Add($client);
-					if($client->isCommentator)
-						$this->tsConnection->toggleClientComment(null, $client->clientId, true);
-					if($client->login && $this->storage->getPlayerObject($client->login))
+					$newChannelId = (int) $data['ctid'];
+					if(Channel::IsClientAllowed($client, $newChannelId))
 					{
-						$main = Main::Create($client->login);
-						$main->setDefaultButtonText(Channel::Get($client->channelId)->name);
-						$main->redraw();
+						$client->channelId = $newChannelId;
+						if($client->channelId == Channel::$serverIds[Channel::COMMENTS] && $client->isCommentator)
+							$this->tsConnection->toggleClientComment($client->clientId, true);
+						
+						if( ($player = $this->storage->getPlayerObject($client->login)) )
+						{
+							$main = Main::Create($client->login);
+							$main->setConnected($client->channelId, $player->teamId);
+							$main->redraw();
+						}
 					}
+					else
+						$this->tsConnection->moveClient($client->clientId, $client->channelId);
 				}
 				break;
 				
 			case 'clientleftview':
-				if( ($client = Client::Get((int) $data['clid'])) )
+				if( ($client = Client::GetById((int) $data['clid'])) )
 				{
-					ClientList::Remove($client);
-					Client::Erase($client->clientId);
+					Client::EraseById($client->clientId);
 					if($client->login && $this->storage->getPlayerObject($client->login))
 					{
 						$main = Main::Create($client->login);
 						$main->setNotConnected();
-						$defaultChannel = Config::getInstance()->getPlayerDefaultChannel($this->storage->getPlayerObject($client->login));
-						if($defaultChannel)
-							$main->setDefaultButtonText($defaultChannel->name);
-						else
-							$main->setDefaultButtonText('Connect');
-						$main->hideClientList($client->login);
 						$main->redraw();
-						ClientList::Erase($client->login);
-						foreach(ChannelTree::Get($client->login) as $channelTree)
-							$channelTree->redraw();
 					}
 				}
 				break;
 			
 			case 'channelcreated':
-				$channel = Channel::CreateFromTeamSpeak($data);
-				if($channel->hasToBeListed)
-					ChannelTree::Add($channel);
-				if($channel === Channel::GetDefault())
-				{
-					$this->defaultChannelId = $channel->channelId;
-					if($config->useLangChannels)
-						$this->tsConnection->createLangChannels($channel);
-				}
-				break;
-			
-			case 'channeledited':
-				if( ($channel = Channel::Get((int) $data['cid'])) )
-				{
-					$commentatorWasEnabled = $channel->commentatorEnabled;
-					$channel->update($data);
-					if(!$commentatorWasEnabled && $channel->commentatorEnabled)
-						foreach($channel->clients as $client)
-							if($client->isCommentator)
-								$this->tsConnection->toggleClientComment(null, $client->clientId, true);
-				}
+				$channel = new Channel($data, $this->tsConnection->getChannelPermissionList($data));
+				if($channel == Channel::GetDefault())
+					$this->onReady();
 				break;
 				
 			case 'channelmoved':
 				if( ($channel = Channel::Get((int) $data['cid'])) )
-				{
-					$wasListed = $channel->hasToBeListed;
-					$channel->update($data);
-					if($wasListed)
-					{
-						if($channel->hasToBeListed)
-							ChannelTree::Move($channel);
-						else
-							ChannelTree::Remove($channel);
-					}
-					else if($channel->hasToBeListed)
-						ChannelTree::Add($channel);
-				}
+					$channel->parentId = $data['cpid'];
 				break;
 				
 			case 'channeldeleted':
 				if( ($channel = Channel::Get((int) $data['cid'])) )
-				{
-					ChannelTree::Remove($channel);
 					Channel::Erase($channel->channelId);
-				}
 				break;
 		}
 	}
@@ -201,32 +152,36 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 		$main = Main::Create($login);
 		if( ($client = Client::GetByLogin($login)) )
 		{
-			$main->setConnected();
-			$main->setDefaultButtonText(Channel::Get($client->channelId)->name);
-				ClientList::Create($login, true, $client->channelId);
+			$teamId = $this->storage->getPlayerObject($login)->teamId;
+			$main->setConnected($client->channelId, $teamId);
+			if(!Channel::IsClientAllowed($client, $client->channelId))
+				$this->tsConnection->moveClient($client->clientId, Channel::$serverIds[$teamId]);
 		}
+		else if($this->tsConnection->isConnected())
+			$main->setNotConnected();
 		else
-		{
-			$defaultChannel = Config::getInstance()->getPlayerDefaultChannel($this->storage->getPlayerObject($login));
-			if($defaultChannel)
-				$main->setDefaultButtonText($defaultChannel->name);
-			if($this->tsConnection->isConnected())
-				$main->setNotConnected();
-			else
-				$main->setError();
-		}
+			$main->setError();
 		$main->show();
 	}
 	
 	function onPlayerDisconnect($login)
 	{
-		Main::Erase($login);
-		ClientList::Erase($login);
-		ChannelTree::Erase($login);
+		$this->movePlayerIFN($login);
+		$this->tsConnection->deleteToken($login);
+	}
+	
+	function onPlayerInfoChanged($playerInfo)
+	{
+		$this->movePlayerIFN($playerInfo['Login']);
+	}
+	
+	private function movePlayerIFN($login)
+	{
 		if( ($client = Client::GetByLogin($login)) )
 		{
-			$client->nicknameToShow = $client->nickname;
-			$client->notifyObservers();
+			$player = $this->storage->getPlayerObject($login);
+			if(!Channel::IsClientAllowed($client, $client->channelId))
+				$this->tsConnection->moveClient($client->clientId, Channel::$serverIds[$player->teamId]);
 		}
 	}
 	
@@ -247,8 +202,6 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	{
 		if(!$this->tsConnection->isConnected())
 		{
-			ChannelTree::EraseAll();
-			ClientList::EraseAll();
 			Channel::EraseAll();
 			Client::EraseAll();
 			foreach(Main::GetAll() as $main)
@@ -263,8 +216,6 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 		
 	function onUnload()
 	{
-		ChannelTree::EraseAll();
-		ClientList::EraseAll();
 		Main::EraseAll();
 		Channel::EraseAll();
 		Client::EraseAll();

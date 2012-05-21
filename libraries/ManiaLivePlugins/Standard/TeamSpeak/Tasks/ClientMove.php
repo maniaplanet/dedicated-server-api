@@ -29,7 +29,11 @@ class ClientMove extends AbstractTask
 	
 	protected function doRun()
 	{
-		$this->connection()->clientMove($this->clientId, $this->channelId);
+		try
+		{
+			$this->connection()->clientMove($this->clientId, $this->channelId);
+		}
+		catch(\ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\Adapter\ServerQuery\Exception $exc) {}
 	}
 }
 

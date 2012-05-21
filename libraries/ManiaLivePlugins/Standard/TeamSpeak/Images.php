@@ -10,14 +10,16 @@
  * @date        $Date$:
  */
 
-namespace ManiaLivePlugins\Standard\TeamSpeak\Structures;
+namespace ManiaLivePlugins\Standard\TeamSpeak;
 
 /**
- * Description of Observer
+ * Description of Images
  */
-interface Observer
+class Images extends \ManiaLib\Utils\Singleton
 {
-	function onUpdate();
+	public $tsGreen = 'http://files.manialive.com/icons/tsGreen.png';
+	public $tsGrey  = 'http://files.manialive.com/icons/tsGrey.png';
+	public $tsRed   = 'http://files.manialive.com/icons/tsRed.png';
 }
 
 ?>

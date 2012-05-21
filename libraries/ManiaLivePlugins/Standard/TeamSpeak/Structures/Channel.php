@@ -12,131 +12,149 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak\Structures;
 
-use ManiaLivePlugins\Standard\TeamSpeak\Config;
+use ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak;
 
-/**
- * Description of Channel
- */
-class Channel extends Observable
+class Channel
 {
-	static private $instances = array();
-	static private $instancesByPath = array();
-	static private $defaultChannelId = 0;
+	const PATH      = -3;
+	const COMMENTS  = -2;
+	const FREE_TALK = -1;
+	const TEAM_1    = 0;
+	const TEAM_2    = 1;
+	
+	static public $serverIds = array(
+		self::PATH => 0,
+		self::COMMENTS => 0,
+		self::FREE_TALK => 0,
+		self::TEAM_1 => 0,
+		self::TEAM_2 => 0
+	);
+	static public $moveActions = array(
+		self::COMMENTS => null,
+		self::FREE_TALK => null,
+		self::TEAM_1 => null,
+		self::TEAM_2 => null
+	);
+	
+	static private $byId = array();
 	
 	public $channelId;
 	public $parentId = 0;
 	public $name;
+	public $joinPower = 0;
+	public $talkPower = 0;
 	
-	public $serverPath;
-	public $hasToBeListed;
-	public $commentatorEnabled = false;
-	
-	public $subChannels = array();
-	public $clients = array();
-	
-	static function CreateFromTeamSpeak($channelInfo)
+	function __construct($channelData, $permissionsList)
 	{
-		$channelId = (int) $channelInfo['cid'];
-		$channel = new self();
-		$channel->channelId = $channelId;
-		$channel->update($channelInfo);
-
-		self::$instances[$channelId] = $channel;
-		self::$instancesByPath[$channel->serverPath] = $channel;
-		return $channel;
+		$this->channelId = (int) $channelData['cid'];
+		if(isset(self::$byId[$this->channelId]))
+			self::Erase($this->channelId);
+		self::$byId[$this->channelId] = $this;
+		
+		if(isset($channelData['pid']))
+			$this->parentId = (int) $channelData['pid'];
+		else if(isset($channelData['cpid']))
+			$this->parentId = (int) $channelData['cpid'];
+		
+		if(isset($channelData['channel_name']))
+			$this->name = strval($channelData['channel_name']);
+		
+		if(isset($permissionsList['i_channel_needed_join_power']))
+			$this->joinPower = (int) $permissionsList['i_channel_needed_join_power']['permvalue'];
+		if(isset($permissionsList['i_client_needed_talk_power']))
+			$this->talkPower = (int) $permissionsList['i_client_needed_talk_power']['permvalue'];
+		
+		$config = \ManiaLivePlugins\Standard\TeamSpeak\Config::getInstance();
+		$actionHandler = \ManiaLive\Gui\ActionHandler::getInstance();
+		$tsconnection = \ManiaLivePlugins\Standard\TeamSpeak\Connection::getInstance();
+		if($config->serverChannelPath && $this->getPath() == $config->serverChannelPath)
+			self::$serverIds[self::PATH] = $this->channelId;
+		else if($this->parentId == self::$serverIds[self::PATH] && $this->name == $config->serverChannelName)
+		{
+			self::$serverIds[self::FREE_TALK] = $this->channelId;
+			self::$moveActions[self::FREE_TALK] = $actionHandler->createAction(array($tsconnection, 'movePlayer'), $this->channelId);
+			foreach(array(self::COMMENTS, self::TEAM_1, self::TEAM_2) as $const)
+				if(self::$serverIds[$const])
+				{
+					self::$serverIds[$const] = 0;
+					$actionHandler->deleteAction(self::$moveActions[$const]);
+					self::$moveActions[$const] = null;
+				}
+		}
+		else if(self::$serverIds[self::FREE_TALK] && $this->parentId == self::$serverIds[self::FREE_TALK])
+		{
+			if($this->joinPower == TeamSpeak::BASIC_POWER)
+			{
+				self::$serverIds[self::TEAM_1] = $this->channelId;
+				self::$moveActions[self::TEAM_1] = $actionHandler->createAction(array($tsconnection, 'movePlayer'), $this->channelId);
+			}
+			else if($this->joinPower == TeamSpeak::BASIC_POWER+1)
+			{
+				self::$serverIds[self::TEAM_2] = $this->channelId;
+				self::$moveActions[self::TEAM_2] = $actionHandler->createAction(array($tsconnection, 'movePlayer'), $this->channelId);
+			}
+			else if($this->talkPower == TeamSpeak::BASIC_POWER)
+			{
+				self::$serverIds[self::COMMENTS] = $this->channelId;
+				self::$moveActions[self::COMMENTS] = $actionHandler->createAction(array($tsconnection, 'movePlayer'), $this->channelId);
+			}
+		}
 	}
 	
-	static function Get($channelId)
+	function getPath()
 	{
-		if(isset(self::$instances[$channelId]))
-			return self::$instances[$channelId];
-		return null;
+		$path = array();
+		$channel = $this;
+		do
+		{
+			array_unshift($path, $channel->name);
+		} while($channel = self::GetById($channel->parentId));
+		
+		return implode('/', str_replace('/', '\\/', $path));
 	}
 	
-	static function GetByPath($path)
+	static function GetById($channelId)
 	{
-		if(isset(self::$instancesByPath[$path]))
-			return self::$instancesByPath[$path];
+		if(isset(self::$byId[$channelId]))
+			return self::$byId[$channelId];
 		return null;
 	}
 	
 	static function GetDefault()
 	{
-		return self::Get(self::$defaultChannelId);
-	}
-	
-	static function GetAll()
-	{
-		return self::$instances;
+		return self::GetById(self::$serverIds[self::FREE_TALK]);
 	}
 	
 	static function Erase($channelId)
 	{
-		if( ($channel = self::Get($channelId)) )
+		if( ($channel = self::GetById($channelId)) )
 		{
-			$channel->removeAllObservers();
-			if( ($parentChannel = Channel::Get($channel->parentId)) )
-				unset($parentChannel->subChannels[$channelId]);
-			unset(self::$instances[$channelId]);
-			unset(self::$instances[$channel->name]);
-			if($channelId == self::$defaultChannelId)
-				self::$defaultChannelId = 0;
+			unset(self::$byId[$channelId]);
+			$const = array_search($channelId, self::$serverIds, true);
+			if($const !== false)
+			{
+				self::$serverIds[$const] = 0;
+				if($const != self::PATH)
+				{
+					\ManiaLive\Gui\ActionHandler::getInstance()->deleteAction(self::$moveActions[$const]);
+					self::$moveActions[$const] = null;
+				}
+			}
 		}
 	}
 	
 	static function EraseAll()
 	{
-		foreach(self::$instances as $channel)
-		{
-			$channel->removeAllObservers();
-			if( ($parentChannel = Channel::Get($channel->parentId)) )
-				unset($parentChannel->subChannels[$channel->channelId]);
-		}
-		self::$instances = array();
-		self::$instancesByPath = array();
+		self::$byId = array();
+		//TODO
 	}
 	
-	private function __construct() {}
-	
-	function update($channelInfo)
+	static function IsClientAllowed($client, $channelId)
 	{
-		if(isset($channelInfo['channel_name']))
-			$this->name = strval($channelInfo['channel_name']);
-		if(isset($channelInfo['channel_needed_talk_power']))
-			$this->commentatorEnabled = $channelInfo['channel_needed_talk_power'] >= \ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak::COMMENTATOR;
-
-		if( ($parentChannel = Channel::Get($this->parentId)) )
-			unset($parentChannel->subChannels[$this->channelId]);
-		
-		if(isset($channelInfo['pid']))
-			$this->parentId = (int) $channelInfo['pid'];
-		else if(isset($channelInfo['cpid']))
-			$this->parentId = (int) $channelInfo['cpid'];
-		
-		if( ($parentChannel = self::Get($this->parentId)) )
-		{
-			$parentChannel->subChannels[$this->channelId] = $this;
-			$this->serverPath = $parentChannel->serverPath.'/'.str_replace('/', '\\/', $this->name);
-		}
-		else
-			$this->serverPath = str_replace('/', '\\/', $this->name);
-		
-		$config = Config::getInstance();
-		if(!$this->parentId && $this->name == $config->dedicatedChannelName)
-			self::$defaultChannelId = $this->channelId;
-		
-		$this->hasToBeListed = 
-				$config->listAllChannels
-				|| (!$config->useLangChannels && $this->channelId == self::$defaultChannelId)
-				|| ($config->useLangChannels && $parentChannel && $parentChannel->channelId == self::$defaultChannelId)
-				|| ($parentChannel && $parentChannel->hasToBeListed);
-		
-		$this->notifyObservers();
-	}
-	
-	function getParent()
-	{
-		return self::Get($this->parentId);
+		$player = \ManiaLive\Data\Storage::getInstance()->getPlayerObject($client->login);
+		if($player && $player->teamId != -1)
+			return $channelId == self::$serverIds[$player->teamId] || $channelId == self::$serverIds[self::PATH] || !in_array($channelId, self::$serverIds);
+		return $channelId != self::$serverIds[self::TEAM_1] && $channelId != self::$serverIds[self::TEAM_2];
 	}
 }
 

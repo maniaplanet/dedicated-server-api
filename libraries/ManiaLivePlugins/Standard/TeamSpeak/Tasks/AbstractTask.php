@@ -30,7 +30,7 @@ abstract class AbstractTask implements \ManiaLive\Threading\Runnable
 	protected function connection()
 	{
 		if(!self::$tsServer)
-			self::$tsServer = TeamSpeak3::factory('serverquery://'.$this->config->queryLogin.':'.$this->config->queryPassword.'@'.$this->config->ipAddress.':'.$this->config->queryPort.'/?server_port='.$this->config->voicePort.'#no_query_clients');
+			self::$tsServer = TeamSpeak3::factory('serverquery://'.$this->config->queryLogin.':'.$this->config->queryPassword.'@'.$this->config->host.':'.$this->config->queryPort.'/?server_port='.$this->config->voicePort.'#no_query_clients');
 		return self::$tsServer;
 	}
 	
@@ -40,7 +40,7 @@ abstract class AbstractTask implements \ManiaLive\Threading\Runnable
 	{
 		try
 		{
-			$this->doRun();
+			return $this->doRun();
 		}
 		catch(\Exception $e)
 		{

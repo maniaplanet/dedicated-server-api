@@ -12,58 +12,33 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak;
 
-use ManiaLib\Utils\Formatting;
-
 /**
  * @method \ManiaLivePlugins\Standard\TeamSpeak\Config getInstance()
  */
 class Config extends \ManiaLib\Utils\Singleton
 {
-	public $ipAddress = '127.0.0.1';
-    public $voicePort = '9987';
-    public $password = '';
-    public $queryPort = '10011';
-    public $queryLogin = 'serveradmin';
-    public $queryPassword = '';
+	public $host = '127.0.0.1';
+	public $voicePort = '9987';
+	public $password = '';
+	public $queryPort = '10011';
+	public $queryLogin = 'serveradmin';
+	public $queryPassword = '';
 	
-	public $listAllChannels = false;
-	public $useDedicatedChannel = true;
-	public $useLangChannels = true;
-	public $dedicatedChannelName = '';
+	public $serverChannelPath = '';
+	public $serverChannelName = '';
 	public $commentators = array();
 	
-	public $nbChannelsToShow = 15;
-	public $nbClientsToShow = 10;
-	
-	function getConnectUrl($channel, $login)
+	function getConnectUrl($login)
 	{
 		$player = \ManiaLive\Data\Storage::getInstance()->getPlayerObject($login);
-		$nickname = substr(Formatting::stripStyles($player->nickName), 0, 27 - strlen($login)).' ('.$login.')';
-		
-		$queryArgs = 'nickname='.rawurlencode($nickname);
-		if($channel || ($channel = $this->getPlayerDefaultChannel($player)) )
-			$queryArgs .= '&channel='.rawurlencode($channel->serverPath);
+		$queryArgs = 'nickname='.rawurlencode(substr(\ManiaLib\Utils\Formatting::stripStyles($player->nickName), 0, 30));
+		if( ($channel = Structures\Channel::GetDefault()) )
+			$queryArgs .= '&channel='.rawurlencode($channel->getPath());
+		$queryArgs .= '&token='.rawurlencode(Connection::getInstance()->getToken($login));
 		if($this->password)
 			$queryArgs .= '&password='.rawurlencode($this->password);
 		
-		return 'ts3server://'.$this->ipAddress.':'.$this->voicePort.'?'.$queryArgs;
-	}
-	
-	function getPlayerDefaultChannel($player)
-	{
-		if($this->useLangChannels)
-		{
-			$channel = Structures\Channel::GetByPath($this->dedicatedChannelName.'/'.Connection::$languages[substr($player->language, 0, 2)]);
-			if($channel)
-				return $channel;
-		}
-		if($this->useDedicatedChannel)
-		{
-			$channel = Structures\Channel::GetByPath($this->dedicatedChannelName);
-			if($channel)
-				return $channel;
-		}
-		return null;
+		return 'ts3server://'.$this->host.':'.$this->voicePort.'?'.$queryArgs;
 	}
 }
 

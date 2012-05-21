@@ -12,7 +12,6 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak;
 
-use ManiaLive\Cache\Cache;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\Application\Listener as AppListener;
 use ManiaLive\Application\Event as AppEvent;
@@ -28,36 +27,10 @@ use ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\TeamSpeak3;
  */
 class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickListener
 {
-	static public $languages = array
-	(
-		'ar' => 'Arabic',
-        'cz' => 'Čeština',
-        'da' => 'Dansk',
-        'de' => 'Deutsch',
-        'el' => 'Ελληνικά',
-        'en' => 'English',
-        'es' => 'Español',
-        'et' => 'Eesti',
-        'fi' => 'Suomi',
-        'fr' => 'Français',
-        'hu' => 'Magyar',
-        'it' => 'Italiano',
-        'jp' => '日本語',
-        'kr' => '한국어',
-        'lv' => 'Latviešu',
-        'nb' => 'Norsk',
-        'nl' => 'Nederlands',
-        'pl' => 'Polski',
-        'pt' => 'Português',
-        'ro' => 'Română',
-        'ru' => 'Русский',
-        'sk' => 'Slovenčina',
-        'sv' => 'Svenska',
-        'tr' => 'Türkçe',
-        'zh' => '中文'
-	);
-	
 	private $server;
+	private $playersGroupId;
+	private $privilegeKeys = array();
+	
 	private $processHandler;
 	private $processId;
 	
@@ -68,7 +41,7 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		$config = Config::getInstance();
 		try
 		{
-			$this->server = TeamSpeak3::factory('serverquery://'.$config->queryLogin.':'.$config->queryPassword.'@'.$config->ipAddress.':'.$config->queryPort.'/?server_port='.$config->voicePort.'&blocking=0#no_query_clients');
+			$this->server = TeamSpeak3::factory('serverquery://'.$config->queryLogin.':'.$config->queryPassword.'@'.$config->host.':'.$config->queryPort.'/?server_port='.$config->voicePort.'&blocking=0#no_query_clients');
 		}
 		catch(\Exception $e)
 		{
@@ -85,23 +58,27 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		Dispatcher::register(TickEvent::getClass(), $this);
 		$this->server->notifyRegister('channel');
 		
+		// Find players group id or create a new group for privilege keys
+		foreach($this->server->serverGroupList() as $group)
+		{
+			if($group['name'] == 'ManiaPlanet Player')
+			{
+				$this->playersGroupId = $group['sgid'];
+				break;
+			}
+		}
+		$this->server->serverGroupListReset();
+		if(!$this->playersGroupId)
+			$this->playersGroupId = $this->server->serverGroupCreate('ManiaPlanet Player');
+		
 		// Populate
 		foreach($this->server->channelList() as $channel)
-			Channel::CreateFromTeamSpeak($channel->getInfo());
+			new Channel($channel, $this->getChannelPermissionList($channel));
 		foreach($this->server->clientList() as $client)
-			Client::CreateFromTeamSpeak($client->getInfo());
+			new Client($client, $this->getCustomInfo($client));
 		
 		// Handle default channels
-		if($config->useDedicatedChannel)
-		{
-			if( !($defaultChannel = Channel::GetDefault()) )
-				$this->processHandler->addTask(
-						$this->processId,
-						new Tasks\ChannelCreate($config, $config->dedicatedChannelName)
-				);
-			else if($config->useLangChannels)
-				$this->createLangChannels($defaultChannel);
-		}
+		$this->createChannelsIFN();
 	}
 	
 	function isConnected()
@@ -109,71 +86,141 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		return $this->server != null;
 	}
 	
-	function createLangChannels($parentChannel)
+	function createChannelsIFN()
 	{
-		$wantedChannels = array_values(self::$languages);
-		$existingChannels = array_map(function ($subChannel) { return $subChannel->name; }, $parentChannel->subChannels);
-		foreach(array_diff($wantedChannels, $existingChannels) as $channelName)
+		$config = Config::getInstance();
+		if(Channel::$serverIds[Channel::FREE_TALK])
+		{
+			if(!Channel::$serverIds[Channel::COMMENTS])
+				$this->processHandler->addTask(
+						$this->processId,
+						new Tasks\ChannelCreate($config, 'Comments', Channel::$serverIds[Channel::FREE_TALK], TeamSpeak::BASIC_POWER)
+				);
+			
+			if(!Channel::$serverIds[Channel::TEAM_1])
+				$this->processHandler->addTask(
+						$this->processId,
+						new Tasks\ChannelCreate($config, 'Team 1', Channel::$serverIds[Channel::FREE_TALK], 0, TeamSpeak::BASIC_POWER),
+						array($this, 'onChannelCreated')
+				);
+			
+			if(!Channel::$serverIds[Channel::TEAM_2])
+				$this->processHandler->addTask(
+						$this->processId,
+						new Tasks\ChannelCreate($config, 'Team 2', Channel::$serverIds[Channel::FREE_TALK], 0, TeamSpeak::BASIC_POWER+1),
+						array($this, 'onChannelCreated')
+				);
+		}
+		else
 			$this->processHandler->addTask(
 					$this->processId,
-					new Tasks\ChannelCreate(Config::getInstance(), $channelName, $parentChannel->channelId)
+					new Tasks\ChannelCreate($config, $config->serverChannelName),
+					array($this, 'createChannelsIFN')
 			);
-		
+	}
+	
+	// Hack because we can't set needed join power at channel creation
+	// and no event is launched when needed join power is modified...
+	function onChannelCreated($command)
+	{
+		$channelId = $command->getResult();
+		$channel = $this->server->request('channelinfo cid='.$channelId)->toList();
+		$channel['cid'] = $channelId;
+		new Channel($channel, $this->getChannelPermissionList($channel));
+	}
+	
+	function getCustomInfo($client)
+	{
+		try
+		{
+			$infoArray = $this->server->customInfo($client['client_database_id']);
+			$customInfo = array();
+			foreach($infoArray as $info)
+				$customInfo[strval($info['ident'])] = strval($info['value']);
+			
+			return $customInfo;
+		}
+		catch(\Exception $e)
+		{
+			return array();
+		}
+	}
+	
+	function getChannelPermissionList($channel)
+	{
+		try
+		{
+			return $this->server->channelPermList($channel['cid'], true);
+		}
+		catch(\Exception $e)
+		{
+			return array();
+		}
+	}
+	
+	function getToken($login)
+	{
+		if(!isset($this->privilegeKeys[$login]))
+			$this->privilegeKeys[$login] = $this->server->privilegeKeyCreate(
+					TeamSpeak3::TOKEN_SERVERGROUP, $this->playersGroupId, 0,
+					'Created by ManiaLive to authenticate players',
+					'ident=maniaplanet_login value='.$login);
+		return $this->privilegeKeys[$login];
+	}
+	
+	function useToken($login)
+	{
+		if(isset($this->privilegeKeys[$login]))
+			unset($this->privilegeKeys[$login]);
+	}
+	
+	function deleteToken($login)
+	{
+		if(isset($this->privilegeKeys[$login]))
+		{
+			$this->server->privilegeKeyDelete($this->privilegeKeys[$login]);
+			unset($this->privilegeKeys[$login]);
+		}
+	}
+	
+	function moveClient($clientId, $channelId)
+	{
+		$this->processHandler->addTask(
+				$this->processId,
+				new Tasks\ClientMove(Config::getInstance(), $clientId, $channelId)
+		);
 	}
 	
 	function movePlayer($login, $channelId)
 	{
-		if( ($client = Client::GetByLogin($login)) )
-			$this->processHandler->addTask(
-					$this->processId,
-					new Tasks\ClientMove(Config::getInstance(), $client->clientId, $channelId)
-			);
+		$client = Client::GetByLogin($login);
+		if($client)
+			$this->moveClient($client->clientId, $channelId);
 	}
 	
-	function toggleGlobalComment($login, $enable)
+	function toggleClientComment($clientId, $enable=true)
 	{
-		$config = Config::getInstance();
-		$defaultId = Channel::GetDefault() ? Channel::GetDefault()->channelId : -1;
-		foreach(Channel::GetAll() as $channel)
-			if($channel->hasToBeListed)
-				$this->processHandler->addTask(
-						$this->processId,
-						new Tasks\ChannelToggleComment(Config::getInstance(), $channel->channelId, $enable)
-				);
+		$this->processHandler->addTask(
+				$this->processId,
+				new Tasks\ClientToggleComment(Config::getInstance(), $clientId, $enable)
+		);
 	}
 	
-	function toggleChannelComment($login, $channelId, $enable)
-	{
-		if( ($channel = Channel::Get($channelId)) )
-			$this->processHandler->addTask(
-					$this->processId,
-					new Tasks\ChannelToggleComment(Config::getInstance(), $channelId, $enable)
-			);
-	}
-	
-	function toggleClientComment($login, $clientId, $enable)
-	{
-		if( ($client = Client::Get($clientId)) )
-		{
-			$client->isCommentator = $enable;
-			$client->notifyObservers();
-			if( ($channel = Channel::Get($client->channelId)) && $channel->commentatorEnabled)
-				$this->processHandler->addTask(
-						$this->processId,
-						new Tasks\ClientToggleComment(Config::getInstance(), $clientId, $enable)
-				);
-		}
-	}
-	
-	function close($isDisconnected=false)
+	function close($onPurpose=true)
 	{
 		if($this->server)
 		{
-			if(!$isDisconnected)
+			if($onPurpose)
+			{
 				$this->server->notifyUnregister();
+				foreach($this->privilegeKeys as $key)
+					$this->server->privilegeKeyDelete($key);
+				$this->privilegeKeys = array();
+			}
 			$this->server->clientListReset();
 			$this->server->channelListReset();
 			$this->server = null;
+			$this->playersGroupId = 0;
 		}
 		if($this->processHandler && $this->processId)
 		{
@@ -188,26 +235,12 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 	}
 	
 	// Events
-	function onClientEdited($command)
-	{
-		print_r($command->result);
-		list($clientId, $isCommentator) = $command->result;
-		if( ($client = Client::Get($clientId)) )
-		{
-			$client->isCommentator = (bool) $isCommentator;
-			$client->notifyObservers();
-		}
-	}
-	
 	function onTick()
 	{
 		if(++$this->tick % 5 == 0)
 		{
 			try
 			{
-				foreach(Client::GetAll() as $client)
-					$client->update($this->server->request('clientinfo clid='.$client->clientId)->toList());
-
 				if($this->tick % 60 == 0)
 				{
 					$this->server->request('whoami');
@@ -219,7 +252,7 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 			}
 			catch(\Exception $e)
 			{
-				$this->close(true);
+				$this->close(false);
 			}
 		}
 	}
@@ -233,7 +266,7 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		}
 		catch(\Exception $e)
 		{
-			$this->close(true);
+			$this->close(false);
 		}
 	}
 	
