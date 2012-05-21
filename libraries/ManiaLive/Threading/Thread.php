@@ -51,6 +51,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 			'server'    => \ManiaLive\DedicatedApi\Config::getInstance(),
 			'threading' => Config::getInstance()
 		);
+		$this->database->getHandle()->busyTimeout(2000);
 		foreach($configs as $dbName => $instance)
 		{
 			$data = $this->getData($dbName);
@@ -65,7 +66,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 		$this->database->execute(
 				'INSERT INTO data (name, value) VALUES (%s, %s)',
 				$this->database->quote($key),
-				$this->database->quote(serialize($value)));
+				$this->database->quote(base64_encode(serialize($value))));
 		
 		return $this->database->affectedRows() > 0;
 	}
@@ -75,7 +76,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 		$result = $this->database->query('SELECT value FROM data WHERE name=%s', $this->database->quote($key));
 			
 		if($result->recordAvailable())
-			return unserialize($result->fetchScalar());
+			return unserialize(base64_decode($result->fetchScalar()));
 		else
 			return $default;
 	}
@@ -92,9 +93,10 @@ class Thread extends \ManiaLib\Utils\Singleton
 				$result = $task['task']->run();
 				$timeTaken = microtime(true) - $startTime;
 				
+				$this->database->getHandle()->busyTimeout(5000);
 				$this->database->execute(
 						'UPDATE commands SET result=%s, timeTaken=%f WHERE commandId=%d',
-						$this->database->quote(serialize($result)), $timeTaken, $task['commandId']);
+						$this->database->quote(base64_encode(serialize($result))), $timeTaken, $task['commandId']);
 			}
 			else
 				sleep(1);
@@ -108,10 +110,21 @@ class Thread extends \ManiaLib\Utils\Singleton
 	{
 		if(empty($this->taskBuffer))
 		{
-			$tasks = $this->database->query('SELECT commandId, task FROM commands WHERE threadId=%d AND result IS NULL ORDER BY commandId ASC', $this->threadId);
+			try
+			{
+				$this->database->getHandle()->busyTimeout(100);
+				$tasks = @$this->database->query('SELECT commandId, task FROM commands WHERE threadId=%d AND result IS NULL ORDER BY commandId ASC', $this->threadId);
+			}
+			catch (\Exception $ex)
+			{
+				if(strpos($ex->getMessage(), 'database is locked') === false)
+					throw $ex;
+				return;
+			}
+			
 			while( ($task = $tasks->fetchAssoc()) )
 			{
-				$task['task'] = unserialize($task['task']);
+				$task['task'] = unserialize(base64_decode($task['task']));
 				$this->taskBuffer[] = $task;
 			}
 			Console::println('Incoming Tasks: '.count($this->taskBuffer));
