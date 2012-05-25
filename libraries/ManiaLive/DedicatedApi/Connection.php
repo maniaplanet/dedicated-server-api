@@ -26,6 +26,7 @@ use ManiaLive\Utilities\Console;
  */
 class Connection extends \ManiaLib\Utils\Singleton
 {
+
 	/**
 	 * XML-RPC client instance
 	 * @var
@@ -50,7 +51,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	protected function __construct()
 	{
-	    $config = Config::getInstance();
+		$config = Config::getInstance();
 		$this->xmlrpcClient = new Xmlrpc\ClientMulticall($config->host, $config->port);
 		Console::printlnFormatted('XML-RPC connection established');
 		$this->authenticate($config->user, $config->password);
@@ -76,9 +77,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		$this->xmlrpcClient->readCallbacks();
 		$calls = $this->xmlrpcClient->getCallbackResponses();
-		if (!empty($calls))
+		if(!empty($calls))
 		{
-			foreach ($calls as $call)
+			foreach($calls as $call)
 			{
 				$method = preg_replace('/^[[:alpha:]]+\./', '', $call[0]); // remove trailing "Whatever."
 				$params = (array) $call[1];
@@ -102,9 +103,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param string $authLevel
 	 * @param array $params
 	 */
-	protected function execute($methodName, $params = array(), $multicall=false)
+	protected function execute($methodName, $params = array(), $multicall = false)
 	{
-		if ($multicall)
+		if($multicall)
 		{
 			$this->xmlrpcClient->addCall($methodName, $params);
 		}
@@ -125,7 +126,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function methodSignature($methodName)
 	{
-		return $this->execute('system.methodSignature', array( $methodName ));
+		return $this->execute('system.methodSignature', array($methodName));
 	}
 
 	/**
@@ -137,16 +138,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function changeAuthPassword($username, $password)
 	{
-		if (!is_string($password))
+		if(!is_string($password))
 		{
-			throw new InvalidArgumentException('password = '.print_r($password,true));
+			throw new InvalidArgumentException('password = '.print_r($password, true));
 		}
-		if ($username != 'User' && $username != 'Admin' && $username != 'SuperAdmin')
+		if($username != 'User' && $username != 'Admin' && $username != 'SuperAdmin')
 		{
-			throw new InvalidArgumentException('username = '.print_r($username,true));
+			throw new InvalidArgumentException('username = '.print_r($username, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($username, $password), false);
+		return $this->execute(ucfirst(__FUNCTION__), array($username, $password),
+						false);
 	}
 
 	/**
@@ -168,7 +170,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	protected function setApiVersion($version, $multicall = false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array((string) $version), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array((string) $version),
+						$multicall);
 	}
 
 	/**
@@ -184,7 +187,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	function authenticate($username, $password)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array($username, $password), false);
+		return $this->execute(ucfirst(__FUNCTION__), array($username, $password),
+						false);
 	}
 
 	/**
@@ -200,32 +204,35 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVote(Vote $vote, $ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVote(Vote $vote, $ratio = 0.5, $timeout = 0, $voters = 1,
+			$multicall = false)
 	{
-		if (is_null($vote))
+		if(is_null($vote))
 		{
 			throw new InvalidArgumentException('vote must be set');
 		}
-		if (!is_double($ratio))
+		if(!is_double($ratio))
 		{
-			throw new InvalidArgumentException('ratio = '.print_r($ratio,true));
+			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
-			throw new InvalidArgumentException('timeout = '.print_r($timeout,true));
+			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
-		if (!is_int($voters))
+		if(!is_int($voters))
 		{
-			throw new InvalidArgumentException('voters = '.print_r($voters,true));
+			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
-		if (!is_array($vote->cmdParam))
+		if(!is_array($vote->cmdParam))
 		{
-			throw new InvalidArgumentException('vote->cmdParam = '.print_r($vote->cmdParam,true));
+			throw new InvalidArgumentException('vote->cmdParam = '.print_r($vote->cmdParam,
+							true));
 		}
 
 		$tmpCmd = new Xmlrpc\Request($vote->cmdName, $vote->cmdParam);
 
-		return  $this->execute(ucfirst(__FUNCTION__).'Ex', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__).'Ex',
+						array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
 	/**
@@ -241,28 +248,30 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteKick($player, $ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteKick($player, $ratio = 0.5, $timeout = 0, $voters = 1,
+			$multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (!is_double($ratio))
+		if(!is_double($ratio))
 		{
-			throw new InvalidArgumentException('ratio = '.print_r($ratio,true));
+			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
-			throw new InvalidArgumentException('timeout = '.print_r($timeout,true));
+			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
-		if (!is_int($voters))
+		if(!is_int($voters))
 		{
-			throw new InvalidArgumentException('voters = '.print_r($voters,true));
+			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
 		$tmpCmd = new Xmlrpc\Request('Kick', array($login));
 
-		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
+		return $this->execute('CallVoteEx',
+						array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
 	/**
@@ -278,28 +287,30 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteBan(Player $player, $ratio = 0.6, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteBan(Player $player, $ratio = 0.6, $timeout = 0, $voters = 1,
+			$multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (!is_double($ratio))
+		if(!is_double($ratio))
 		{
-			throw new InvalidArgumentException('ratio = '.print_r($ratio,true));
+			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
-			throw new InvalidArgumentException('timeout = '.print_r($timeout,true));
+			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
-		if (!is_int($voters))
+		if(!is_int($voters))
 		{
-			throw new InvalidArgumentException('voters = '.print_r($voters,true));
+			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
 		$tmpCmd = new Xmlrpc\Request('Ban', array($login));
 
-		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
+		return $this->execute('CallVoteEx',
+						array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
 	/**
@@ -314,24 +325,26 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteRestartMap($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteRestartMap($ratio = 0.5, $timeout = 0, $voters = 1,
+			$multicall = false)
 	{
-		if (!is_double($ratio))
+		if(!is_double($ratio))
 		{
-			throw new InvalidArgumentException('ratio = '.print_r($ratio,true));
+			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
-			throw new InvalidArgumentException('timeout = '.print_r($timeout,true));
+			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
-		if (!is_int($voters))
+		if(!is_int($voters))
 		{
-			throw new InvalidArgumentException('voters = '.print_r($voters,true));
+			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
 		$tmpCmd = new Xmlrpc\Request('MapRestart', array());
 
-		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
+		return $this->execute('CallVoteEx',
+						array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
 	/**
@@ -346,24 +359,26 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @throws InvalidArgumentException
 	 */
-	function callVoteNextMap($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
+	function callVoteNextMap($ratio = 0.5, $timeout = 0, $voters = 1,
+			$multicall = false)
 	{
-		if (!is_double($ratio))
+		if(!is_double($ratio))
 		{
-			throw new InvalidArgumentException('ratio = '.print_r($ratio,true));
+			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
-			throw new InvalidArgumentException('timeout = '.print_r($timeout,true));
+			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
-		if (!is_int($voters))
+		if(!is_int($voters))
 		{
-			throw new InvalidArgumentException('voters = '.print_r($voters,true));
+			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
 		$tmpCmd = new Xmlrpc\Request('NextMap', array());
 
-		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
+		return $this->execute('CallVoteEx',
+						array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
 
 	/**
@@ -406,7 +421,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCallVoteTimeOut($timeout, $multicall = false)
 	{
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
 			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
@@ -434,7 +449,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCallVoteRatio($ratio, $multicall = false)
 	{
-		if (!is_double($ratio) && ($ratio < 0 || $ratio > 1))
+		if(!is_double($ratio) && ($ratio < 0 || $ratio > 1))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -463,24 +478,27 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCallVoteRatios(array $ratios, $multicall = false)
 	{
-		if (!is_array($ratios))
+		if(!is_array($ratios))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
 
 		for($i = 0; $i < count($ratios); $i++)
 		{
-			if (!is_array($ratios[$i]) && !array_key_exists('Command', $ratios[$i]) && !array_key_exists('Ratio', $ratios[$i]))
+			if(!is_array($ratios[$i]) && !array_key_exists('Command', $ratios[$i]) && !array_key_exists('Ratio',
+							$ratios[$i]))
 			{
 				throw new InvalidArgumentException('ratios['.$i.'] = '.print_r($ratio, true));
 			}
-			if (!is_string($ratios[$i]['Command']))
+			if(!is_string($ratios[$i]['Command']))
 			{
-				throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios[$i][0],true));
+				throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios[$i][0],
+								true));
 			}
-			if (!is_double($ratios[$i]['Ratio']) && ($ratios[$i]['Ratio'] != -1 && ($ratios[$i]['Ratio'] < 0 || $ratios[$i]['Ratio'] > 1)))
+			if(!is_double($ratios[$i]['Ratio']) && ($ratios[$i]['Ratio'] != -1 && ($ratios[$i]['Ratio'] < 0 || $ratios[$i]['Ratio'] > 1)))
 			{
-				throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratios[$i]['Ratio'],true));
+				throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratios[$i]['Ratio'],
+								true));
 			}
 		}
 
@@ -506,22 +524,24 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatSendServerMessageToLanguage(array $messages, $receiver = null, $multicall = false)
+	function chatSendServerMessageToLanguage(array $messages, $receiver = null,
+			$multicall = false)
 	{
-		if (!is_array($messages))
+		if(!is_array($messages))
 		{
-			throw new InvalidArgumentException('messages = '.print_r($messages,true));
+			throw new InvalidArgumentException('messages = '.print_r($messages, true));
 		}
-		if (is_null($receiver))
+		if(is_null($receiver))
 		{
 			$receiverString = '';
 		}
-		else if (! ($receiverString = $this->getLogins($receiver)))
+		else if(!($receiverString = $this->getLogins($receiver)))
 		{
-			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+			throw new InvalidArgumentException('receiver = '.print_r($receiver, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($messages, $receiverString), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($messages, $receiverString), $multicall);
 	}
 
 	/**
@@ -535,18 +555,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function chatSendServerMessage($message, $receiver = null, $multicall = false)
 	{
-		if (!is_string($message))
+		if(!is_string($message))
 		{
-			throw new InvalidArgumentException('message = '.print_r($message,true));
+			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
 
 		$params = array($message);
 		$method = 'ChatSendServerMessage';
-		if (!is_null($receiver))
+		if(!is_null($receiver))
 		{
-			if (! ($logins = $this->getLogins($receiver)))
+			if(!($logins = $this->getLogins($receiver)))
 			{
-				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+				throw new InvalidArgumentException('receiver = '.print_r($receiver, true));
 			}
 			$params[] = $logins;
 			$method .= 'ToLogin';
@@ -565,21 +585,23 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatSendToLanguage(array $messages, $receiver = null, $multicall = false)
+	function chatSendToLanguage(array $messages, $receiver = null,
+			$multicall = false)
 	{
-		if (!is_array($messages))
-			throw new InvalidArgumentException('messages = '.print_r($messages,true));
+		if(!is_array($messages))
+				throw new InvalidArgumentException('messages = '.print_r($messages, true));
 
-		if ($receiver == null)
+		if($receiver == null)
 		{
 			$receiverString = '';
 		}
-		else if (! ($receiverString = $this->getLogins($receiver)))
+		else if(!($receiverString = $this->getLogins($receiver)))
 		{
-			throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
+			throw new InvalidArgumentException('receiver = '.print_r($receiver, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($messages, $receiverString), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($messages, $receiverString), $multicall);
 	}
 
 	/**
@@ -593,16 +615,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function chatSend($message, $receiver, $multicall = false)
 	{
-		if (!is_string($message))
-			throw new InvalidArgumentException('message = '.print_r($message,true));
+		if(!is_string($message))
+				throw new InvalidArgumentException('message = '.print_r($message, true));
 
 		$params = array($message);
 		$method = 'ChatSend';
-		if (!is_null($receiver))
+		if(!is_null($receiver))
 		{
-			if (! ($logins = $this->getLogins($receiver)))
+			if(!($logins = $this->getLogins($receiver)))
 			{
-				throw new InvalidArgumentException('players = '.print_r($receiver,true));
+				throw new InvalidArgumentException('players = '.print_r($receiver, true));
 			}
 			$params[] = $logins;
 			$method .= 'ToLogin';
@@ -630,18 +652,21 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatEnableManualRouting($enable, $serverAutomaticForward = false, $multicall = false)
+	function chatEnableManualRouting($enable, $serverAutomaticForward = false,
+			$multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
-			throw new InvalidArgumentException('enable = '.print_r($enable,true));
+			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
-		if (!is_bool($serverAutomaticForward))
+		if(!is_bool($serverAutomaticForward))
 		{
-			throw new InvalidArgumentException('serverAutomaticForward = '.print_r($serverAutomaticForward,true));
+			throw new InvalidArgumentException('serverAutomaticForward = '.print_r($serverAutomaticForward,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($enable,$serverAutomaticForward), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($enable, $serverAutomaticForward), $multicall);
 	}
 
 	/**
@@ -655,19 +680,21 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function chatForwardToLogin($message, $sender, $receiver = null, $multicall = false)
+	function chatForwardToLogin($message, $sender, $receiver = null,
+			$multicall = false)
 	{
-		if (!is_string($message))
+		if(!is_string($message))
 		{
-			throw new InvalidArgumentException('message = '.print_r($message,true));
+			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
-		if (! ($senderLogin = $this->getLogin($sender)))
+		if(!($senderLogin = $this->getLogin($sender)))
 		{
 			throw new InvalidArgumentException('sender must be set');
 		}
-		$receiverLogin = $this->getLogin($receiver) ?: '';
+		$receiverLogin = $this->getLogin($receiver) ? : '';
 
-		return $this->execute(ucfirst(__FUNCTION__), array($message,$senderLogin,$receiverLogin), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($message, $senderLogin, $receiverLogin), $multicall);
 	}
 
 	/**
@@ -685,27 +712,27 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function sendNotice($receiver, $message, $player = null, $variant = 0, $multicall = false)
+	function sendNotice($receiver, $message, $player = null, $variant = 0,
+			$multicall = false)
 	{
-		if (!is_string($message))
+		if(!is_string($message))
 		{
-			throw new InvalidArgumentException('message = '.print_r($message,true));
+			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
 
 		$params = array();
 		$method = 'SendNotice';
-		if (!is_null($receiver))
+		if(!is_null($receiver))
 		{
-			if (! ($login = $this->getLogins($receiver)))
-				throw new InvalidArgumentException('receiver = '.print_r($receiver,true));
-			else
-				$params[] = $login;
+			if(!($login = $this->getLogins($receiver)))
+					throw new InvalidArgumentException('receiver = '.print_r($receiver, true));
+			else $params[] = $login;
 
 			$method .= 'ToLogin';
 		}
 
 		$params[] = $message;
-		$params[] = $this->getLogin($player) ?: '';
+		$params[] = $this->getLogin($player) ? : '';
 		$params[] = $variant;
 		return $this->execute($method, $params, $multicall);
 	}
@@ -723,31 +750,32 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function sendDisplayManialinkPage($players, $manialink, $timeout, $hideOnClick, $multicall = false)
+	function sendDisplayManialinkPage($players, $manialink, $timeout, $hideOnClick,
+			$multicall = false)
 	{
 		$params = array();
 		$method = 'SendDisplayManialinkPage';
-		if (!is_null($players))
+		if(!is_null($players))
 		{
-			if (! ($login = $this->getLogins($players)))
-				throw new InvalidArgumentException('players = '.print_r($players,true));
-			else
-				$params[] = $login;
+			if(!($login = $this->getLogins($players)))
+					throw new InvalidArgumentException('players = '.print_r($players, true));
+			else $params[] = $login;
 
 			$method .= 'ToLogin';
 		}
 
-		if (!is_string($manialink))
+		if(!is_string($manialink))
 		{
-			throw new InvalidArgumentException('manialink = '.print_r($manialink,true));
+			throw new InvalidArgumentException('manialink = '.print_r($manialink, true));
 		}
-		if (!is_int($timeout))
+		if(!is_int($timeout))
 		{
-			throw new InvalidArgumentException('timeout = '.print_r($timeout,true));
+			throw new InvalidArgumentException('timeout = '.print_r($timeout, true));
 		}
-		if (!is_bool($hideOnClick))
+		if(!is_bool($hideOnClick))
 		{
-			throw new InvalidArgumentException('hideOnClick = '.print_r($hideOnClick,true));
+			throw new InvalidArgumentException('hideOnClick = '.print_r($hideOnClick,
+							true));
 		}
 		$params[] = $manialink;
 		$params[] = $timeout;
@@ -768,12 +796,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		$params = array();
 		$method = 'SendHideManialinkPage';
-		if (!is_null($players))
+		if(!is_null($players))
 		{
-			if (! ($login = $this->getLogins($players)))
-				throw new InvalidArgumentException('players = '.print_r($players,true));
-			else
-				$params[] = $login;
+			if(!($login = $this->getLogins($players)))
+					throw new InvalidArgumentException('players = '.print_r($players, true));
+			else $params[] = $login;
 
 			$method .= 'ToLogin';
 		}
@@ -802,13 +829,13 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function kick($player, $message = '', $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (!is_string($message))
+		if(!is_string($message))
 		{
-			throw new InvalidArgumentException('message = '.print_r($message,true));
+			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
 
 		return $this->execute('Kick', array($login, $message), $multicall);
@@ -822,15 +849,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function ban(Player $player, $message = '', $multicall = false)
+	function ban($player, $message = '', $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (!is_string($message))
+		if(!is_string($message))
 		{
-			throw new InvalidArgumentException('message = '.print_r($message,true));
+			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
 
 		return $this->execute('Ban', array($login, $message), $multicall);
@@ -846,22 +873,24 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function banAndBlackList($player, $message, $saveList = false, $multicall = false)
+	function banAndBlackList($player, $message, $saveList = false,
+			$multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (!is_string($message) || !$message)
+		if(!is_string($message) || !$message)
 		{
 			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
-		if (!is_bool($saveList))
+		if(!is_bool($saveList))
 		{
-			throw new InvalidArgumentException('saveList = '.print_r($saveList,true));
+			throw new InvalidArgumentException('saveList = '.print_r($saveList, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($login, $message, $saveList), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($login, $message, $saveList), $multicall);
 	}
 
 	/**
@@ -873,7 +902,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function unBan($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -903,10 +932,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getBanList($length, $offset)
 	{
-		if (!is_int($length))
-		throw new InvalidArgumentException('length = '.print_r($length,true));
-		if (!is_int($offset))
-		throw new InvalidArgumentException('offset = '.print_r($offset,true));
+		if(!is_int($length))
+				throw new InvalidArgumentException('length = '.print_r($length, true));
+		if(!is_int($offset))
+				throw new InvalidArgumentException('offset = '.print_r($offset, true));
 
 		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
@@ -921,7 +950,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function blackList($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -937,7 +966,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function unBlackList($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -967,10 +996,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getBlackList($length, $offset)
 	{
-		if (!is_int($length))
-		throw new InvalidArgumentException('length = '.print_r($length,true));
-		if (!is_int($offset))
-		throw new InvalidArgumentException('offset = '.print_r($offset,true));
+		if(!is_int($length))
+				throw new InvalidArgumentException('length = '.print_r($length, true));
+		if(!is_int($offset))
+				throw new InvalidArgumentException('offset = '.print_r($offset, true));
 
 		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
@@ -985,8 +1014,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function loadBlackList($filename, $multicall = false)
 	{
-		if (!is_string($filename))
-		throw new InvalidArgumentException('filename = '.print_r($filename,true));
+		if(!is_string($filename))
+				throw new InvalidArgumentException('filename = '.print_r($filename, true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -1000,8 +1029,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function saveBlackList($filename, $multicall = false)
 	{
-		if (!is_string($filename))
-		throw new InvalidArgumentException('filename = '.print_r($filename,true));
+		if(!is_string($filename))
+				throw new InvalidArgumentException('filename = '.print_r($filename, true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -1015,7 +1044,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function addGuest($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1031,7 +1060,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function removeGuest($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1061,13 +1090,13 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getGuestList($length, $offset)
 	{
-		if (!is_int($length))
+		if(!is_int($length))
 		{
-			throw new InvalidArgumentException('length = '.print_r($length,true));
+			throw new InvalidArgumentException('length = '.print_r($length, true));
 		}
-		if (!is_int($offset))
+		if(!is_int($offset))
 		{
-			throw new InvalidArgumentException('offset = '.print_r($offset,true));
+			throw new InvalidArgumentException('offset = '.print_r($offset, true));
 		}
 
 		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
@@ -1084,9 +1113,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function loadGuestList($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -1101,9 +1130,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function saveGuestList($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -1121,14 +1150,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setBuddyNotification(Player $player, $enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
-			throw new InvalidArgumentException('enable = '.print_r($enable,true));
+			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
 
-		$player = $this->getLogin($player) ?: '';
+		$player = $this->getLogin($player) ? : '';
 
-		return $this->execute(ucfirst(__FUNCTION__), array($player, $enable), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($player, $enable),
+						$multicall);
 	}
 
 	/**
@@ -1139,7 +1169,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getBuddyNotification($player)
 	{
-		$player = $this->getLogin($player) ?: '';
+		$player = $this->getLogin($player) ? : '';
 
 		return $this->execute(ucfirst(__FUNCTION__), $params);
 	}
@@ -1154,13 +1184,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function writeFile($filename, $localFilename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
-		if (!file_exists($localFilename))
+		if(!file_exists($localFilename))
 		{
-			throw new InvalidArgumentException('localFilename = '.print_r($localFilename,true));
+			throw new InvalidArgumentException('localFilename = '.print_r($localFilename,
+							true));
 		}
 
 		$inputData = file_get_contents($localFilename);
@@ -1172,9 +1203,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 			throw new InvalidArgumentException('file is too big');
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data),
+						$multicall);
 	}
-
 
 	/**
 	 * Write the data to the specified file. The filename is relative to the Tracks path
@@ -1186,7 +1217,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function writeFileFromString($filename, $data, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
@@ -1212,15 +1243,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function tunnelSendData($players, $filename, $multicall = false)
 	{
-		if (! ($login = $this->getLogins($players)))
+		if(!($login = $this->getLogins($players)))
 		{
-			throw new InvalidArgumentException('players = '.print_r($players,true));
+			throw new InvalidArgumentException('players = '.print_r($players, true));
 		}
-		if (!file_exists($filename))
+		if(!file_exists($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
-		if (filesize($filename) > 4 * 1024)
+		if(filesize($filename) > 4 * 1024)
 		{
 			throw new InvalidArgumentException('file is too big');
 		}
@@ -1229,7 +1260,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 		$data = new Xmlrpc\Base64($inputData);
 
-		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
+		return $this->execute('TunnelSendDataToLogin', array($login, $data),
+						$multicall);
 	}
 
 	/**
@@ -1243,14 +1275,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function tunnelSendDataFromString($players, $data, $multicall = false)
 	{
-		if (! ($login = $this->getLogins($players)))
+		if(!($login = $this->getLogins($players)))
 		{
-			throw new InvalidArgumentException('players = '.print_r($players,true));
+			throw new InvalidArgumentException('players = '.print_r($players, true));
 		}
 
 		$data = new Xmlrpc\Base64($data);
 
-		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
+		return $this->execute('TunnelSendDataToLogin', array($login, $data),
+						$multicall);
 	}
 
 	/**
@@ -1263,13 +1296,13 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function dedicatedEcho ($message, $callback = '', $multicall = false)
+	function dedicatedEcho($message, $callback = '', $multicall = false)
 	{
-		if (!is_string($message))
+		if(!is_string($message))
 		{
 			throw new InvalidArgumentException('message = '.print_r($message, true));
 		}
-		if (!is_string($callback))
+		if(!is_string($callback))
 		{
 			throw new InvalidArgumentException('callback = '.print_r($callback, true));
 		}
@@ -1286,7 +1319,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function ignore($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1302,7 +1335,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function unIgnore(Player $player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -1331,13 +1364,13 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getIgnoreList($length, $offset)
 	{
-		if (!is_int($length))
+		if(!is_int($length))
 		{
-			throw new InvalidArgumentException('length = '.print_r($length,true));
+			throw new InvalidArgumentException('length = '.print_r($length, true));
 		}
-		if (!is_int($offset))
+		if(!is_int($offset))
 		{
-			throw new InvalidArgumentException('offset = '.print_r($offset,true));
+			throw new InvalidArgumentException('offset = '.print_r($offset, true));
 		}
 
 		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
@@ -1361,20 +1394,21 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function pay($player, $amount, $label, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (!is_int($amount) || $amount < 1)
+		if(!is_int($amount) || $amount < 1)
 		{
 			throw new InvalidArgumentException('amount = '.print_r($amount, true));
 		}
-		if (!is_string($label))
+		if(!is_string($label))
 		{
 			throw new InvalidArgumentException('label = '.print_r($label, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($login, $amount, $label), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($login, $amount, $label),
+						$multicall);
 	}
 
 	/**
@@ -1394,25 +1428,27 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return int
 	 * @throws InvalidArgumentException
 	 */
-	function sendBill($fromPlayer, $amount, $label, $toPlayer = null, $multicall = false)
+	function sendBill($fromPlayer, $amount, $label, $toPlayer = null,
+			$multicall = false)
 	{
 
-		if (!is_int($amount) || $amount < 1)
+		if(!is_int($amount) || $amount < 1)
 		{
 			throw new InvalidArgumentException('amount = '.print_r($amount, true));
 		}
-		if (!is_string($label))
+		if(!is_string($label))
 		{
 			throw new InvalidArgumentException('label = '.print_r($label, true));
 		}
-		if (! ($from = $this->getLogin($fromPlayer)))
+		if(!($from = $this->getLogin($fromPlayer)))
 		{
 			throw new InvalidArgumentException('fromPlayer must be set');
 		}
 
-		$to = $this->getLogin($toPlayer) ?: '';
+		$to = $this->getLogin($toPlayer) ? : '';
 
-		return $this->execute(ucfirst(__FUNCTION__), array($from, $amount, $label, $to), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($from, $amount, $label, $to), $multicall);
 	}
 
 	/**
@@ -1427,7 +1463,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getBillState($billId)
 	{
-		if (!is_int($billId))
+		if(!is_int($billId))
 		{
 			throw new InvalidArgumentException('billId = '.print_r($billId, true));
 		}
@@ -1466,16 +1502,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setConnectionRates($downloadRate, $uploadRate, $multicall = false)
 	{
-		if (!is_int($downloadRate))
+		if(!is_int($downloadRate))
 		{
-			throw new InvalidArgumentException('downloadRate = '.print_r($downloadRate, true));
+			throw new InvalidArgumentException('downloadRate = '.print_r($downloadRate,
+							true));
 		}
-		if (!is_int($uploadRate))
+		if(!is_int($uploadRate))
 		{
 			throw new InvalidArgumentException('uploadRate = '.print_r($uploadRate, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($downloadRate, $uploadRate),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($downloadRate, $uploadRate), $multicall);
 	}
 
 	/**
@@ -1487,9 +1525,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerName($serverName, $multicall = false)
 	{
-		if (!is_string($serverName))
+		if(!is_string($serverName))
 		{
-			throw new InvalidArgumentException('serverName = '.print_r($serverName,true));
+			throw new InvalidArgumentException('serverName = '.print_r($serverName, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($serverName), $multicall);
@@ -1513,9 +1551,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerComment($serverComment, $multicall = false)
 	{
-		if (!is_string($serverComment))
+		if(!is_string($serverComment))
 		{
-			throw new InvalidArgumentException('serverComment = '.print_r($serverComment,true));
+			throw new InvalidArgumentException('serverComment = '.print_r($serverComment,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($serverComment), $multicall);
@@ -1540,9 +1579,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setHideServer($visibility, $multicall = false)
 	{
-		if ($visibility !== 0 && $visibility !== 1 && $visibility !== 2)
+		if($visibility !== 0 && $visibility !== 1 && $visibility !== 2)
 		{
-			throw new InvalidArgumentException('visibility = '.print_r($visibility,true));
+			throw new InvalidArgumentException('visibility = '.print_r($visibility, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($visibility), $multicall);
@@ -1575,12 +1614,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerPassword($serverPassword, $multicall = false)
 	{
-		if (!is_string($serverPassword))
+		if(!is_string($serverPassword))
 		{
-			throw new DedicatedApiInvalidArgumentExcepption('serverPassword = '.print_r($serverPassword,true));
+			throw new DedicatedApiInvalidArgumentExcepption('serverPassword = '.print_r($serverPassword,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($serverPassword), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($serverPassword),
+						$multicall);
 	}
 
 	/**
@@ -1602,12 +1643,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerPasswordForSpectator($serverPassword, $multicall = false)
 	{
-		if (!is_string($serverPassword))
+		if(!is_string($serverPassword))
 		{
-			throw new DedicatedApiInvalidArgumentExcepption('serverPassword = '.print_r($serverPassword,true));
+			throw new DedicatedApiInvalidArgumentExcepption('serverPassword = '.print_r($serverPassword,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($serverPassword), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($serverPassword),
+						$multicall);
 	}
 
 	/**
@@ -1629,7 +1672,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setMaxPlayers($maxPlayers, $multicall = false)
 	{
-		if (!is_int($maxPlayers))
+		if(!is_int($maxPlayers))
 		{
 			throw new InvalidArgumentException('maxPlayers = '.print_r($maxPlayers, true));
 		}
@@ -1657,15 +1700,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setMaxSpectators($maxSpectators, $multicall = false)
 	{
-		if (!is_int($maxSpectators))
+		if(!is_int($maxSpectators))
 		{
-			throw new InvalidArgumentException('maxPlayers = '.print_r($maxSpectators, true));
+			throw new InvalidArgumentException('maxPlayers = '.print_r($maxSpectators,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($maxSpectators), $multicall);
 	}
-
-
 
 	/**
 	 * Get the current and next maximum number of spectators allowed on server.
@@ -1686,12 +1728,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function enableP2PUpload($enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
 			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($enable),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($enable), $multicall);
 	}
 
 	/**
@@ -1712,12 +1754,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function enableP2PDownload($enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
 			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($enable),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($enable), $multicall);
 	}
 
 	/**
@@ -1738,12 +1780,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function allowMapDownload($allow, $multicall = false)
 	{
-		if (!is_bool($allow))
+		if(!is_bool($allow))
 		{
 			throw new InvalidArgumentException('allow = '.print_r($allow, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($allow),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($allow), $multicall);
 	}
 
 	/**
@@ -1765,12 +1807,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function autoSaveReplays($enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
 			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($enable),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($enable), $multicall);
 	}
 
 	/**
@@ -1791,12 +1833,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function autoSaveValidationReplays($enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
 			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($enable),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($enable), $multicall);
 	}
 
 	/**
@@ -1818,12 +1860,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function saveCurrentReplay($filename = '', $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
 			throw new InvalidArgumentException('filename = '.$print_r($filename, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($filename),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
 
 	/**
@@ -1836,16 +1878,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function saveBestGhostsReplay($player = null, $filename = '', $multicall = false)
+	function saveBestGhostsReplay($player = null, $filename = '',
+			$multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
 			throw new InvalidArgumentException('filename = '.$print_r($filename, true));
 		}
 
-		$playerLogin = $this->getLogin($player) ?: '';
+		$playerLogin = $this->getLogin($player) ? : '';
 
-		return $this->execute(ucfirst(__FUNCTION__),array($playerLogin,$filename),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($playerLogin, $filename),
+						$multicall);
 	}
 
 	/**
@@ -1857,11 +1901,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getValidationReplay($player)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__),array($login));
+		return $this->execute(ucfirst(__FUNCTION__), array($login));
 	}
 
 	/**
@@ -1874,12 +1918,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setLadderMode($mode, $multicall = false)
 	{
-		if ($mode !== 0 && $mode !== 1)
+		if($mode !== 0 && $mode !== 1)
 		{
 			throw new InvalidArgumentException('mode = '.print_r($mode, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($mode),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($mode), $multicall);
 	}
 
 	/**
@@ -1912,12 +1956,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setVehicleNetQuality($quality, $multicall = false)
 	{
-		if ($quality !== 0 && $quality !== 1)
+		if($quality !== 0 && $quality !== 1)
 		{
 			throw new InvalidArgumentException('quality = '.print_r($quality, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__),array($quality),$multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($quality), $multicall);
 	}
 
 	/**
@@ -1953,14 +1997,20 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerOptions(array $options, $multicall = false)
 	{
-		if(!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment', $options)
-				|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
-				|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
-				|| (array_key_exists('IsP2PUpload', $options) xor array_key_exists('IsP2PDownload', $options))
-				|| (array_key_exists('NextMaxPlayer', $options) xor array_key_exists('NextMaxSpectator', $options))
-				|| (array_key_exists('RefereePassword', $options) xor array_key_exists('RefereeMode', $options)))
+		if(!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment',
+						$options)
+				|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator',
+						$options)
+				|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio',
+						$options)
+				|| (array_key_exists('IsP2PUpload', $options) xor array_key_exists('IsP2PDownload',
+						$options))
+				|| (array_key_exists('NextMaxPlayer', $options) xor array_key_exists('NextMaxSpectator',
+						$options))
+				|| (array_key_exists('RefereePassword', $options) xor array_key_exists('RefereeMode',
+						$options)))
 		{
-			throw new InvalidArgumentException('options = '.print_r($options,true));
+			throw new InvalidArgumentException('options = '.print_r($options, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($options), $multicall);
@@ -1983,12 +2033,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getServerOptions($compatibility = 1)
 	{
-		if ($compatibility !== 0 && $compatibility !== 1)
+		if($compatibility !== 0 && $compatibility !== 1)
 		{
-			throw  new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__), array($compatibility)));
+		return ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__),
+								array($compatibility)));
 	}
 
 	/**
@@ -2003,7 +2055,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setServerPackMask($packMask, $multicall = false)
 	{
-		if (!is_string($packMask))
+		if(!is_string($packMask))
 		{
 			throw new InvalidArgumentException('packMask = '.print_r($packMask, true));
 		}
@@ -2033,27 +2085,25 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setForcedMods($override, $mods, $multicall = false)
 	{
-		if (!is_bool($override))
+		if(!is_bool($override))
 		{
 			throw new InvalidArgumentException('override = '.print_r($override, true));
 		}
-		if (is_array($mods))
+		if(is_array($mods))
 		{
 			$modList = array();
-			foreach ($mods as $mod)
+			foreach($mods as $mod)
 			{
-				if (!($mod instanceof Structures\Mod))
-				throw new InvalidArgumentException('mods = '.print_r($mods, true));
-				else
-				$modList[] = $mod->toArray();
+				if(!($mod instanceof Structures\Mod))
+						throw new InvalidArgumentException('mods = '.print_r($mods, true));
+				else $modList[] = $mod->toArray();
 			}
 		}
-		elseif ($mods instanceof Structures\Mod)
-		$modList = array($mods->toArray());
-		else
-		throw new InvalidArgumentException('mods = '.print_r($mods, true));
+		elseif($mods instanceof Structures\Mod) $modList = array($mods->toArray());
+		else throw new InvalidArgumentException('mods = '.print_r($mods, true));
 
-		return $this->execute(ucfirst(__FUNCTION__), array($override, $modList), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($override, $modList),
+						$multicall);
 	}
 
 	/**
@@ -2079,16 +2129,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setForcedMusic($override, $music, $multicall = false)
 	{
-		if (!is_bool($override))
+		if(!is_bool($override))
 		{
 			throw new InvalidArgumentException('override = '.print_r($override, true));
 		}
-		if (!is_string($music))
+		if(!is_string($music))
 		{
 			throw new InvalidArgumentException('music = '.print_r($music, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($override, $music), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($override, $music),
+						$multicall);
 	}
 
 	/**
@@ -2112,25 +2163,28 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setForcedSkins(array $skins, $multicall = false)
 	{
-		if (!is_array($skins))
+		if(!is_array($skins))
 		{
 			throw new InvalidArgumentException('skins = '.print_r($skins, true));
 		}
 
 		$skinParameter = array();
-		foreach ($skins as $key => $skin)
+		foreach($skins as $key => $skin)
 		{
-			if ($skin instanceof namespace\Structures\Skin)
+			if($skin instanceof namespace\Structures\Skin)
 			{
 				$skinParameter[$key] = array();
-				$skinParameter[$key]['Orig'] 		= $skin->orig;
-				$skinParameter[$key]['Name'] 		= $skin->name;
-				$skinParameter[$key]['Checksum'] 	= $skin->checksum;
-				$skinParameter[$key]['Url'] 		= $skin->url;
+				$skinParameter[$key]['Orig'] = $skin->orig;
+				$skinParameter[$key]['Name'] = $skin->name;
+				$skinParameter[$key]['Checksum'] = $skin->checksum;
+				$skinParameter[$key]['Url'] = $skin->url;
 			}
-			elseif (!is_array($skin) || !array_key_exists('Orig', $skin) && !array_key_exists('Name', $skin) && !array_key_exists('Checksum', $skin) && !array_key_exists('Url', $skin))
+			elseif(!is_array($skin) || !array_key_exists('Orig', $skin) && !array_key_exists('Name',
+							$skin) && !array_key_exists('Checksum', $skin) && !array_key_exists('Url',
+							$skin))
 			{
-				throw new InvalidArgumentException('skins['.$key.'] = '.print_r($skins[$key], true));
+				throw new InvalidArgumentException('skins['.$key.'] = '.print_r($skins[$key],
+								true));
 			}
 			else
 			{
@@ -2168,12 +2222,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setRefereePassword($refereePassword, $multicall = false)
 	{
-		if (!is_string($refereePassword))
+		if(!is_string($refereePassword))
 		{
-			throw new DedicatedApiInvalidArgumentExcepption('refereePassword = '.print_r($refereePassword,true));
+			throw new DedicatedApiInvalidArgumentExcepption('refereePassword = '.print_r($refereePassword,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($refereePassword), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($refereePassword),
+						$multicall);
 	}
 
 	/**
@@ -2196,7 +2252,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setUseChangingValidationSeed($enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
 			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
@@ -2223,7 +2279,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setWarmUp($enable, $multicall = false)
 	{
-		if (!is_bool($enable))
+		if(!is_bool($enable))
 		{
 			throw new InvalidArgumentException('enable = '.print_r($enable, true));
 		}
@@ -2248,7 +2304,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getRulesScriptText()
 	{
-	    return $this->execute(ucfirst(__FUNCTION__));
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -2262,7 +2318,33 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setRulesScriptText($script, $multicall = false)
 	{
-	    return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
+	}
+
+	function getRulesScriptTraits()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+
+	/**
+	 * Set netwrite variables
+	 * @param array $traits
+	 * @param bool $multicall
+	 */
+	function setRulesScriptTraits($traits, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array($traits), $multicall);
+	}
+
+	/**
+	 * Fire an event in the script on the dedicated server
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function triggerRulesScriptEvent($param1, $param2, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array($param1, $param2),
+						$multicall);
 	}
 
 	/**
@@ -2293,7 +2375,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setRulesScriptParams($rules, $multicall = false)
 	{
-		 return $this->execute(ucfirst(__FUNCTION__), array($rules), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($rules), $multicall);
 	}
 
 	/**
@@ -2305,12 +2387,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function restartMap($dontClearCupScores = false, $multicall = false)
 	{
-		if (!is_bool($dontClearCupScores))
+		if(!is_bool($dontClearCupScores))
 		{
-			throw new InvalidArgumentException('dontClearCupScores = '.print_r($dontClearCupScores, true));
+			throw new InvalidArgumentException('dontClearCupScores = '.print_r($dontClearCupScores,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($dontClearCupScores), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($dontClearCupScores),
+						$multicall);
 	}
 
 	/**
@@ -2322,12 +2406,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function nextMap($dontClearCupScores = false, $multicall = false)
 	{
-		if (!is_bool($dontClearCupScores))
+		if(!is_bool($dontClearCupScores))
 		{
-			throw new InvalidArgumentException('dontClearCupScores = '.print_r($dontClearCupScores, true));
+			throw new InvalidArgumentException('dontClearCupScores = '.print_r($dontClearCupScores,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($dontClearCupScores), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($dontClearCupScores),
+						$multicall);
 	}
 
 	/**
@@ -2365,7 +2451,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setGameInfos(Structures\GameInfos $gameInfos, $multicall = false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array($gameInfos->toArray()), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($gameInfos->toArray()),
+						$multicall);
 	}
 
 	/**
@@ -2383,12 +2470,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getCurrentGameInfo($compatibility = 1)
 	{
-		if ($compatibility !== 1 && $compatibility != 0)
+		if($compatibility !== 1 && $compatibility != 0)
 		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return Structures\GameInfos::fromArray($this->execute(ucfirst(__FUNCTION__), array($compatibility)));
+		return Structures\GameInfos::fromArray($this->execute(ucfirst(__FUNCTION__),
+								array($compatibility)));
 	}
 
 	/**
@@ -2406,12 +2495,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getNextGameInfo($compatibility = 1)
 	{
-		if ($compatibility !== 1 && $compatibility != 0)
+		if($compatibility !== 1 && $compatibility != 0)
 		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return Structures\GameInfos::fromArray($this->execute(ucfirst(__FUNCTION__),array($compatibility)));
+		return Structures\GameInfos::fromArray($this->execute(ucfirst(__FUNCTION__),
+								array($compatibility)));
 	}
 
 	/**
@@ -2425,12 +2516,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getGameInfos($compatibility = 1)
 	{
-		if ($compatibility !== 1 && $compatibility != 0)
+		if($compatibility !== 1 && $compatibility != 0)
 		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return Structures\GameInfos::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),array($compatibility)));
+		return Structures\GameInfos::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
+								array($compatibility)));
 	}
 
 	/**
@@ -2443,9 +2536,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setGameMode($gameMode, $multicall = false)
 	{
-		if (!is_int($gameMode) && ($gameMode < 0  || $gameMode > 5))
+		if(!is_int($gameMode) && ($gameMode < 0 || $gameMode > 5))
 		{
-			throw new InvalidArgumentException('gameMode = '.print_r($gameMode,true));
+			throw new InvalidArgumentException('gameMode = '.print_r($gameMode, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($gameMode), $multicall);
@@ -2469,9 +2562,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setChatTime($chatTime, $multicall = false)
 	{
-		if (!is_int($chatTime))
+		if(!is_int($chatTime))
 		{
-			throw new InvalidArgumentException('chatTime = '.print_r($chatTime,true));
+			throw new InvalidArgumentException('chatTime = '.print_r($chatTime, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($chatTime), $multicall);
@@ -2497,9 +2590,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setFinishTimeout($finishTimeout, $multicall = false)
 	{
-		if (!is_int($finishTimeout))
+		if(!is_int($finishTimeout))
 		{
-			throw new InvalidArgumentException('chatTime = '.print_r($finishTimeout,true));
+			throw new InvalidArgumentException('chatTime = '.print_r($finishTimeout, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($finishTimeout), $multicall);
@@ -2526,12 +2619,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setAllWarmUpDuration($warmUpDuration, $multicall = false)
 	{
-		if (!is_int($warmUpDuration))
+		if(!is_int($warmUpDuration))
 		{
-			throw new InvalidArgumentException('warmUpDuration = '.print_r($warmUpDuration,true));
+			throw new InvalidArgumentException('warmUpDuration = '.print_r($warmUpDuration,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($warmUpDuration), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($warmUpDuration),
+						$multicall);
 	}
 
 	/**
@@ -2553,12 +2648,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setDisableRespawn($disableRespawn, $multicall = false)
 	{
-		if (!is_bool($disableRespawn))
+		if(!is_bool($disableRespawn))
 		{
-			throw new InvalidArgumentException('disableRespawn = '.print_r($disableRespawn,true));
+			throw new InvalidArgumentException('disableRespawn = '.print_r($disableRespawn,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($disableRespawn), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($disableRespawn),
+						$multicall);
 	}
 
 	/**
@@ -2581,12 +2678,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setForceShowAllOpponents($forceShowAllOpponents, $multicall = false)
 	{
-		if (!is_int($forceShowAllOpponents))
+		if(!is_int($forceShowAllOpponents))
 		{
-			throw new InvalidArgumentException('forceShowAllOpponents = '.print_r($forceShowAllOpponents,true));
+			throw new InvalidArgumentException('forceShowAllOpponents = '.print_r($forceShowAllOpponents,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($forceShowAllOpponents), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($forceShowAllOpponents),
+						$multicall);
 	}
 
 	/**
@@ -2630,12 +2729,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setTimeAttackLimit($timeAttackLimit, $multicall = false)
 	{
-		if (!is_int($timeAttackLimit))
+		if(!is_int($timeAttackLimit))
 		{
-			throw new InvalidArgumentException('timeAttackLimit = '.print_r($timeAttackLimit,true));
+			throw new InvalidArgumentException('timeAttackLimit = '.print_r($timeAttackLimit,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($timeAttackLimit), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($timeAttackLimit),
+						$multicall);
 	}
 
 	/**
@@ -2655,14 +2756,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 */
-	function setTimeAttackSynchStartPeriod($timeAttackSynchPeriod, $multicall = false)
+	function setTimeAttackSynchStartPeriod($timeAttackSynchPeriod,
+			$multicall = false)
 	{
-		if (!is_int($timeAttackSynchPeriod))
+		if(!is_int($timeAttackSynchPeriod))
 		{
-			throw new InvalidArgumentException('timeAttackSynchPeriod = '.print_r($timeAttackSynchPeriod,true));
+			throw new InvalidArgumentException('timeAttackSynchPeriod = '.print_r($timeAttackSynchPeriod,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($timeAttackSynchPeriod), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($timeAttackSynchPeriod),
+						$multicall);
 	}
 
 	/**
@@ -2685,9 +2789,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setLapsTimeLimit($lapsTimeLimit, $multicall = false)
 	{
-		if (!is_int($lapsTimeLimit))
+		if(!is_int($lapsTimeLimit))
 		{
-			throw new InvalidArgumentException('lapsTimeLimit = '.print_r($lapsTimeLimit,true));
+			throw new InvalidArgumentException('lapsTimeLimit = '.print_r($lapsTimeLimit,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($lapsTimeLimit), $multicall);
@@ -2713,9 +2818,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setNbLaps($nbLaps, $multicall = false)
 	{
-		if (!is_int($nbLaps))
+		if(!is_int($nbLaps))
 		{
-			throw new InvalidArgumentException('nbLaps = '.print_r($nbLaps,true));
+			throw new InvalidArgumentException('nbLaps = '.print_r($nbLaps, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($nbLaps), $multicall);
@@ -2743,12 +2848,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setRoundForcedLaps($roundForcedLaps, $multicall = false)
 	{
-		if (!is_int($roundForcedLaps))
+		if(!is_int($roundForcedLaps))
 		{
-			throw new InvalidArgumentException('roundForcedLaps = '.print_r($roundForcedLaps,true));
+			throw new InvalidArgumentException('roundForcedLaps = '.print_r($roundForcedLaps,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($roundForcedLaps), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($roundForcedLaps),
+						$multicall);
 	}
 
 	/**
@@ -2771,12 +2878,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setRoundPointsLimit($roundPointsLimit, $multicall = false)
 	{
-		if (!is_int($roundPointsLimit))
+		if(!is_int($roundPointsLimit))
 		{
-			throw new InvalidArgumentException('roundPointsLimit = '.print_r($roundPointsLimit,true));
+			throw new InvalidArgumentException('roundPointsLimit = '.print_r($roundPointsLimit,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($roundPointsLimit), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($roundPointsLimit),
+						$multicall);
 	}
 
 	/**
@@ -2799,18 +2908,22 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @throws InvalidArgumentException
 	 * @return bool
 	 */
-	function setRoundCustomPoints(array $roundCustomPoints, $relaxChecking = false, $multicall = false)
+	function setRoundCustomPoints(array $roundCustomPoints, $relaxChecking = false,
+			$multicall = false)
 	{
-		if (!is_array($roundCustomPoints))
+		if(!is_array($roundCustomPoints))
 		{
-			throw new InvalidArgumentException('roundCustomPoints = '.print_r($roundCustomPoints,true));
+			throw new InvalidArgumentException('roundCustomPoints = '.print_r($roundCustomPoints,
+							true));
 		}
-		if (!is_bool($relaxChecking))
+		if(!is_bool($relaxChecking))
 		{
-			throw new InvalidArgumentException('relaxChecking = '.print_r($relaxChecking,true));
+			throw new InvalidArgumentException('relaxChecking = '.print_r($relaxChecking,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($roundCustomPoints, $relaxChecking), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+						array($roundCustomPoints, $relaxChecking), $multicall);
 	}
 
 	/**
@@ -2834,12 +2947,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setUseNewRulesRound($useNewRulesRound, $multicall = false)
 	{
-		if (!is_bool($useNewRulesRound))
+		if(!is_bool($useNewRulesRound))
 		{
-			throw new InvalidArgumentException('useNewRulesRound = '.print_r($useNewRulesRound,true));
+			throw new InvalidArgumentException('useNewRulesRound = '.print_r($useNewRulesRound,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($useNewRulesRound), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($useNewRulesRound),
+						$multicall);
 	}
 
 	/**
@@ -2861,12 +2976,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setTeamPointsLimit($teamPointsLimit, $multicall = false)
 	{
-		if (!is_int($teamPointsLimit))
+		if(!is_int($teamPointsLimit))
 		{
-			throw new InvalidArgumentException('teamPointsLimit = '.print_r($teamPointsLimit,true));
+			throw new InvalidArgumentException('teamPointsLimit = '.print_r($teamPointsLimit,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($teamPointsLimit), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($teamPointsLimit),
+						$multicall);
 	}
 
 	/**
@@ -2889,9 +3006,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setMaxPointsTeam($maxPointsTeam, $multicall = false)
 	{
-		if (!is_int($maxPointsTeam))
+		if(!is_int($maxPointsTeam))
 		{
-			throw new InvalidArgumentException('maxPointsTeam = '.print_r($maxPointsTeam,true));
+			throw new InvalidArgumentException('maxPointsTeam = '.print_r($maxPointsTeam,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($maxPointsTeam), $multicall);
@@ -2917,12 +3035,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setUseNewRulesTeam($useNewRulesTeam, $multicall = false)
 	{
-		if (!is_bool($useNewRulesTeam))
+		if(!is_bool($useNewRulesTeam))
 		{
-			throw new InvalidArgumentException('useNewRulesTeam = '.print_r($useNewRulesTeam,true));
+			throw new InvalidArgumentException('useNewRulesTeam = '.print_r($useNewRulesTeam,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($useNewRulesTeam), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($useNewRulesTeam),
+						$multicall);
 	}
 
 	/**
@@ -2945,9 +3065,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCupPointsLimit($pointsLimit, $multicall = false)
 	{
-		if (!is_int($pointsLimit))
+		if(!is_int($pointsLimit))
 		{
-			throw new InvalidArgumentException('pointsLimit = '.print_r($pointsLimit,true));
+			throw new InvalidArgumentException('pointsLimit = '.print_r($pointsLimit,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($pointsLimit), $multicall);
@@ -2973,9 +3094,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCupRoundsPerMap($roundsPerMap, $multicall = false)
 	{
-		if (!is_int($roundsPerMap))
+		if(!is_int($roundsPerMap))
 		{
-			throw new InvalidArgumentException('roundsPerMap = '.print_r($roundsPerMap,true));
+			throw new InvalidArgumentException('roundsPerMap = '.print_r($roundsPerMap,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($roundsPerMap), $multicall);
@@ -3003,12 +3125,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCupWarmUpDuration($warmUpDuration, $multicall = false)
 	{
-		if (!is_int($warmUpDuration))
+		if(!is_int($warmUpDuration))
 		{
-			throw new InvalidArgumentException('warmUpDuration = '.print_r($warmUpDuration,true));
+			throw new InvalidArgumentException('warmUpDuration = '.print_r($warmUpDuration,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($warmUpDuration), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($warmUpDuration),
+						$multicall);
 	}
 
 	/**
@@ -3031,9 +3155,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCupNbWinners($nbWinners, $multicall = false)
 	{
-		if (!is_int($nbWinners))
+		if(!is_int($nbWinners))
 		{
-			throw new InvalidArgumentException('nbWinners = '.print_r($nbWinners,true));
+			throw new InvalidArgumentException('nbWinners = '.print_r($nbWinners, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($nbWinners), $multicall);
@@ -3076,12 +3200,37 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setNextMapIndex($nextMapIndex, $multicall = false)
 	{
-		if (!is_int($nextMapIndex))
+		if(!is_int($nextMapIndex))
 		{
-			throw new InvalidArgumentException('nextMapIndex = '.print_r($nextMapIndex,true));
+			throw new InvalidArgumentException('nextMapIndex = '.print_r($nextMapIndex,
+							true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($nextMapIndex), $multicall);
+	}
+
+	function setTeamInfo($teamName1, $teamColor1, $team1Country, $teamName2,
+			$teamColor2, $team2Country, $multicall = false)
+	{
+		if(!is_double($teamColor1))
+		{
+			throw new InvalidArgumentException('teamColor1 = '.print_r($teamColor1, true));
+		}
+		if(!is_double($teamColor2))
+		{
+			throw new InvalidArgumentException('teamColor2 = '.print_r($teamColor2, true));
+		}
+		if(!is_string($teamName1))
+		{
+			throw new InvalidArgumentException('teamName1 = '.print_r($teamName1, true));
+		}
+		if(!is_string($teamName2))
+		{
+			throw new InvalidArgumentException('teamName2 = '.print_r($teamName2, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__),
+						array('unused', 0., '|World|France', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
+						$multicall);
 	}
 
 	/**
@@ -3121,12 +3270,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getMapInfo($filename)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
-		$temp = $this->execute(ucfirst(__FUNCTION__),array($filename));
+		$temp = $this->execute(ucfirst(__FUNCTION__), array($filename));
 		return Structures\Map::fromArray($temp);
 	}
 
@@ -3137,9 +3286,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function checkMapForCurrentServerParams($filename)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename));
@@ -3158,16 +3307,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getMapList($length, $offset)
 	{
-		if (!is_int($length))
+		if(!is_int($length))
 		{
-			throw new InvalidArgumentException('length = '.print_r($length,true));
+			throw new InvalidArgumentException('length = '.print_r($length, true));
 		}
-		if (!is_int($offset))
+		if(!is_int($offset))
 		{
-			throw new InvalidArgumentException('offset = '.print_r($offset,true));
+			throw new InvalidArgumentException('offset = '.print_r($offset, true));
 		}
 
-		return Structures\Map::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset)));
+		return Structures\Map::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
+								array($length, $offset)));
 	}
 
 	/**
@@ -3179,9 +3329,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function addMap($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3196,9 +3346,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function addMapList(array $filenames, $multicall = false)
 	{
-		if (!is_array($filenames))
+		if(!is_array($filenames))
 		{
-			throw new InvalidArgumentException('filenames = '.print_r($filenames,true));
+			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
@@ -3213,9 +3363,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function removeMap($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3231,9 +3381,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function removeMapList(array $filenames, $multicall = false)
 	{
-		if (!is_array($filenames))
+		if(!is_array($filenames))
 		{
-			throw new InvalidArgumentException('filenames = '.print_r($filenames,true));
+			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
@@ -3247,9 +3397,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function insertMap($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3264,9 +3414,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function insertMapList(array $filenames, $multicall = false)
 	{
-		if (!is_array($filenames))
+		if(!is_array($filenames))
 		{
-			throw new InvalidArgumentException('filenames = '.print_r($filenames,true));
+			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
@@ -3281,9 +3431,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function chooseNextMap($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3299,9 +3449,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function chooseNextMapList(array $filenames, $multicall = false)
 	{
-		if (!is_array($filenames))
+		if(!is_array($filenames))
 		{
-			throw new InvalidArgumentException('filenames = '.print_r($filenames,true));
+			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
@@ -3316,9 +3466,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function loadMatchSettings($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename));
@@ -3332,9 +3482,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function appendPlaylistFromMatchSettings($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3349,9 +3499,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function saveMatchSettings($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3365,9 +3515,9 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function insertPlaylistFromMatchSettings($filename, $multicall = false)
 	{
-		if (!is_string($filename))
+		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.print_r($filename,true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3391,20 +3541,22 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getPlayerList($length, $offset, $compatibility = 1)
 	{
-		if (!is_int($length))
+		if(!is_int($length))
 		{
-			throw new InvalidArgumentException('length = '.print_r($length,true));
+			throw new InvalidArgumentException('length = '.print_r($length, true));
 		}
-		if (!is_int($offset))
+		if(!is_int($offset))
 		{
-			throw new InvalidArgumentException('offset = '.print_r($offset,true));
+			throw new InvalidArgumentException('offset = '.print_r($offset, true));
 		}
-		if (!is_int($compatibility))
+		if(!is_int($compatibility))
 		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset, $compatibility)));
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
+								array($length, $offset, $compatibility)));
 	}
 
 	/**
@@ -3423,16 +3575,19 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getPlayerInfo($playerLogin, $compatibility = 1)
 	{
-		if (!is_string($playerLogin))
+		if(!is_string($playerLogin))
 		{
-			throw new InvalidArgumentException('playerLogin = '.print_r($playerLogin,true));
+			throw new InvalidArgumentException('playerLogin = '.print_r($playerLogin,
+							true));
 		}
-		if (!is_int($compatibility))
+		if(!is_int($compatibility))
 		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return Structures\Player::fromArray($this->execute(ucfirst(__FUNCTION__), array($playerLogin, $compatibility)));
+		return Structures\Player::fromArray($this->execute(ucfirst(__FUNCTION__),
+								array($playerLogin, $compatibility)));
 	}
 
 	/**
@@ -3449,12 +3604,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getDetailedPlayerInfo($playerLogin)
 	{
-		if (!is_string($playerLogin))
+		if(!is_string($playerLogin))
 		{
-			throw new InvalidArgumentException('playerLogin = '.print_r($playerLogin,true));
+			throw new InvalidArgumentException('playerLogin = '.print_r($playerLogin,
+							true));
 		}
 
-		return Structures\Player::fromArray($this->execute(ucfirst(__FUNCTION__), array($playerLogin)));
+		return Structures\Player::fromArray($this->execute(ucfirst(__FUNCTION__),
+								array($playerLogin)));
 	}
 
 	/**
@@ -3470,12 +3627,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getMainServerPlayerInfo($compatibility = 1)
 	{
-		if (!is_int($compatibility))
+		if(!is_int($compatibility))
 		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,true));
+			throw new InvalidArgumentException('compatibility = '.print_r($compatibility,
+							true));
 		}
 
-		return Structures\Player::fromArray($this->execute(ucfirst(__FUNCTION__), array($compatibility)));
+		return Structures\Player::fromArray($this->execute(ucfirst(__FUNCTION__),
+								array($compatibility)));
 	}
 
 	/**
@@ -3493,16 +3652,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getCurrentRanking($length, $offset)
 	{
-		if (!is_int($length))
+		if(!is_int($length))
 		{
-			throw new InvalidArgumentException('length = '.print_r($length,true));
+			throw new InvalidArgumentException('length = '.print_r($length, true));
 		}
-		if (!is_int($offset))
+		if(!is_int($offset))
 		{
-			throw new InvalidArgumentException('offset = '.print_r($offset,true));
+			throw new InvalidArgumentException('offset = '.print_r($offset, true));
 		}
 
-		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset)));
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
+								array($length, $offset)));
 	}
 
 	/**
@@ -3516,9 +3676,10 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getCurrentRankingForLogin($player = null)
 	{
-		$login = $this->getLogin($player) ?: '';
+		$login = $this->getLogin($player) ? : '';
 
-		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($login)));
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
+								array($login)));
 	}
 
 	/**
@@ -3532,24 +3693,27 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function forceScores(array $scores, $silentMode = false, $multicall = false)
 	{
-		if (!is_array($scores))
+		if(!is_array($scores))
 		{
-			throw new InvalidArgumentException('scores = '.print_r($scores,true));
+			throw new InvalidArgumentException('scores = '.print_r($scores, true));
 		}
 
 		for($i = 0; $i < count($scores); $i++)
 		{
-			if (!is_int($scores[$i]['PlayerId']))
+			if(!is_int($scores[$i]['PlayerId']))
 			{
-				throw new InvalidArgumentException('score['.$i.'][\'PlayerId\'] = '.print_r($scores[$i]['PlayerId'],true));
+				throw new InvalidArgumentException('score['.$i.'][\'PlayerId\'] = '.print_r($scores[$i]['PlayerId'],
+								true));
 			}
-			if (!is_int($scores[$i]['Score']))
+			if(!is_int($scores[$i]['Score']))
 			{
-				throw new InvalidArgumentException('score['.$i.'][\'Score\'] = '.print_r($scores[$i]['Score'],true));
+				throw new InvalidArgumentException('score['.$i.'][\'Score\'] = '.print_r($scores[$i]['Score'],
+								true));
 			}
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($scores, $silentMode), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($scores, $silentMode),
+						$multicall);
 	}
 
 	/**
@@ -3561,16 +3725,17 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function forcePlayerTeam($player, $teamNumber, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if ($teamNumber !== 0 && $teamNumber !== 1)
+		if($teamNumber !== 0 && $teamNumber !== 1)
 		{
-			throw new InvalidArgumentException('teamNumber = '.print_r($teamNumber,true));
+			throw new InvalidArgumentException('teamNumber = '.print_r($teamNumber, true));
 		}
 
-		return $this->execute('ForcePlayerTeam', array($login, $teamNumber), $multicall);
+		return $this->execute('ForcePlayerTeam', array($login, $teamNumber),
+						$multicall);
 	}
 
 	/**
@@ -3582,16 +3747,18 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function forceSpectator($player, $spectatorMode, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if ($spectatorMode !== 0 && $spectatorMode !== 1 && $spectatorMode !== 2)
+		if($spectatorMode !== 0 && $spectatorMode !== 1 && $spectatorMode !== 2)
 		{
-			throw new InvalidArgumentException('spectatorMode = '.print_r($spectatorMode,true));
+			throw new InvalidArgumentException('spectatorMode = '.print_r($spectatorMode,
+							true));
 		}
 
-		return $this->execute('ForceSpectator', array($login, $spectatorMode), $multicall);
+		return $this->execute('ForceSpectator', array($login, $spectatorMode),
+						$multicall);
 	}
 
 	/**
@@ -3605,20 +3772,21 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function forceSpectatorTarget($player, $target, $cameraType, $multicall = false)
 	{
-		if (! ($playerLogin = $this->getLogin($player)))
+		if(!($playerLogin = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if (! ($targetLogin = $this->getLogin($target)))
+		if(!($targetLogin = $this->getLogin($target)))
 		{
 			throw new InvalidArgumentException('target must be set');
 		}
-		if ($cameraType !== -1 && $cameraType !== 0 && $cameraType !== 1 && $cameraType !== 2)
+		if($cameraType !== -1 && $cameraType !== 0 && $cameraType !== 1 && $cameraType !== 2)
 		{
-			throw new InvalidArgumentException('cameraType = '.print_r($cameraType,true));
+			throw new InvalidArgumentException('cameraType = '.print_r($cameraType, true));
 		}
 
-		return $this->execute('ForceSpectatorTarget', array($playerLogin, $targetLogin, $cameraType), $multicall);
+		return $this->execute('ForceSpectatorTarget',
+						array($playerLogin, $targetLogin, $cameraType), $multicall);
 	}
 
 	/**
@@ -3630,7 +3798,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function spectatorReleasePlayerSlot($player, $multicall = false)
 	{
-		if (! ($login = $this->getLogin($player)))
+		if(!($login = $this->getLogin($player)))
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
@@ -3646,12 +3814,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function manualFlowControlEnable($flowControlEnable, $multicall = false)
 	{
-		if (!is_bool($flowControlEnable))
+		if(!is_bool($flowControlEnable))
 		{
-			throw new InvalidArgumentException('flowControlEnable = '.print_r($flowControlEnable,true));
+			throw new InvalidArgumentException('flowControlEnable = '.print_r($flowControlEnable,
+							true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($flowControlEnable), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($flowControlEnable),
+						$multicall);
 	}
 
 	/**
@@ -3702,7 +3872,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getNetworkStats()
 	{
-		return Structures\NetworkStats::fromArray($this->execute(ucfirst(__FUNCTION__)));;
+		return Structures\NetworkStats::fromArray($this->execute(ucfirst(__FUNCTION__)));
+		;
 	}
 
 	/**
@@ -3780,10 +3951,8 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	private function getLogin($player)
 	{
-		if(is_string($player))
-			return $player;
-		if($player instanceof Player)
-			return $player->login;
+		if(is_string($player)) return $player;
+		if($player instanceof Player) return $player->login;
 		return null;
 	}
 
@@ -3792,23 +3961,22 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param mixed $player Player or string or array
 	 * @return string
 	 */
-	private function getLogins($players, $name='players')
+	private function getLogins($players, $name = 'players')
 	{
 		if(is_array($players))
 		{
 			$logins = array();
 			foreach($players as $i => $player)
 			{
-				if ( ($login = $this->getLogin($player)) )
-					$logins[] = $login;
-				else
-					return null;
+				if(($login = $this->getLogin($player))) $logins[] = $login;
+				else return null;
 			}
 
 			return implode(',', $logins);
 		}
 		return $this->getLogin($players);
 	}
+
 }
 
 /**
@@ -3816,14 +3984,20 @@ class Connection extends \ManiaLib\Utils\Singleton
  * Exception Dedicated to Query Error
  * @author Philippe Melot
  */
-class QueryException extends \Exception {}
+class QueryException extends \Exception
+{
+
+}
 
 /**
  *
  * Exception Dedicated to Connection Error
  * @author Philippe Melot
  */
-class ConnectionException extends \Exception {}
+class ConnectionException extends \Exception
+{
+
+}
 
 /**
  *
@@ -3831,5 +4005,9 @@ class ConnectionException extends \Exception {}
  * @author Philippe Melot
  *
  */
-class InvalidArgumentException extends \Exception {}
+class InvalidArgumentException extends \Exception
+{
+
+}
+
 ?>
