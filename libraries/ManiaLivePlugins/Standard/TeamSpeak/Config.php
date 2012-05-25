@@ -17,9 +17,10 @@ namespace ManiaLivePlugins\Standard\TeamSpeak;
  */
 class Config extends \ManiaLib\Utils\Singleton
 {
-	public $host = '127.0.0.1';
+	public $voiceHost;
 	public $voicePort = '9987';
 	public $password = '';
+	public $queryHost = '127.0.0.1';
 	public $queryPort = '10011';
 	public $queryLogin = 'serveradmin';
 	public $queryPassword = '';
@@ -38,7 +39,7 @@ class Config extends \ManiaLib\Utils\Singleton
 		if($this->password)
 			$queryArgs .= '&password='.rawurlencode($this->password);
 		
-		return 'ts3server://'.$this->host.':'.$this->voicePort.'?'.$queryArgs;
+		return 'ts3server://'.$this->voiceHost.':'.$this->voicePort.'?'.$queryArgs;
 	}
 }
 

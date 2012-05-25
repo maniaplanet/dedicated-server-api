@@ -41,7 +41,7 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		$config = Config::getInstance();
 		try
 		{
-			$this->server = TeamSpeak3::factory('serverquery://'.$config->queryLogin.':'.$config->queryPassword.'@'.$config->host.':'.$config->queryPort.'/?server_port='.$config->voicePort.'&blocking=0#no_query_clients');
+			$this->server = TeamSpeak3::factory('serverquery://'.$config->queryLogin.':'.$config->queryPassword.'@'.$config->queryHost.':'.$config->queryPort.'/?server_port='.$config->voicePort.'&blocking=0#no_query_clients');
 		}
 		catch(\Exception $e)
 		{
