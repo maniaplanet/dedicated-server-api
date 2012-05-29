@@ -78,6 +78,10 @@ class Main extends \ManiaLive\Gui\Window
 	
 	function setNotConnected()
 	{
+		$this->comments->disableLinks();
+		$this->comments->setBgcolor('8888');
+		$this->freeTalk->disableLinks();
+		$this->freeTalk->setBgcolor('8888');
 		$this->logo->setIconImage(TSImages::getInstance()->tsGrey);
 		$this->logo->setUrl(\ManiaLivePlugins\Standard\TeamSpeak\Config::getInstance()->getConnectUrl($this->getRecipient()));
 		$this->status->setText('Connect to the local TeamSpeak server. ManiaPlanet will be minimized.');

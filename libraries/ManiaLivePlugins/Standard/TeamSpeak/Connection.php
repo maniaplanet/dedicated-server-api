@@ -42,6 +42,10 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		try
 		{
 			$this->server = TeamSpeak3::factory('serverquery://'.$config->queryLogin.':'.$config->queryPassword.'@'.$config->queryHost.':'.$config->queryPort.'/?server_port='.$config->voicePort.'&blocking=0#no_query_clients');
+			$this->server->execute('instanceedit', array(
+				'serverinstance_serverquery_flood_commands' => 20,
+				'serverinstance_serverquery_flood_time' => 1,
+				'serverinstance_serverquery_flood_ban_time' => 1));
 		}
 		catch(\Exception $e)
 		{
@@ -70,6 +74,8 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		$this->server->serverGroupListReset();
 		if(!$this->playersGroupId)
 			$this->playersGroupId = $this->server->serverGroupCreate('ManiaPlanet Player');
+		
+		$this->server->serverGroupPermAssign($this->playersGroupId, 'b_channel_join_semi_permanent', 1);
 		
 		// Populate
 		foreach($this->server->channelList() as $channel)
