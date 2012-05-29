@@ -2204,6 +2204,32 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
+	
+	/**
+	 * Set the maximum time the server must wait for inputs from the clients before dropping data, or '0' for auto-adaptation.
+	 * Only used by ShootMania. Only available to Admin.
+	 * @param int $latency
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function setClientInputsMaxLatency($latency, $multicall = false)
+	{
+		if(!is_int($latency))
+		{
+			throw new InvalidArgumentException('latency = '.print_r($latency, true));
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__), array($latency), $multicall);
+	}
+	
+	/**
+	 * Get the current ClientInputsMaxLatency. Only used by ShootMania.
+	 * @return int
+	 */
+	function getClientInputsMaxLatency()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
 
 	/**
 	 * Sets whether the server is in warm-up phase or not.
@@ -2235,7 +2261,6 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Get the current rules script.
 	 * TODO Check if correct
 	 * @return string
-	 * @deprecated
 	 */
 	function getRulesScriptText()
 	{
@@ -2249,20 +2274,23 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param string $script
 	 * @param bool $multicall
 	 * @return bool
-	 * @deprecated
 	 */
 	function setRulesScriptText($script, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
 	}
 
+	/**
+	 * Returns the current traits of the rules script.
+	 * @return array
+	 */
 	function getRulesScriptTraits()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Set netwrite variables
+	 * Set the traits of the rules script. Only available to Admin.
 	 * @param array $traits
 	 * @param bool $multicall
 	 */
@@ -2272,12 +2300,22 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
-	 * Fire an event in the script on the dedicated server
+	 * Send an event to the rules script. Only available to Admin.
+	 * @param string $param1
+	 * @param srting $param2
 	 * @param bool $multicall
 	 * @return bool
 	 */
 	function triggerRulesScriptEvent($param1, $param2, $multicall = false)
 	{
+		if(!is_string($param1))
+		{
+			throw new InvalidArgumentException('param1 = '.print_r($param1, true));
+		}
+		if(!is_string($param2))
+		{
+			throw new InvalidArgumentException('param2 = '.print_r($param2, true));
+		}
 		return $this->execute(ucfirst(__FUNCTION__), array($param1, $param2), $multicall);
 	}
 
