@@ -98,6 +98,7 @@ class Main extends \ManiaLive\Gui\Window
 			$this->comments->setVisibility(true);
 			$this->comments->setBgcolor('0008');
 			$this->comments->enableLinks();
+			$this->logo->setAction(null);
 			if($channelId == Channel::$serverIds[Channel::FREE_TALK])
 			{
 				$this->freeTalk->disableLinks();
