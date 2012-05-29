@@ -44,7 +44,6 @@ class Main extends \ManiaLive\Gui\Window
 		$this->freeTalk->setText('Free talk');
 		$this->freeTalk->setVisibility(false);
 		$this->freeTalk->showText();
-		$this->freeTalk->setAction(Channel::$moveActions[Channel::FREE_TALK]);
 		$this->addComponent($this->freeTalk);
 		
 		$this->comments = new MainButton();
@@ -52,7 +51,6 @@ class Main extends \ManiaLive\Gui\Window
 		$this->comments->setText('Comments');
 		$this->comments->setVisibility(false);
 		$this->comments->showText();
-		$this->comments->setAction(Channel::$moveActions[Channel::COMMENTS]);
 		$this->addComponent($this->comments);
 		
 		$this->status = new MainButton();
@@ -72,6 +70,12 @@ class Main extends \ManiaLive\Gui\Window
 		$this->setPosition(-160, 45);
 	}
 	
+	function updateActions()
+	{
+		$this->freeTalk->setAction(Channel::$moveActions[Channel::FREE_TALK]);
+		$this->comments->setAction(Channel::$moveActions[Channel::COMMENTS]);
+	}
+	
 	function setNotConnected()
 	{
 		$this->logo->setIconImage(TSImages::getInstance()->tsGrey);
@@ -83,6 +87,7 @@ class Main extends \ManiaLive\Gui\Window
 	{
 		if($teamId == -1)
 		{
+			$this->updateActions();
 			$this->freeTalk->setVisibility(true);
 			$this->freeTalk->setBgcolor('0008');
 			$this->freeTalk->enableLinks();

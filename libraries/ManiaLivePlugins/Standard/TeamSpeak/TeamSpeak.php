@@ -131,7 +131,7 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 			
 			case 'channelcreated':
 				$channel = new Channel($data, $this->tsConnection->getChannelPermissionList($data));
-				if($channel == Channel::GetDefault())
+				if($channel == Channel::GetDefault() || $channel->parentId == Channel::GetDefault()->channelId)
 					$this->onReady();
 				break;
 				
