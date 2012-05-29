@@ -42,7 +42,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 	{
 		$this->logger = Logger::getLog('Threading_'.getmypid());
 		
-		if(!extension_loaded('SQLite3'))
+		if(! (extension_loaded('SQLite') || extension_loaded('SQLite3')) )
 			$this->enabled = false;
 		else
 			$this->enabled = Config::getInstance()->enabled;
@@ -115,6 +115,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 					');');
 		
 		
+		sqlite_busy_timeout($this->database->getHandle(), 100);
 		$this->logger->write('Database ready!');
 	}
 	
@@ -123,7 +124,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$this->database->execute(
 				'INSERT INTO data (name, value) VALUES (%s, %s)',
 				$this->database->quote($key),
-				$this->database->quote(base64_encode(serialize($value))));
+				$this->database->quote(serialize($value)));
 		
 		return $this->database->affectedRows() > 0;
 	}
@@ -133,7 +134,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$result = $this->database->query('SELECT value FROM data WHERE name=%s', $this->database->quote($key));
 			
 		if($result->recordAvailable())
-			return unserialize(base64_decode($result->fetchScalar()));
+			return unserialize($result->fetchScalar());
 		else
 			return $default;
 	}
@@ -184,7 +185,6 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		proc_close($threadHandle);
 		Dispatcher::dispatch(new Event(Event::ON_THREAD_KILLED, $threadId));	
 		
-		$this->database->getHandle()->busyTimeout(500);
 		$this->database->execute('DELETE FROM commands WHERE threadId=%d', $threadId);
 		
 		unset($this->threads[$threadId]);
@@ -209,7 +209,6 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 			$lastCommandId = reset($this->pendings[$threadId])->getId();
 			if(++$this->tries[$lastCommandId] > Config::getInstance()->maxTries)
 			{
-				$this->database->getHandle()->busyTimeout(500);
 				$this->database->execute('DELETE FROM commands WHERE commandId=%d', $lastCommandId);
 				unset($this->pendings[$threadId][$lastCommandId]);
 				unset($this->tries[$lastCommandId]);
@@ -291,13 +290,13 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 	{
 		try
 		{
-			$this->database->getHandle()->busyTimeout(100);
 			$results = $this->database->query('SELECT commandId, threadId, result, timeTaken FROM commands WHERE result IS NOT NULL;');
 		}
 		catch (\Exception $ex)
 		{
 			if(strpos($ex->getMessage(), 'database is locked') === false)
 				throw $ex;
+			
 			return;
 		}
 		
@@ -311,12 +310,12 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 			$threadId = (int) $result['threadId'];
 			$timeTaken = (float) $result['timeTaken'];
 			
-			Console::printDebug('Got response for Command #'.$commandId.' finished by Thread #'.$threadId.' in '.$timeTaken.'s!');
+			Console::printDebug('Got response for Command #'.$commandId.' finished by Thread #'.$threadId.' in '.$timeTaken.'ms!');
 			
 			if(isset($this->pendings[$threadId][$commandId]))
 			{
 				$command = $this->pendings[$threadId][$commandId];
-				$command->setResult(unserialize(base64_decode($result['result'])), $timeTaken);
+				$command->setResult(unserialize($result['result']), $timeTaken);
 				unset($this->pendings[$threadId][$commandId]);
 				unset($this->tries[$commandId]);
 			}
@@ -330,7 +329,6 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 			$ids[] = $commandId;
 		}
 		
-		$this->database->getHandle()->busyTimeout(500);
 		$this->database->execute('DELETE FROM commands WHERE commandId IN (%s)', implode(',', $ids));
 	}
 	
@@ -358,16 +356,13 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 			while($command = array_shift($buffer))
 			{
 				$commandId = $command->getId();
-				$lines[] = sprintf('SELECT %d, %d, %s', $commandId, $threadId, $this->database->quote(base64_encode(serialize($command->getTask()))));
+				$lines[] = sprintf('SELECT %d, %d, %s', $commandId, $threadId, $this->database->quote(serialize($command->getTask())));
 				$this->pendings[$threadId][$commandId] = $command;
 				$this->tries[$commandId] = 1;
 			}
 		
 		if(!empty($lines))
-		{
-			$this->database->getHandle()->busyTimeout(500);
 			$this->database->execute('INSERT INTO commands(commandId, threadId, task) '.implode(' UNION ', $lines).';');
-		}
 	}
 	
 	function __destruct()
