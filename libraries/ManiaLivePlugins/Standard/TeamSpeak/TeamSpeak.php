@@ -33,7 +33,7 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	
 	function onInit()
 	{
-		$this->setVersion('2.0');
+		$this->setVersion('2.0b');
 	}
 	
 	function onLoad()

@@ -29,6 +29,7 @@ class HackedQuad extends \ManiaLive\Gui\Control
 		$this->label = new Label($sizeX, $sizeY);
 		$this->label->setStyle(Label::TextButtonNav);
 		$this->label->setFocusAreaColor1('0000');
+		$this->label->setText(' ');
 		
 		$this->addComponent($this->quad);
 		$this->addComponent($this->label);

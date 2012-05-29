@@ -73,9 +73,11 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		}
 		$this->server->serverGroupListReset();
 		if(!$this->playersGroupId)
+		{
 			$this->playersGroupId = $this->server->serverGroupCreate('ManiaPlanet Player');
-		
-		$this->server->serverGroupPermAssign($this->playersGroupId, 'b_channel_join_semi_permanent', 1);
+			foreach($config->groupPermissions as $permission => $value)
+				$this->server->serverGroupPermAssign($this->playersGroupId, $permission, $value);
+		}
 		
 		// Populate
 		foreach($this->server->channelList() as $channel)
