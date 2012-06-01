@@ -16,7 +16,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 	static $aliases = array(
 		'config' => 'ManiaLive\\Config\\Config',
 		'database' => 'ManiaLive\\Database\\Config',
-		'maniahome' => 'ManiaHome\\Config',
+		'wsapi' => 'ManiaLive\\Features\\WebServices\\Config',
 		'manialive' => 'ManiaLive\\Application\\Config',
 		'server' => 'ManiaLive\\DedicatedApi\\Config',
 		'threading' => 'ManiaLive\\Threading\\Config',
