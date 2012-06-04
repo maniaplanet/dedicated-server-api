@@ -12,7 +12,6 @@
 
 namespace ManiaLivePlugins\Standard\TeamSpeak\Controls;
 
-use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Label;
 use ManiaLib\Gui\Elements\Quad;
 

@@ -67,7 +67,7 @@ class Main extends \ManiaLive\Gui\Window
 		$this->addComponent($this->helpButton);
 		
 		$this->setSize(75, 10);
-		$this->setPosition(-160, 45);
+		$this->setPosition(-160, 65);
 	}
 	
 	function updateActions()
