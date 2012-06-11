@@ -2262,7 +2262,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * TODO Check if correct
 	 * @return string
 	 */
-	function getRulesScriptText()
+	function getModeScriptText()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -2275,16 +2275,12 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function setRulesScriptText($script, $multicall = false)
+	function setModeScriptText($script, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
 	}
 
-	/**
-	 * Returns the current traits of the rules script.
-	 * @return array
-	 */
-	function getRulesScriptTraits()
+	function getModeScriptTraits()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -2294,7 +2290,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param array $traits
 	 * @param bool $multicall
 	 */
-	function setRulesScriptTraits($traits, $multicall = false)
+	function setModeScriptTraits($traits, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($traits), $multicall);
 	}
@@ -2306,7 +2302,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function triggerRulesScriptEvent($param1, $param2, $multicall = false)
+	function triggerModeScriptEvent($param1, $param2, $multicall = false)
 	{
 		if(!is_string($param1))
 		{
@@ -2325,16 +2321,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Description and the settings available.
 	 * @return \stdClass
 	 */
-	function getRulesScriptInfo()
+	function getModeScriptInfo()
 	{
 		return (object) $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Returns the current parameters of the rules script.
+	 * Returns the current parameters of the mode script.
 	 * @return \stdClass
 	 */
-	function getRulesScriptParams()
+	function getModeScriptParams()
 	{
 		return (object) $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -2345,7 +2341,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function setRulesScriptParams($rules, $multicall = false)
+	function setModeScriptParams($rules, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($rules), $multicall);
 	}
