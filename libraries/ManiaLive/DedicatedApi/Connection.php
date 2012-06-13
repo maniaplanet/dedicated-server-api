@@ -2323,14 +2323,14 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function getModeScriptInfo()
 	{
-		return (object) $this->execute(ucfirst(__FUNCTION__));
+		return Structures\ScriptInfo::fromArray($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
 	 * Returns the current parameters of the mode script.
 	 * @return \stdClass
 	 */
-	function getModeScriptParams()
+	function getModeScriptSettings()
 	{
 		return (object) $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -2341,7 +2341,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function setModeScriptParams($rules, $multicall = false)
+	function setModeScriptSettings($rules, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($rules), $multicall);
 	}
