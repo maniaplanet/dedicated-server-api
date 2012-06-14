@@ -13,7 +13,7 @@ namespace ManiaLiveApplication;
 
 use ManiaLive\Features\Updater;
 
-const Version = '2.1.9';
+const Version = '2.1.10';
 
 class Application extends \ManiaLive\Application\AbstractApplication
 {
