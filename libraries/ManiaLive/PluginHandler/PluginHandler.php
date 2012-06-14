@@ -285,7 +285,7 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
-	function onRulesScriptCallback($param1, $param2) {}
+	function onModeScriptCallback($param1, $param2) {}
 }
 
 class Exception extends \Exception {}

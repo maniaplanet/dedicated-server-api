@@ -196,7 +196,7 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param string 
 	 * @param string
 	 */
-	function onRulesScriptCallback($param1, $param2);
+	function onModeScriptCallback($param1, $param2);
 }
 
 ?>

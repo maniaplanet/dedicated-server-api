@@ -36,7 +36,7 @@ class Event extends \ManiaLive\Event\Event
 	const ON_PLAYER_INFO_CHANGED            = 0x100000;
 	const ON_MANUAL_FLOW_CONTROL_TRANSITION = 0x200000;
 	const ON_VOTE_UPDATED                   = 0x400000;
-	const ON_RULES_SCRIPT_CALLBACK          = 0x800000;
+	const ON_MODE_SCRIPT_CALLBACK          = 0x800000;
 	
 	static private $rc;
 	protected $params;
@@ -76,7 +76,7 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_PLAYER_INFO_CHANGED: $listener->onPlayerInfoChanged($p[0]); break;
 			case self::ON_MANUAL_FLOW_CONTROL_TRANSITION: $listener->onManualFlowControlTransition($p[0]); break;
 			case self::ON_VOTE_UPDATED: $listener->onVoteUpdated($p[0], $p[1], $p[2], $p[3]); break;
-			case self::ON_RULES_SCRIPT_CALLBACK: $listener->onRulesScriptCallback($p[0], $p[1]); break;
+			case self::ON_MODE_SCRIPT_CALLBACK: $listener->onModeScriptCallback($p[0], $p[1]); break;
 		}
 	}
 	

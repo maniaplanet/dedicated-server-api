@@ -498,7 +498,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		$this->currentVote->cmdParam = $cmdParam;
 	}
 
-	function onRulesScriptCallback($param1, $param2) {}
+	function onModeScriptCallback($param1, $param2) {}
 
 	#endRegion
 

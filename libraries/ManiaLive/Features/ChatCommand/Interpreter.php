@@ -306,7 +306,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
-	function onRulesScriptCallback($param1, $param2) {}
+	function onModeScriptCallback($param1, $param2) {}
 }
 
 class CommandAlreadyRegisteredException extends \Exception {}

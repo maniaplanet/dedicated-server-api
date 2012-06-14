@@ -36,7 +36,7 @@ abstract class Adapter implements Listener
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
-	function onRulesScriptCallback($param1, $param2) {}
+	function onModeScriptCallback($param1, $param2) {}
 }
 
 ?>

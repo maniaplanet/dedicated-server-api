@@ -94,7 +94,7 @@ final class ActionHandler extends \ManiaLib\Utils\Singleton implements ServerLis
 	function onPlayerInfoChanged($playerInfo) {}
 	function onManualFlowControlTransition($transition) {}
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
-	function onRulesScriptCallback($param1, $param2) {}
+	function onModeScriptCallback($param1, $param2) {}
 }
 
 ?>
