@@ -2280,19 +2280,24 @@ class Connection extends \ManiaLib\Utils\Singleton
 		return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
 	}
 
-	function getModeScriptTraits()
+	/**
+	 * Get the xml-rpc variables of the mode script. 
+	 * Only available to Admin.
+	 * @return type
+	 */
+	function getModeScriptVariables()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
-	 * Set the traits of the rules script. Only available to Admin.
-	 * @param array $traits
+	 * Set the variables of the rules script. Only available to Admin.
+	 * @param array $variables
 	 * @param bool $multicall
 	 */
-	function setModeScriptTraits($traits, $multicall = false)
+	function setModeScriptVariables($variables, $multicall = false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array($traits), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($variables), $multicall);
 	}
 
 	/**
