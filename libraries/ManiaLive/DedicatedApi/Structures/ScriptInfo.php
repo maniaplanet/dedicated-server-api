@@ -15,7 +15,7 @@ class ScriptInfo extends AbstractStructure
 	public $name;
 	public $compatibleMapTypes;
 	public $description;
-	public $version
+	public $version;
 	public $paramDescs = array();
 
 	static public function fromArray($array)
