@@ -166,7 +166,12 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	
 	function onPlayerDisconnect($login)
 	{
-		$this->movePlayerIFN($login);
+		if( ($client = Client::GetByLogin($login)) )
+		{
+			$player = $this->storage->getPlayerObject($login);
+			if($player->teamId != -1)
+				$this->tsConnection->moveClient($client->clientId, Channel::$serverIds[-1]);
+		}
 		$this->tsConnection->deleteToken($login);
 	}
 	
