@@ -200,7 +200,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('vote must be set');
 		}
-		if(!is_double($ratio))
+		if(!is_float($ratio))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -241,7 +241,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if(!is_double($ratio))
+		if(!is_float($ratio))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -278,7 +278,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if(!is_double($ratio))
+		if(!is_float($ratio))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -310,7 +310,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function callVoteRestartMap($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
-		if(!is_double($ratio))
+		if(!is_float($ratio))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -342,7 +342,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function callVoteNextMap($ratio = 0.5, $timeout = 0, $voters = 1, $multicall = false)
 	{
-		if(!is_double($ratio))
+		if(!is_float($ratio))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -428,7 +428,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 */
 	function setCallVoteRatio($ratio, $multicall = false)
 	{
-		if(!is_double($ratio) && ($ratio < 0 || $ratio > 1))
+		if($ratio !== -1 && !(is_float($ratio) && $ratio >= 0 && $ratio <= 1))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -459,22 +459,22 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		if(!is_array($ratios))
 		{
-			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
+			throw new InvalidArgumentException('ratios = '.print_r($ratios, true));
 		}
 
-		for($i = 0; $i < count($ratios); $i++)
+		foreach($ratios as $i => $ratio)
 		{
-			if(!is_array($ratios[$i]) && !array_key_exists('Command', $ratios[$i]) && !array_key_exists('Ratio', $ratios[$i]))
+			if(!is_array($ratio) && !array_key_exists('Command', $ratio) && !array_key_exists('Ratio', $ratio))
 			{
 				throw new InvalidArgumentException('ratios['.$i.'] = '.print_r($ratio, true));
 			}
-			if(!is_string($ratios[$i]['Command']))
+			if(!is_string($ratio['Command']))
 			{
-				throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios[$i][0], true));
+				throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios['Command'], true));
 			}
-			if(!is_double($ratios[$i]['Ratio']) && ($ratios[$i]['Ratio'] != -1 && ($ratios[$i]['Ratio'] < 0 || $ratios[$i]['Ratio'] > 1)))
+			if($ratio['Ratio'] !== -1 && !(is_float($ratio['Ratio']) && $ratio['Ratio'] >= 0 || $ratio['Ratio'] <= 1))
 			{
-				throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratios[$i]['Ratio'], true));
+				throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratio['Ratio'], true));
 			}
 		}
 
@@ -3141,11 +3141,11 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	function setTeamInfo($teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country, $multicall = false)
 	{
-		if(!is_double($teamColor1))
+		if(!is_float($teamColor1))
 		{
 			throw new InvalidArgumentException('teamColor1 = '.print_r($teamColor1, true));
 		}
-		if(!is_double($teamColor2))
+		if(!is_float($teamColor2))
 		{
 			throw new InvalidArgumentException('teamColor2 = '.print_r($teamColor2, true));
 		}
