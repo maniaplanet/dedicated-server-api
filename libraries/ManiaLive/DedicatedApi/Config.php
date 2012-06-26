@@ -13,7 +13,7 @@ namespace ManiaLive\DedicatedApi;
 
 class Config extends \ManiaLib\Utils\Singleton
 {
-	public $host = 'localhost';
+	public $host = '127.0.0.1';
 	public $port = 5000;
 	public $user = 'SuperAdmin';
 	public $password = 'SuperAdmin';
