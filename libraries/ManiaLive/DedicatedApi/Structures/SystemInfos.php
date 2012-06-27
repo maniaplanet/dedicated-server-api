@@ -20,5 +20,7 @@ class SystemInfos extends AbstractStructure
 	public $serverPlayerId;
 	public $connectionDownloadRate;
     public $connectionUploadRate;
+	public $isServer;
+	public $isDedicated;
 }
 ?>
