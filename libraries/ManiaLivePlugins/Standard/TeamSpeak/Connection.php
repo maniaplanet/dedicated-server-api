@@ -270,7 +270,8 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		// Receiving TeamSpeak events
 		try
 		{
-			$this->server->getAdapter()->readNotifications();
+			if($this->server)
+				$this->server->getAdapter()->readNotifications();
 		}
 		catch(\Exception $e)
 		{

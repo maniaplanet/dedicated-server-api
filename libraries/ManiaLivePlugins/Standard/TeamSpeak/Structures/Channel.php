@@ -146,7 +146,10 @@ class Channel
 	static function EraseAll()
 	{
 		self::$byId = array();
-		//TODO
+		foreach(self::$serverIds as &$serverId)
+			$serverId = 0;
+		foreach(self::$moveActions as &$moveAction)
+			$moveAction = null;
 	}
 	
 	static function IsClientAllowed($client, $channelId)
