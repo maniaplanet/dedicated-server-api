@@ -160,7 +160,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function setApiVersion($version, $multicall = false)
+	protected function setApiVersion($version, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array((string) $version), $multicall);
 	}
