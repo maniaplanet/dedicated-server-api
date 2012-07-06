@@ -27,4 +27,6 @@ class Map extends AbstractStructure
 	public $lapRace;
 	public $nbLaps;
 	public $nbCheckpoints;
+	public $mapType;
+	public $mapStyle;
 }

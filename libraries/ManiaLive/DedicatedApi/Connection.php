@@ -48,7 +48,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 		$this->xmlrpcClient = new Xmlrpc\ClientMulticall($config->host, $config->port);
 		Console::printlnFormatted('XML-RPC connection established');
 		$this->authenticate($config->user, $config->password);
-		$this->setApiVersion('2011-10-06');
+		$this->setApiVersion('2012-06-19');
 		Console::printlnFormatted('Successfully authentified with XML-RPC server');
 	}
 
@@ -160,7 +160,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	protected function setApiVersion($version, $multicall = false)
+	function setApiVersion($version, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array((string) $version), $multicall);
 	}
@@ -1978,7 +1978,6 @@ class Connection extends \ManiaLib\Utils\Singleton
 		{
 			throw new InvalidArgumentException('compatibility = '.print_r($compatibility, true));
 		}
-
 		return Structures\ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__), array($compatibility)));
 	}
 
@@ -2178,6 +2177,32 @@ class Connection extends \ManiaLib\Utils\Singleton
 	}
 
 	/**
+	 * Set the referee validation mode. 0 = validate the top3 players, 1 = validate all players. Only available to Admin.
+	 * @param int $refereeMode
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function setRefereeMode($refereeMode, $multicall = false)
+	{
+		if($refereeMode !== 0 && $refereeMode !== 1)
+		{
+			throw new InvalidArgumentException('refereeMode = '.print_r($refereeMode, true));
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__), array($refereeMode), $multicall);
+	}
+
+	/**
+	 * Get the referee validation mode.
+	 * @return bool|string
+	 */
+	function getRefereeMode()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+
+	/**
 	 * Set whether the game should use a variable validation seed or not.
 	 * Requires a map restart to be taken into account.
 	 * @param bool $enable
@@ -2283,7 +2308,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	/**
 	 * Get the xml-rpc variables of the mode script. 
 	 * Only available to Admin.
-	 * @return type
+	 * @return array
 	 */
 	function getModeScriptVariables()
 	{
@@ -2324,7 +2349,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * Returns the description of the current rules script,
 	 * as a structure containing: Name, CompatibleTypes,
 	 * Description and the settings available.
-	 * @return \stdClass
+	 * @return Structures\ScriptInfo
 	 */
 	function getModeScriptInfo()
 	{
@@ -2333,16 +2358,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 
 	/**
 	 * Returns the current parameters of the mode script.
-	 * @return \stdClass
+	 * @return array
 	 */
 	function getModeScriptSettings()
 	{
-		return (object) $this->execute(ucfirst(__FUNCTION__));
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
 	 * Set the parameters of the rules script. Only available to Admin.
-	 * @param \stdClass $rules
+	 * @param array $rules
 	 * @param bool $multicall
 	 * @return bool
 	 */
@@ -2383,6 +2408,15 @@ class Connection extends \ManiaLib\Utils\Singleton
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($dontClearCupScores), $multicall);
+	}
+	
+	/**
+	 * Attempt to balance teams. Only available to Admin.
+	 * @return bool
+	 */
+	function autoTeamBalance()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -3042,7 +3076,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param bool $multicall
 	 * @return array
 	 */
-	function getCupRoundsPerMap($multicall = false)
+	function getCupRoundsPerMap()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}

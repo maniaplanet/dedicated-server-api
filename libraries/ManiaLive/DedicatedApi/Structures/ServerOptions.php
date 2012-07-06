@@ -39,5 +39,7 @@ class ServerOptions extends AbstractStructure
 	public $refereePassword;
 	public $refereeMode;
 	public $currentUseChangingValidationSeed;
+	public $useChangingValidationSeed;
 	public $nextUseChangingValidationSeed;
+	public $clientInputsMaxLatency;
 }
