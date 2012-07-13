@@ -65,14 +65,14 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_BEGIN_MAP:
 				// FIXME hack for SM
 				if(count($p) == 1)
-					$listener->onBeginMap($p[0], null, null);
+					$listener->onBeginMap($p[0], false, null);
 				else
 					$listener->onBeginMap($p[0], $p[1], $p[2]);
 				break;
 			case self::ON_END_MAP:
 				// FIXME hack for SM
 				if(count($p) == 1)
-					$listener->onEndMap(null, $p[0], null, null, null);
+					$listener->onEndMap(array(), $p[0], false, null, null);
 				else
 					$listener->onEndMap($p[0], $p[1], $p[2], $p[3], $p[4]);
 				break;
