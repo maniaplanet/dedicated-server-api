@@ -78,8 +78,10 @@ class Main extends \ManiaLive\Gui\Window
 	
 	function setNotConnected()
 	{
+		$this->comments->setVisibility(false);
 		$this->comments->disableLinks();
 		$this->comments->setBgcolor('8888');
+		$this->freeTalk->setVisibility(false);
 		$this->freeTalk->disableLinks();
 		$this->freeTalk->setBgcolor('8888');
 		$this->logo->setIconImage(TSImages::getInstance()->tsGrey);

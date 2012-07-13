@@ -33,14 +33,14 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	
 	function onInit()
 	{
-		$this->setVersion('2.0b');
+		$this->setVersion('2.0');
 	}
 	
 	function onLoad()
 	{
 		$config = Config::getInstance();
 		if(!$config->serverChannelName)
-			$config->serverChannelName = substr('ManiaPlanet> '.Formatting::stripStyles($this->storage->server->name), 0, 40);
+			$config->serverChannelName = substr('ManiaPlanet> '.Formatting::stripStyles($this->connection->getMainServerPlayerInfo()->nickName), 0, 40);
 		
 		$this->tsConnection = Connection::getInstance();
 		$this->tsConnection->open();
