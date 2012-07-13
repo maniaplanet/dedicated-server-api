@@ -36,7 +36,7 @@ abstract class CommandLineInterpreter
 			'user::'//Set the user to use during the communication with the server
 		));
 
-		$help = 'ManiaLive - TrackMania Dedicated Server Manager v2.0 (2011 Nov 4)'."\n"
+		$help = 'ManiaLive v2.1.14 (2012 Jul 13)'."\n"
 		.'Authors : '."\n"
 		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'."\n"
 		.'Usage: php bootstrapper.php [args]'."\n"
@@ -70,43 +70,33 @@ abstract class CommandLineInterpreter
 
 		if(isset($options['dedicated_cfg']))
 		{
-			$filename = \ManiaLive\Config\Config::getInstance()->dedicatedPath
-					.DIRECTORY_SEPARATOR.'UserData'
-					.DIRECTORY_SEPARATOR.'Config'
-					.DIRECTORY_SEPARATOR.$options['cfg'];
+			$filename = \ManiaLive\Config\Config::getInstance()->dedicatedPath.'/UserData/Config/'.$options['dedicated_cfg'];
 			if(file_exists($filename))
 			{
 				//Load the config file
-				$dom = new \DOMDocument();
-				$dom->load($filename);
-
-				//Get the xml RPC port
-				$nodeList = $dom->getElementsByTagName('xmlrpc_port');
-				$serverConfig->port = (int)$nodeList->item(0)->nodeValue;
-
-				$nodeList = $dom->getElementsByTagName('level');
-				foreach ($nodeList as $node)
+				$config = simplexml_load_file($filename);
+				$serverConfig->port = (int)$config->system_config->xmlrpc_port;
+				foreach ($config->authorization_levels->children() as $level)
 				{
-					$name = $node->getElementsByTagName('name')->item(0)->nodeValue;
-					$pass = $node->getElementsByTagName('password')->item(0)->nodeValue;
-					if($serverConfig->user == $name)
-					$serverConfig->password = $pass;
+					if($serverConfig->user == (string)$level->name)
+					{
+						$serverConfig->password = (string)$level->password;
+						break;
+					}
 				}
-
-				if(isset($options['address']))
-					$serverConfig->host = $options['address'];
 			}
 			else
-				throw new Exception('configuration file not found.....'.PHP_EOL.'stopping software....');
+				throw new Exception('Configuration file not found...'.PHP_EOL.'stopping software...');
 		}
 		else
 		{
 			if(isset($options['rpcport']))
 				$serverConfig->port = $options['rpcport'];
-			if(isset($options['address']))
-				$serverConfig->host = $options['address'];
 			if(isset($options['password']))
 				$serverConfig->password = $options['password'];
 		}
+		
+		if(isset($options['address']))
+			$serverConfig->host = $options['address'];
 	}
 }
