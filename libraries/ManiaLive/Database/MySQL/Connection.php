@@ -35,7 +35,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 	function __construct($host, $username, $password, $database, $port)
 	{
 		// Init
-		$this->host = $host;
+		$this->host = $host.($port ? ':'.$port : '');
 		$this->user = $username;
 		$this->password = $password;
 		$this->connect($database);
