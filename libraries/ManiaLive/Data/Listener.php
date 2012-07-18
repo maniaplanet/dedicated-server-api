@@ -15,7 +15,7 @@ interface Listener extends \ManiaLive\Event\Listener
 {
 	/**
 	 * Event lauch when a player beat his best Time
-	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
+	 * @param \DedicatedApi\Structures\Player $player
 	 * @param int $oldBest
 	 * @param int $newBest
 	 */
@@ -23,7 +23,7 @@ interface Listener extends \ManiaLive\Event\Listener
 	
 	/**
 	 * Event lauch when player's rank change
-	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
+	 * @param \DedicatedApi\Structures\Player $player
 	 * @param int $oldRank
 	 * @param int $newRank
 	 */
@@ -31,7 +31,7 @@ interface Listener extends \ManiaLive\Event\Listener
 	
 	/**
 	 * Event lauch when beat his best score
-	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
+	 * @param \DedicatedApi\Structures\Player $player
 	 * @param int $oldScore
 	 * @param int $newScore
 	 */
@@ -39,14 +39,14 @@ interface Listener extends \ManiaLive\Event\Listener
 	
 	/**
 	 * Event lauch when the player change to spectator or to player
-	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
+	 * @param \DedicatedApi\Structures\Player $player
 	 * @param string $oldSide - it can take 2 values spectator or player
 	 */
 	function onPlayerChangeSide($player, $oldSide);
 	
 	/**
 	 * Event launched when a player finishes a lap.
-	 * @param \ManiaLive\DedicatedApi\Structures\Player $player
+	 * @param \DedicatedApi\Structures\Player $player
 	 * @param integer $time
 	 * @param integer $nbLap
 	 */

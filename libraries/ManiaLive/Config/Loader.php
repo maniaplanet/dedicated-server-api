@@ -33,14 +33,9 @@ class Loader extends \ManiaLib\Utils\Singleton
 	final public function run()
 	{
 		$mtime = microtime(true);
-		$this->debug('Starting runtime load');
 		$this->preLoad();
-		$this->debug('Pre-load completed');
 		$this->data = $this->load();
-		$this->debug('Load completed');
-		$this->debug("Data dump:\n\n".print_r($this->data, true));
 		$mtime = microtime(true) - $mtime;
-		$this->debug('Runtime load completed in '.number_format($mtime*1000, 2).' milliseconds');
 		$this->postLoad();
 	}
 	
@@ -63,13 +58,11 @@ class Loader extends \ManiaLib\Utils\Singleton
 	protected function load()
 	{
 		$values = $this->loadINI($this->configFilename);
-		$this->debug($this->configFilename.' parsed');
 		list($values, $overrides) = $this->scanOverrides($values);
 		$values = $this->processOverrides($values, $overrides);
 		$values = $this->loadAliases($values);
 		$values = $this->replaceAliases($values);
 		$instances = $this->arrayToSingletons($values);
-		$this->debug(sprintf('Loaded %d class instances', count($instances)));
 		return $instances;
 	}
 	
@@ -127,7 +120,6 @@ class Loader extends \ManiaLib\Utils\Singleton
 				{
 					if($matches[1] == gethostname())
 					{
-						$this->debug('Found hostname override: '.$matches[1]);
 						$values = $this->overrideArray($values, $override);
 						break;
 					}
@@ -164,7 +156,6 @@ class Loader extends \ManiaLib\Utils\Singleton
 				{
 					self::$aliases[$matches[1]] = $value;
 					unset($values[$key]);
-					$this->debug(sprintf('Found alias "%s"', $matches[1]));
 				}
 			}
 		}
@@ -207,39 +198,14 @@ class Loader extends \ManiaLib\Utils\Singleton
 		foreach($values as $key => $value)
 		{
 			$callback = explode('.', $key, 2);
-			if(count($callback) != 2)
-			{
-				$this->debug('Could not parse key='.$key);
-				continue;
-			}
 			$className = reset($callback);
 			$propertyName = end($callback);
-			if(!class_exists($className))
-			{
-				$this->debug(sprintf('Class %s does not exists', $className));
-				continue;
-			}
-			if(!is_subclass_of($className, '\\ManiaLib\\Utils\\Singleton'))
-			{
-				$this->debug(sprintf('Class %s must be an instance of \ManiaLib\Utils\Singleton', $className));
-				continue;
-			}
-			if(!property_exists($className, $propertyName))
-			{
-				$this->debug(sprintf('%s::%s does not exists or is not public', $className, $propertyName));
-				continue;
-			}
 			$instance = call_user_func(array($className, 'getInstance'));
 			
 			$instance->$propertyName = $value;
 			$instances[$className] = $instance;
 		}
 		return $instances;
-	}
-	
-	protected function debug($message)
-	{
-		error_log($this->debugPrefix.' '.$message.PHP_EOL, 3, APP_ROOT.'logs'.DIRECTORY_SEPARATOR.'Loader_'.getmypid().'.txt');
 	}
 }
 

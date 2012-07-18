@@ -9,29 +9,41 @@
  * @date        $Date$:
  */
 
-namespace ManiaLive\DedicatedApi;
-
-use ManiaLive\Event\Dispatcher;
-use ManiaLive\Utilities\Console;
+namespace DedicatedApi;
 
 /**
  * Dedicated Server Connection Instance
  * Methods returns nothing if $multicall = true
  */
-class Connection extends \ManiaLib\Utils\Singleton
+class Connection
 {
+	/**
+	 * @var Connection
+	 */
+	static protected $instances = array();
+	
 	/**
 	 * XML-RPC client instance
 	 * @var
 	 */
 	protected $xmlrpcClient;
 
-	/**
-	 * @return Connection
-	 */
-	static function getInstance()
+	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 5, $user = 'SuperAdmin', $password = 'SuperAdmin')
 	{
-		return parent::getInstance();
+		if(!array_key_exists($host.':'.$port, self::$instances))
+		{
+			self::$instances[$host.':'.$port] = new self($host, $port, $timeout, $user, $password);
+		}
+		return self::$instances[$host.':'.$port];
+	}
+	
+	static function deleteConnection($hostname, $port)
+	{
+		if(array_key_exists($host.':'.$port, self::$instances))
+		{
+			self::$instances[$host.':'.$port]->terminate();
+			unset(self::$instances[$host.':'.$port]);
+		}
 	}
 
 	/**
@@ -42,19 +54,16 @@ class Connection extends \ManiaLib\Utils\Singleton
 	 * @param string $adminPassword represents the Admin password
 	 * @param string $userPassword represents the User password
 	 */
-	protected function __construct()
+	protected function __construct($host, $port, $timeout, $user, $password)
 	{
-		$config = Config::getInstance();
-		$this->xmlrpcClient = new Xmlrpc\ClientMulticall($config->host, $config->port);
-		Console::printlnFormatted('XML-RPC connection established');
-		$this->authenticate($config->user, $config->password);
+		$this->xmlrpcClient = new Xmlrpc\ClientMulticall($host, $port, $timeout);
+		$this->authenticate($user, $password);
 		$this->setApiVersion('2012-06-19');
-		Console::printlnFormatted('Successfully authentified with XML-RPC server');
 	}
 
 	/**
 	 * Close the current socket connexion
-	 * Never call this method, use instead DedicatedApiFactory::deleteConnection($hostname,$port)
+	 * Never call this method, use instead DedicatedApi::deleteConnection($hostname,$port)
 	 */
 	function terminate()
 	{
@@ -70,15 +79,7 @@ class Connection extends \ManiaLib\Utils\Singleton
 	{
 		$this->xmlrpcClient->readCallbacks();
 		$calls = $this->xmlrpcClient->getCallbackResponses();
-		if(!empty($calls))
-		{
-			foreach($calls as $call)
-			{
-				$method = preg_replace('/^[[:alpha:]]+\./', '', $call[0]); // remove trailing "Whatever."
-				$params = (array) $call[1];
-				Dispatcher::dispatch(new Callback\Event($method, $params));
-			}
-		}
+		return $calls;
 	}
 
 	/**

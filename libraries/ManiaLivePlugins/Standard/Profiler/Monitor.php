@@ -11,12 +11,12 @@
 
 namespace ManiaLivePlugins\Standard\Profiler;
 
-use ManiaLive\Event\Dispatcher;
-use ManiaLive\Application\Listener as AppListener;
-use ManiaLive\Application\Event as AppEvent;
-use ManiaLive\Features\Tick\Listener as TickListener;
-use ManiaLive\Features\Tick\Event as TickEvent;
-use ManiaLive\DedicatedApi\Xmlrpc\Client;
+use \ManiaLive\Event\Dispatcher;
+use \ManiaLive\Application\Listener as AppListener;
+use \ManiaLive\Application\Event as AppEvent;
+use \ManiaLive\Features\Tick\Listener as TickListener;
+use \ManiaLive\Features\Tick\Event as TickEvent;
+use \DedicatedApi\Xmlrpc\Client;
 
 /**
  * Description of Monitor

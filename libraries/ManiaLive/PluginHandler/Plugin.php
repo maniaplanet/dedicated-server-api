@@ -27,7 +27,7 @@ use ManiaLive\Threading\Event as ThreadEvent;
 
 use ManiaLive\Data\Storage;
 use ManiaLive\Database\Connection as DbConnection;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Features\ChatCommand\Interpreter;
 use ManiaLive\Features\ChatCommand\Command;
 use ManiaLive\Utilities\Console;
@@ -86,7 +86,7 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	 */
 	protected $storage;
 	/**
-	 * @var \ManiaLive\DedicatedApi\Connection
+	 * @var DedicatedApi\Connection
 	 */
 	protected $connection;
 	/**
@@ -105,7 +105,8 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 		$this->id = $this->author.'\\'.$this->name;
 		$this->setVersion(1);
 
-		$this->connection = Connection::getInstance();
+		$config = \ManiaLive\DedicatedApi\Config::getInstance();
+		$this->connection = Connection::factory($config->host, $config->port, $config->timeout, $config->user, $config->password);
 		$this->pluginHandler = PluginHandler::getInstance();
 		$this->storage = Storage::getInstance();
 		$this->chatCommands = array();

@@ -14,16 +14,16 @@ namespace ManiaLivePlugins\Standard\Admin\Gui\Windows;
 use ManiaLib\Gui\Elements\Icons128x32_1;
 use ManiaLib\Gui\Layouts\Line;
 use ManiaLive\Data\Storage;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\DedicatedApi\Structures\GameInfos;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Windows\Dialog;
 use ManiaLive\Gui\Windows\Info;
-
 use ManiaLivePlugins\Standard\Admin\Gui\Controls\ButtonMode;
 
 class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 {
+
 	static private $modes = array(
 		GameInfos::GAMEMODE_SCRIPT => array('Script', Icons128x32_1::RT_Script),
 		GameInfos::GAMEMODE_ROUNDS => array('Rounds', Icons128x32_1::RT_Rounds),
@@ -33,20 +33,19 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 		GameInfos::GAMEMODE_CUP => array('Cup', Icons128x32_1::RT_Cup),
 		GameInfos::GAMEMODE_STUNTS => array('Stunts', Icons128x32_1::RT_Stunts)
 	);
-	
 	private $buttons = array();
 	private $buttonsFrame;
-	
+
 	protected function onConstruct()
 	{
 		parent::onConstruct();
 		$this->setSize(count(self::$modes) * 20 + 2, 36);
 		$this->setTitle('Choose Game Mode');
-		
+
 		// create layout for buttons ...
 		$this->buttonsFrame = new Frame(1, -15, new Line());
 		$this->addComponent($this->buttonsFrame);
-		
+
 		foreach(self::$modes as $mode => $modeInfo)
 		{
 			$button = new ButtonMode($modeInfo[0], $modeInfo[1]);
@@ -55,47 +54,48 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 			$this->buttonsFrame->addComponent($button);
 		}
 	}
-	
+
 	function onDraw()
 	{
 		$currentMode = Storage::getInstance()->gameInfos->gameMode;
 		foreach($this->buttons as $mode => $button)
 			$button->setSelected($mode == $currentMode);
 	}
-	
+
 	function onDialogClosed($login, \ManiaLive\Gui\Window $dialog)
 	{
 		if($dialog->getAnswer() == Dialog::YES)
 		{
 			if(Storage::getInstance()->serverStatus->code == 4)
 			{
-				Connection::getInstance()->restartMap();
+				$config = \ManiaLive\DedicatedApi\Config::getInstance();
+				Connection::factory()->restartMap($config->host, $config->port);
 				$this->hide();
 			}
-			else
-				$dialog->showModal();
+			else $dialog->showModal();
 		}
 	}
-	
+
 	function onClickMode($login, $mode)
 	{
 		try
 		{
-			Connection::getInstance()->setGameMode($mode);
+			$config = \ManiaLive\DedicatedApi\Config::getInstance();
+			Connection::factory()->setGameMode($mode);
 			$dialog = Dialog::Create($login, false);
 			$dialog->setSize(125, 40);
 			$dialog->setTitle('Game Mode Changed!');
 			$dialog->setText(
-					'You have selected '.self::$modes[$mode][0].",\n".
-					'New game mode will be set on map change!'."\n".
-					'Do you want to restart now?');
+				'You have selected '.self::$modes[$mode][0].",\n".
+				'New game mode will be set on map change!'."\n".
+				'Do you want to restart now?');
 			$dialog->setButtons(Dialog::YES | Dialog::NO);
 			$dialog->addCloseCallback(array($this, 'onDialogClosed'));
 			$dialog->centerOnScreen();
 			$dialog->showModal();
 			$this->show();
 		}
-		catch (\Exception $ex)
+		catch(\Exception $ex)
 		{
 			$win = Info::Create($login, false);
 			$win->setSize(40, 23);
@@ -105,6 +105,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 			$win->showModal();
 		}
 	}
+
 }
 
 ?>

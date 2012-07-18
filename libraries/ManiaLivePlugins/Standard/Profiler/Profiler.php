@@ -13,7 +13,6 @@ namespace ManiaLivePlugins\Standard\Profiler;
 
 use ManiaLib\Gui\Elements\Icons128x128_1;
 use ManiaLive\Application\Event as AppEvent;
-use ManiaLive\DedicatedApi\Xmlrpc\Client;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Gui\Windows\Info;
 

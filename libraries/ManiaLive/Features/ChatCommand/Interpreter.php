@@ -14,9 +14,7 @@ namespace ManiaLive\Features\ChatCommand;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\DedicatedApi\Callback\Listener as ServerListener;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
-use ManiaLive\DedicatedApi\Connection;
-use ManiaLive\Data\Storage;
-use ManiaLive\Utilities\Console;
+use DedicatedApi\Connection;
 use ManiaLive\Utilities\Logger;
 
 final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListener
@@ -27,6 +25,11 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 	const REGISTERED_EXACTLY        = 3;
 	
 	private $registeredCommands = array();
+	
+	/**
+	 * @var Connection
+	 */
+	private $connection;
 
 	protected function __construct()
 	{
@@ -57,6 +60,9 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		$command->callback = array($this, 'man');
 
 		$this->register($command);
+		
+		$config = \ManiaLive\DedicatedApi\Config::getInstance();
+		$this->connection = Connection::factory($config->host, $config->port, $config->timeout, $config->user, $config->password);
 	}
 
 	/**
@@ -163,7 +169,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		if($isRegistered == self::REGISTERED_AS_POLYMORPHIC)
 			$this->callCommand($login, $text, $command, $parameters ? array($parameters) : array(), true);
 		else if($isRegistered == self::NOT_REGISTERED_AT_ALL)
-			Connection::getInstance()->chatSendServerMessage(
+			$this->connection->chatSendServerMessage(
 					'Command $<$o$FC4'.$command.'$> does not exist, try /help to see a list of the available commands.',
 					$login, true);
 		else
@@ -184,7 +190,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 				$this->callCommand($login, $text, $command, $parameters);
 			else
 			{
-				Connection::getInstance()->chatSendServerMessage(
+				$this->connection->chatSendServerMessage(
 						'The command you entered exists but has not the correct number of parameters, use $<$o$FC4/man '.$command.'$> for more details',
 						$login, true);
 				$this->man($login, $command);
@@ -207,7 +213,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 			call_user_func_array($command->callback, $parameters);
 		}
 		else
-			Connection::getInstance()->chatSendServerMessage(
+			$this->connection->chatSendServerMessage(
 					'$f00You are not authorized to use this command!', $login, true);
 	}
 
@@ -223,10 +229,10 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 				}
 
 		if(count($availableCommands))
-			Connection::getInstance()->chatSendServerMessage(
+			$this->connection->chatSendServerMessage(
 					'Available commands are: '.implode(', ', $availableCommands), $login, true);
 		else
-			Connection::getInstance()->chatSendServerMessage(
+			$this->connection->chatSendServerMessage(
 					'There is no command available', $login, true);
 	}
 
@@ -259,7 +265,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		else
 			$text = 'This command does not exists use help to see available commands';
 
-		Connection::getInstance()->chatSendServerMessage($text, $login, true);
+		$this->connection->chatSendServerMessage($text, $login, true);
 	}
 
 	private function getCommandParametersCount(Command $command)

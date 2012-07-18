@@ -19,8 +19,8 @@ use ManiaLive\Data\Listener as PlayerListener;
 use ManiaLive\Data\Event as PlayerEvent;
 use ManiaLive\DedicatedApi\Callback\Listener as ServerListener;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
-use ManiaLive\DedicatedApi\Connection;
-use ManiaLive\DedicatedApi\Structures\Status;
+use DedicatedApi\Connection;
+use DedicatedApi\Structures\Status;
 use ManiaLive\Data\Storage;
 use ManiaLive\Gui\Windows\Info;
 use ManiaLive\Gui\Windows\Shortkey;
@@ -33,6 +33,11 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 {
 	const MAX_THUMBNAILS = 5;
 	const NEXT_IS_MODAL = 0xFA15EADD;
+	
+	/**
+	 * @var Connection
+	 */
+	private $connection;
 
 	private $hidingGui = array();
 	private $modals = array();
@@ -67,6 +72,9 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ALL & ~AppEvent::ON_POST_LOOP);
 		Dispatcher::register(PlayerEvent::getClass(), $this, PlayerEvent::ON_PLAYER_CHANGE_SIDE);
 		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
+		
+		$config = \ManiaLive\DedicatedApi\Config::getInstance();
+		$this->connection = Connection::factory($config->host, $config->port, $config->timeout, $config->user, $config->password);
 	}
 
 	function getAverageSendingTimes()
@@ -79,14 +87,13 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$this->hidingGui[$login] = !$this->hidingGui[$login];
 		if($this->hidingGui[$login])
 		{
-			$connection = Connection::getInstance();
-			$connection->chatSendServerMessage('ManiaLive interface has been deactivated, press F8 to enable...', $login, true);
-			$connection->sendHideManialinkPage($login, true);
+			$this->connection->chatSendServerMessage('ManiaLive interface has been deactivated, press F8 to enable...', $login, true);
+			$this->connection->sendHideManialinkPage($login, true);
 			Manialinks::load();
 			$this->drawWindow(Shortkey::Create($login));
 			CustomUI::Create($login)->saveToDefault();
-			$connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false, true);
-			$connection->executeMulticall();
+			$this->connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false, true);
+			$this->connection->executeMulticall();
 		}
 		else
 		{
@@ -98,8 +105,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 				$this->drawModal($this->modalShown[$login]);
 			$this->drawWindow(Shortkey::Create($login));
 			CustomUI::Create($login)->save();
-			$connection = Connection::getInstance();
-			$connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false);
+			$this->connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false);
 		}
 	}
 
@@ -288,7 +294,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	function onInit()
 	{
 		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING)
-			Connection::getInstance()->sendHideManialinkPage();
+			$this->connection->sendHideManialinkPage();
 	}
 
 	function onRun()
@@ -314,7 +320,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		if($startTime < $this->nextLoop)
 			return;
 
-		$connection = Connection::getInstance();
 		$stackByPlayer = array();
 		$playersOnServer = array_merge(array_keys(Storage::getInstance()->players), array_keys(Storage::getInstance()->spectators));
 		$playersHidingGui = array_keys(array_filter($this->hidingGui));
@@ -387,9 +392,9 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 					$this->drawWindow($toDraw);
 				}
 			}
-			$connection->sendDisplayManialinkPage($login == $this->groupAllLogin ? null : $login, Manialinks::getXml(), 0, false, true);
+			$this->connection->sendDisplayManialinkPage($login == $this->groupAllLogin ? null : $login, Manialinks::getXml(), 0, false, true);
 		}
-		$connection->executeMulticall();
+		$this->connection->executeMulticall();
 
 		// Merging windows and deleting hidden ones to keep clean the current state
 		foreach($this->nextWindows as $windowId => $visibilityByLogin)
@@ -454,7 +459,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	function onTerminate()
 	{
 		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING)
-			Connection::getInstance()->sendHideManialinkPage();
+			$this->connection->sendHideManialinkPage();
 	}
 
 	// Storage Listener

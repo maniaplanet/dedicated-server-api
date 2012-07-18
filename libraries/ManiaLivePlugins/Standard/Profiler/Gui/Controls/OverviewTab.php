@@ -13,7 +13,7 @@ namespace ManiaLivePlugins\Standard\Profiler\Gui\Controls;
 
 use ManiaLib\Gui\Elements\Label;
 use ManiaLive\Database\Connection;
-use ManiaLive\DedicatedApi\Xmlrpc\Client;
+use DedicatedApi\Xmlrpc\Client;
 use ManiaLive\Gui\GuiHandler;
 use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLive\Threading\ThreadHandler;

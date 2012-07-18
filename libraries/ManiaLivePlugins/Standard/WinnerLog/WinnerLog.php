@@ -12,7 +12,7 @@
 namespace ManiaLivePlugins\Standard\WinnerLog;
 
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
-use ManiaLive\DedicatedApi\Structures\GameInfos;
+use DedicatedApi\Structures\GameInfos;
 use ManiaLive\Utilities\Time;
 use ManiaLive\Utilities\Logger;
 

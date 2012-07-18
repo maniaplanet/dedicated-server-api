@@ -1,5 +1,6 @@
 <?php
 /**
+ * Represents a Dedicated TrackMania Server Player
  * ManiaLive - TrackMania dedicated server manager in PHP
  * 
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
@@ -9,15 +10,16 @@
  * @date        $Date$:
  */
 
-namespace ManiaLive\DedicatedApi;
+namespace DedicatedApi\Structures;
 
-class Config extends \ManiaLib\Utils\Singleton
+final class ScriptSettings extends AbstractStructure
 {
-	public $host = '127.0.0.1';
-	public $port = 5000;
-	public $user = 'SuperAdmin';
-	public $password = 'SuperAdmin';
-	public $timeout = 5;
+
+	public $name;
+	public $desc;
+	public $type;
+	public $default;
+
 }
 
 ?>

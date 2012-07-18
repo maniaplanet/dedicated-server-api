@@ -13,7 +13,7 @@
 namespace ManiaLive\Utilities;
 
 use ManiaLive\Config\Config;
-use ManiaLive\DedicatedApi\Structures\Player;
+use DedicatedApi\Structures\Player;
 
 abstract class Console
 {

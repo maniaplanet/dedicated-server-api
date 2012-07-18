@@ -12,17 +12,21 @@
 namespace ManiaLive\Application;
 
 use ManiaLive\Config\Loader;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Event\Dispatcher;
 
 abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 {
+
 	const CYCLES_PER_SECOND = 60;
+
 	static $startTime;
+
 	/**
 	 * @var bool
 	 */
 	protected $running = true;
+
 	/**
 	 * @var Connection
 	 * @todo Connection is not the best name here. $dedicatedApi ? $api? $apiConnection ? etc.
@@ -36,7 +40,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		{
 			pcntl_signal(SIGTERM, array($this, 'kill'));
 			pcntl_signal(SIGINT, array($this, 'kill'));
-			declare(ticks=1);
+			declare(ticks = 1);
 		}
 
 		try
@@ -56,13 +60,13 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
 			if($manialiveConfig->logsPrefix != null)
 			{
-				$manialiveConfig->logsPrefix = str_replace('%ip%', str_replace('.', '-', $serverConfig->host), $manialiveConfig->logsPrefix);
+				$manialiveConfig->logsPrefix = str_replace('%ip%', str_replace('.', '-', $serverConfig->host),
+					$manialiveConfig->logsPrefix);
 				$manialiveConfig->logsPrefix = str_replace('%port%', $serverConfig->port, $manialiveConfig->logsPrefix);
 			}
 
 			// disable logging?
-			if(!$manialiveConfig->runtimeLog)
-				\ManiaLive\Utilities\Logger::getLog('Runtime')->disableLog();
+			if(!$manialiveConfig->runtimeLog) \ManiaLive\Utilities\Logger::getLog('Runtime')->disableLog();
 		}
 		catch(\Exception $e)
 		{
@@ -74,7 +78,9 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	protected function init()
 	{
 		new \ManiaLive\Features\Tick\Ticker();
-		$this->connection = Connection::getInstance();
+		$ConnectionConfig = \ManiaLive\DedicatedApi\Config::getInstance();
+		$this->connection = Connection::factory($ConnectionConfig->host, $ConnectionConfig->port, $ConnectionConfig->timeout,
+				$ConnectionConfig->user, $ConnectionConfig->password);
 		$this->connection->enableCallbacks(true);
 		\ManiaLive\Data\Storage::getInstance();
 		\ManiaLive\Features\ChatCommand\Interpreter::getInstance();
@@ -99,7 +105,16 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			while($this->running)
 			{
 				Dispatcher::dispatch(new Event(Event::ON_PRE_LOOP));
-				$this->connection->executeCallbacks();
+				$calls = $this->connection->executeCallbacks();
+				if(!empty($calls))
+				{
+					foreach($calls as $call)
+					{
+						$method = preg_replace('/^[[:alpha:]]+\./', '', $call[0]); // remove trailing "Whatever."
+						$params = (array) $call[1];
+						Dispatcher::dispatch(new \ManiaLive\DedicatedApi\Callback\Event($method, $params));
+					}
+				}
 				$this->connection->executeMulticall();
 				Dispatcher::dispatch(new Event(Event::ON_POST_LOOP));
 
@@ -107,7 +122,8 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				do
 				{
 					$nextCycleStart += $cycleTime;
-				} while($nextCycleStart < $endCycleTime);
+				}
+				while($nextCycleStart < $endCycleTime);
 				@time_sleep_until($nextCycleStart);
 			}
 		}
@@ -115,16 +131,16 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		{
 			ErrorHandling::processRuntimeException($e);
 		}
-		
+
 		Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
 	}
 
 	function kill()
 	{
-		if($this->connection)
-			$this->connection->manualFlowControlEnable(false);
+		if($this->connection) $this->connection->manualFlowControlEnable(false);
 		$this->running = false;
 	}
+
 }
 
 ?>
