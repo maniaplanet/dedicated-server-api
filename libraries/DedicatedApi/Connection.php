@@ -17,17 +17,27 @@ namespace DedicatedApi;
  */
 class Connection
 {
+
 	/**
 	 * @var Connection
 	 */
 	static protected $instances = array();
-	
+
 	/**
 	 * XML-RPC client instance
 	 * @var
 	 */
 	protected $xmlrpcClient;
 
+	/**
+	 * 
+	 * @param string $host
+	 * @param int $port
+	 * @param int $timeout
+	 * @param string $user
+	 * @param string $password
+	 * @return Connection
+	 */
 	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 5, $user = 'SuperAdmin', $password = 'SuperAdmin')
 	{
 		if(!array_key_exists($host.':'.$port, self::$instances))
@@ -36,7 +46,7 @@ class Connection
 		}
 		return self::$instances[$host.':'.$port];
 	}
-	
+
 	static function deleteConnection($hostname, $port)
 	{
 		if(array_key_exists($host.':'.$port, self::$instances))
@@ -562,8 +572,7 @@ class Connection
 	 */
 	function chatSendToLanguage(array $messages, $receiver = null, $multicall = false)
 	{
-		if(!is_array($messages))
-			throw new InvalidArgumentException('messages = '.print_r($messages, true));
+		if(!is_array($messages)) throw new InvalidArgumentException('messages = '.print_r($messages, true));
 
 		if($receiver == null)
 		{
@@ -588,8 +597,7 @@ class Connection
 	 */
 	function chatSend($message, $receiver, $multicall = false)
 	{
-		if(!is_string($message))
-			throw new InvalidArgumentException('message = '.print_r($message, true));
+		if(!is_string($message)) throw new InvalidArgumentException('message = '.print_r($message, true));
 
 		$params = array($message);
 		$method = 'ChatSend';
@@ -692,9 +700,8 @@ class Connection
 		if(!is_null($receiver))
 		{
 			if(!($login = $this->getLogins($receiver)))
-				throw new InvalidArgumentException('receiver = '.print_r($receiver, true));
-			else
-				$params[] = $login;
+					throw new InvalidArgumentException('receiver = '.print_r($receiver, true));
+			else $params[] = $login;
 
 			$method .= 'ToLogin';
 		}
@@ -724,10 +731,8 @@ class Connection
 		$method = 'SendDisplayManialinkPage';
 		if(!is_null($players))
 		{
-			if(!($login = $this->getLogins($players)))
-				throw new InvalidArgumentException('players = '.print_r($players, true));
-			else
-				$params[] = $login;
+			if(!($login = $this->getLogins($players))) throw new InvalidArgumentException('players = '.print_r($players, true));
+			else $params[] = $login;
 
 			$method .= 'ToLogin';
 		}
@@ -765,10 +770,8 @@ class Connection
 		$method = 'SendHideManialinkPage';
 		if(!is_null($players))
 		{
-			if(!($login = $this->getLogins($players)))
-				throw new InvalidArgumentException('players = '.print_r($players, true));
-			else
-				$params[] = $login;
+			if(!($login = $this->getLogins($players))) throw new InvalidArgumentException('players = '.print_r($players, true));
+			else $params[] = $login;
 
 			$method .= 'ToLogin';
 		}
@@ -898,10 +901,8 @@ class Connection
 	 */
 	function getBanList($length, $offset)
 	{
-		if(!is_int($length))
-			throw new InvalidArgumentException('length = '.print_r($length, true));
-		if(!is_int($offset))
-			throw new InvalidArgumentException('offset = '.print_r($offset, true));
+		if(!is_int($length)) throw new InvalidArgumentException('length = '.print_r($length, true));
+		if(!is_int($offset)) throw new InvalidArgumentException('offset = '.print_r($offset, true));
 
 		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
@@ -962,10 +963,8 @@ class Connection
 	 */
 	function getBlackList($length, $offset)
 	{
-		if(!is_int($length))
-			throw new InvalidArgumentException('length = '.print_r($length, true));
-		if(!is_int($offset))
-			throw new InvalidArgumentException('offset = '.print_r($offset, true));
+		if(!is_int($length)) throw new InvalidArgumentException('length = '.print_r($length, true));
+		if(!is_int($offset)) throw new InvalidArgumentException('offset = '.print_r($offset, true));
 
 		$result = $this->execute(ucfirst(__FUNCTION__), array($length, $offset));
 		return Structures\Player::fromArrayOfArray($result);
@@ -980,8 +979,7 @@ class Connection
 	 */
 	function loadBlackList($filename, $multicall = false)
 	{
-		if(!is_string($filename))
-			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		if(!is_string($filename)) throw new InvalidArgumentException('filename = '.print_r($filename, true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -995,8 +993,7 @@ class Connection
 	 */
 	function saveBlackList($filename, $multicall = false)
 	{
-		if(!is_string($filename))
-			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		if(!is_string($filename)) throw new InvalidArgumentException('filename = '.print_r($filename, true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -1946,11 +1943,11 @@ class Connection
 	function setServerOptions(array $options, $multicall = false)
 	{
 		if(!is_array($options) || !array_key_exists('Name', $options) || !array_key_exists('Comment', $options)
-				|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
-				|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
-				|| (array_key_exists('IsP2PUpload', $options) xor array_key_exists('IsP2PDownload', $options))
-				|| (array_key_exists('NextMaxPlayer', $options) xor array_key_exists('NextMaxSpectator', $options))
-				|| (array_key_exists('RefereePassword', $options) xor array_key_exists('RefereeMode', $options)))
+			|| !array_key_exists('Password', $options) || !array_key_exists('PasswordForSpectator', $options)
+			|| !array_key_exists('NextCallVoteTimeOut', $options) || !array_key_exists('CallVoteRatio', $options)
+			|| (array_key_exists('IsP2PUpload', $options) xor array_key_exists('IsP2PDownload', $options))
+			|| (array_key_exists('NextMaxPlayer', $options) xor array_key_exists('NextMaxSpectator', $options))
+			|| (array_key_exists('RefereePassword', $options) xor array_key_exists('RefereeMode', $options)))
 		{
 			throw new InvalidArgumentException('options = '.print_r($options, true));
 		}
@@ -2033,16 +2030,12 @@ class Connection
 			$modList = array();
 			foreach($mods as $mod)
 			{
-				if(!($mod instanceof Structures\Mod))
-					throw new InvalidArgumentException('mods = '.print_r($mods, true));
-				else
-					$modList[] = $mod->toArray();
+				if(!($mod instanceof Structures\Mod)) throw new InvalidArgumentException('mods = '.print_r($mods, true));
+				else $modList[] = $mod->toArray();
 			}
 		}
-		elseif($mods instanceof Structures\Mod)
-			$modList = array($mods->toArray());
-		else
-			throw new InvalidArgumentException('mods = '.print_r($mods, true));
+		elseif($mods instanceof Structures\Mod) $modList = array($mods->toArray());
+		else throw new InvalidArgumentException('mods = '.print_r($mods, true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($override, $modList), $multicall);
 	}
@@ -2119,7 +2112,8 @@ class Connection
 				$skinParameter[$key]['Checksum'] = $skin->checksum;
 				$skinParameter[$key]['Url'] = $skin->url;
 			}
-			elseif(!is_array($skin) || !array_key_exists('Orig', $skin) && !array_key_exists('Name', $skin) && !array_key_exists('Checksum', $skin) && !array_key_exists('Url', $skin))
+			elseif(!is_array($skin) || !array_key_exists('Orig', $skin) && !array_key_exists('Name', $skin) && !array_key_exists('Checksum',
+					$skin) && !array_key_exists('Url', $skin))
 			{
 				throw new InvalidArgumentException('skins['.$key.'] = '.print_r($skins[$key], true));
 			}
@@ -2230,7 +2224,7 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
 	 * Set the maximum time the server must wait for inputs from the clients before dropping data, or '0' for auto-adaptation.
 	 * Only used by ShootMania. Only available to Admin.
@@ -2247,7 +2241,7 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($latency), $multicall);
 	}
-	
+
 	/**
 	 * Get the current ClientInputsMaxLatency. Only used by ShootMania.
 	 * @return int
@@ -2410,7 +2404,7 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($dontClearCupScores), $multicall);
 	}
-	
+
 	/**
 	 * Attempt to balance teams. Only available to Admin.
 	 * @return bool
@@ -3192,7 +3186,9 @@ class Connection
 		{
 			throw new InvalidArgumentException('teamName2 = '.print_r($teamName2, true));
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array('unused', 0., '|World|France', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__),
+				array('unused', 0., '|World|France', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
+				$multicall);
 	}
 
 	/**
@@ -3515,7 +3511,8 @@ class Connection
 			throw new InvalidArgumentException('compatibility = '.print_r($compatibility, true));
 		}
 
-		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset, $compatibility)));
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
+					array($length, $offset, $compatibility)));
 	}
 
 	/**
@@ -3891,10 +3888,8 @@ class Connection
 	 */
 	private function getLogin($player)
 	{
-		if(is_string($player))
-			return $player;
-		if($player instanceof Structures\Player)
-			return $player->login;
+		if(is_string($player)) return $player;
+		if($player instanceof Structures\Player) return $player->login;
 		return null;
 	}
 
@@ -3910,16 +3905,15 @@ class Connection
 			$logins = array();
 			foreach($players as $player)
 			{
-				if(($login = $this->getLogin($player)))
-					$logins[] = $login;
-				else
-					return null;
+				if(($login = $this->getLogin($player))) $logins[] = $login;
+				else return null;
 			}
 
 			return implode(',', $logins);
 		}
 		return $this->getLogin($players);
 	}
+
 }
 
 /**
