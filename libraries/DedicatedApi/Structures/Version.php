@@ -14,7 +14,9 @@ namespace DedicatedApi\Structures;
 class Version extends AbstractStructure
 {
 	public $name;
+	public $titleId;
 	public $version;
 	public $build;
+	public $apiVersion;
 }
 ?>

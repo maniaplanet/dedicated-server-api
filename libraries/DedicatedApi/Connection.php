@@ -30,7 +30,6 @@ class Connection
 	protected $xmlrpcClient;
 
 	/**
-	 * 
 	 * @param string $host
 	 * @param int $port
 	 * @param int $timeout
@@ -47,7 +46,7 @@ class Connection
 		return self::$instances[$host.':'.$port];
 	}
 
-	static function deleteConnection($hostname, $port)
+	static function deleteConnection($host, $port)
 	{
 		if(array_key_exists($host.':'.$port, self::$instances))
 		{
