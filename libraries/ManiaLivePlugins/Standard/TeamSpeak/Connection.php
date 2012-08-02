@@ -78,6 +78,23 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 			foreach($config->groupPermissions as $permission => $value)
 				$this->server->serverGroupPermAssign($this->playersGroupId, $permission, $value);
 		}
+		else
+		{
+			// Find existing tokens to avoid duplicates
+			try
+			{
+				foreach($this->server->privilegeKeyList() as $token => $tokenInfo)
+				{
+					if(!$tokenInfo['token_type'] && $tokenInfo['token_id1'] == $this->playersGroupId
+							&& preg_match('/`([a-z\._-]{1,25})`$/', $tokenInfo['token_description'], $matches))
+						$this->privilegeKeys[$matches[1]] = $token;
+				}
+			}
+			catch(\ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\Adapter\ServerQuery\Exception $e)
+			{
+				/* thanks for launching exception instead of just returning an empty array... */
+			}
+		}
 		
 		// Populate
 		foreach($this->server->channelList() as $channel)
@@ -171,7 +188,7 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 		if(!isset($this->privilegeKeys[$login]))
 			$this->privilegeKeys[$login] = $this->server->privilegeKeyCreate(
 					TeamSpeak3::TOKEN_SERVERGROUP, $this->playersGroupId, 0,
-					'Created by ManiaLive to authenticate players',
+					'Created by ManiaLive to authenticate `'.$login.'`',
 					'ident=maniaplanet_login value='.$login);
 		return $this->privilegeKeys[$login];
 	}
@@ -223,12 +240,12 @@ class Connection extends \ManiaLib\Utils\Singleton implements AppListener, TickL
 				$this->server->notifyUnregister();
 				foreach($this->privilegeKeys as $key)
 					$this->server->privilegeKeyDelete($key);
-				$this->privilegeKeys = array();
 			}
 			$this->server->clientListReset();
 			$this->server->channelListReset();
 			$this->server = null;
 			$this->playersGroupId = 0;
+			$this->privilegeKeys = array();
 		}
 		if($this->processHandler && $this->processId)
 		{

@@ -33,7 +33,7 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	
 	function onInit()
 	{
-		$this->setVersion('2.0');
+		$this->setVersion('2.0.1');
 	}
 	
 	function onLoad()
@@ -166,6 +166,9 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 	
 	function onPlayerDisconnect($login)
 	{
+		if(!$this->tsConnection->isConnected())
+			return;
+		
 		if( ($client = Client::GetByLogin($login)) )
 		{
 			$player = $this->storage->getPlayerObject($login);
