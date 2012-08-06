@@ -3167,6 +3167,18 @@ class Connection
 		return $this->execute(ucfirst(__FUNCTION__), array($nextMapIndex), $multicall);
 	}
 
+	/**
+	 * Set Team names and colors. Only available to Admin.
+	 * @param string $teamName1
+	 * @param float $teamColor1
+	 * @param string $team1Country
+	 * @param string $teamName2
+	 * @param float $teamColor2
+	 * @param string $team2Country
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
 	function setTeamInfo($teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country, $multicall = false)
 	{
 		if(!is_float($teamColor1))
@@ -3186,8 +3198,34 @@ class Connection
 			throw new InvalidArgumentException('teamName2 = '.print_r($teamName2, true));
 		}
 		return $this->execute(ucfirst(__FUNCTION__),
-				array('unused', 0., '|World|France', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
+				array('unused', 0., 'World', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
 				$multicall);
+	}
+	
+	/**
+	 * Disable player horns. Only available to Admin.
+	 * @param bool $disable
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function disableHorns($disable, $multicall = false)
+	{
+		if(!is_bool($disable))
+		{
+			throw new InvalidArgumentException('disable = '.print_r($disable, true));
+		}
+		
+		return $this->execute(ucfirst(__FUNCTION__), array($disable), $multicall);
+	}
+	
+	/**
+	 * Returns whether the horns are disabled.
+	 * @return bool
+	 */
+	function areHornsDisabled()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
