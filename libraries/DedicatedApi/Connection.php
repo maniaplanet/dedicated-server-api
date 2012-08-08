@@ -17,15 +17,14 @@ namespace DedicatedApi;
  */
 class Connection
 {
-
 	/**
-	 * @var Connection
+	 * @var Connection[]
 	 */
 	static protected $instances = array();
 
 	/**
 	 * XML-RPC client instance
-	 * @var
+	 * @var Xmlrpc\ClientMulticall
 	 */
 	protected $xmlrpcClient;
 
@@ -39,29 +38,34 @@ class Connection
 	 */
 	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 5, $user = 'SuperAdmin', $password = 'SuperAdmin')
 	{
-		if(!array_key_exists($host.':'.$port, self::$instances))
+		$key = $host.':'.$port;
+		if(!isset(self::$instances[$key]))
 		{
-			self::$instances[$host.':'.$port] = new self($host, $port, $timeout, $user, $password);
+			self::$instances[$key] = new self($host, $port, $timeout, $user, $password);
 		}
-		return self::$instances[$host.':'.$port];
+		return self::$instances[$key];
 	}
 
-	static function deleteConnection($host, $port)
+	/**
+	 * @param string $host
+	 * @param int $port
+	 */
+	static function delete($host, $port)
 	{
-		if(array_key_exists($host.':'.$port, self::$instances))
+		$key = $host.':'.$port;
+		if(isset(self::$instances[$key]))
 		{
-			self::$instances[$host.':'.$port]->terminate();
-			unset(self::$instances[$host.':'.$port]);
+			self::$instances[$key]->terminate();
+			unset(self::$instances[$key]);
 		}
 	}
 
 	/**
-	 * Constructor of the class
-	 * @param int $port represents the communication port
-	 * @param string $hostname represents the ip to reach
-	 * @param string $superAdminPassword represents the SuperAdmin password
-	 * @param string $adminPassword represents the Admin password
-	 * @param string $userPassword represents the User password
+	 * @param string $host
+	 * @param int $port
+	 * @param int $timeout
+	 * @param string $user
+	 * @param string $password
 	 */
 	protected function __construct($host, $port, $timeout, $user, $password)
 	{
@@ -72,9 +76,9 @@ class Connection
 
 	/**
 	 * Close the current socket connexion
-	 * Never call this method, use instead DedicatedApi::deleteConnection($hostname,$port)
+	 * Never call this method, use instead DedicatedApi::delete($host, $port)
 	 */
-	function terminate()
+	protected function terminate()
 	{
 		$this->xmlrpcClient->terminate();
 	}
