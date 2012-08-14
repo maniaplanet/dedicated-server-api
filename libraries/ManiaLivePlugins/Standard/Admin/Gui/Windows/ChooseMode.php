@@ -15,7 +15,7 @@ use ManiaLib\Gui\Elements\Icons128x32_1;
 use ManiaLib\Gui\Layouts\Line;
 use ManiaLive\Data\Storage;
 use DedicatedApi\Connection;
-use ManiaLive\DedicatedApi\Structures\GameInfos;
+use DedicatedApi\Structures\GameInfos;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Windows\Dialog;
 use ManiaLive\Gui\Windows\Info;
@@ -69,7 +69,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 			if(Storage::getInstance()->serverStatus->code == 4)
 			{
 				$config = \ManiaLive\DedicatedApi\Config::getInstance();
-				Connection::factory()->restartMap($config->host, $config->port);
+				Connection::factory($config->host, $config->port)->restartMap();
 				$this->hide();
 			}
 			else $dialog->showModal();
@@ -81,7 +81,7 @@ class ChooseMode extends \ManiaLive\Gui\ManagedWindow
 		try
 		{
 			$config = \ManiaLive\DedicatedApi\Config::getInstance();
-			Connection::factory()->setGameMode($mode);
+			Connection::factory($config->host, $config->port)->setGameMode($mode);
 			$dialog = Dialog::Create($login, false);
 			$dialog->setSize(125, 40);
 			$dialog->setTitle('Game Mode Changed!');

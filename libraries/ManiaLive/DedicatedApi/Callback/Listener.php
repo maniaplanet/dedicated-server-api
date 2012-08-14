@@ -56,31 +56,11 @@ interface Listener extends \ManiaLive\Event\Listener
 	function onServerStop();
 	/**
 	 * Method called when the Race Begin
-	 * struct SMapInfo is like the object Map
-	 * struct SMapInfo
-	 * {
-	 *	string Uid;
-	 *	string Name;
-	 *	string FileName;
-	 *	string Author;
-	 *	string Environnement;
-	 *	string Mood;
-	 *	int BronzeTime;
-	 *	int SilverTime;
-	 *	int GoldTime;
-	 *	int AuthorTime;
-	 *	int CopperPrice;
-	 *	bool LapRace;
-	 *	int NbLaps;
-	 *	int NbCheckpoints;
-	 * } 
-	 * @param array[MapInfo] $map
 	 */
-	function onBeginMatch($map);
+	function onBeginMatch();
 	/**
 	 * Method called when the Race Ended
 	 * struct of SPlayerRanking is a part of the structure of DedicatedApi\Structures\Player object
-	 * struct MapInfo is like the object Map
 	 * struct SPlayerRanking
 	 * {
 	 *	string Login;
@@ -88,15 +68,14 @@ interface Listener extends \ManiaLive\Event\Listener
 	 *	int PlayerId;
 	 *	int Rank;
 	 *	int BestTime;
-	 *	array[int] BestCheckpoints;
+	 *	int[] BestCheckpoints;
 	 *	int Score;
 	 *	int NbrLapsFinished;
 	 *	double LadderScore;
 	 * } 
-	 * @param array[SPlayerRanking] $rankings
-	 * @param SMapInfo $map
+	 * @param SPlayerRanking[] $rankings
 	 */
-	function onEndMatch($rankings, $map);
+	function onEndMatch($rankings);
 	/**
 	 * Method called when a map begin
 	 * @param SMapInfo $map

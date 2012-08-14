@@ -60,17 +60,17 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_ECHO: $listener->onEcho($p[0], $p[1]); break;
 			case self::ON_SERVER_START: $listener->onServerStart(); break;
 			case self::ON_SERVER_STOP: $listener->onServerStop(); break;
-			case self::ON_BEGIN_MATCH: $listener->onBeginMatch($p[0]); break;
-			case self::ON_END_MATCH: $listener->onEndMatch($p[0], $p[1]); break;
+			case self::ON_BEGIN_MATCH: $listener->onBeginMatch(); break;
+			case self::ON_END_MATCH: $listener->onEndMatch($p[0]); break;
 			case self::ON_BEGIN_MAP:
-				// FIXME hack for SM
+				// FIXME hack for 2011-10-06 API
 				if(count($p) == 1)
 					$listener->onBeginMap($p[0], false, null);
 				else
 					$listener->onBeginMap($p[0], $p[1], $p[2]);
 				break;
 			case self::ON_END_MAP:
-				// FIXME hack for SM
+				// FIXME hack for 2011-10-06 API
 				if(count($p) == 1)
 					$listener->onEndMap(array(), $p[0], false, null, null);
 				else

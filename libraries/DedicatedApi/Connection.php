@@ -174,7 +174,7 @@ class Connection
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	protected function setApiVersion($version, $multicall = false)
+	function setApiVersion($version, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array((string) $version), $multicall);
 	}

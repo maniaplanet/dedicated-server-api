@@ -269,8 +269,8 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
 	function onEcho($internal, $public) {}
-	function onBeginMatch($map) {}
-	function onEndMatch($rankings, $map) {}
+	function onBeginMatch() {}
+	function onEndMatch($rankings) {}
 	function onBeginMap($map, $warmUp, $matchContinuation) {}
 	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
 	function onBeginRound() {}

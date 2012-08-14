@@ -258,12 +258,12 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		
 	}
 
-	function onBeginMatch($map)
+	function onBeginMatch()
 	{
 		
 	}
 
-	function onEndMatch($rankings, $map)
+	function onEndMatch($rankings)
 	{
 		if($this->isWarmUp && $this->gameInfos->gameMode == GameInfos::GAMEMODE_LAPS)
 		{

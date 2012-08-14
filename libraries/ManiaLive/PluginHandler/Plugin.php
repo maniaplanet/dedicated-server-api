@@ -40,25 +40,15 @@ use ManiaLive\Utilities\Logger;
  */
 abstract class Plugin extends ServerAdapter implements ThreadListener, TickListener, AppListener, PlayerListener, PluginListener
 {
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $name;
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $author;
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $id;
-	/**
-	 * @var integer
-	 */
+	/** @var mixed */
 	private $version;
-	/**
-	 * @var array[Dependency]
-	 */
+	/** @var Dependency[] */
 	private $dependencies;
 	/**
 	 * Event subscriber swichtes
@@ -69,29 +59,17 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	private $eventsServer = 0;
 	private $eventsStorage = 0;
 	private $eventsPlugins = 0;
-	/**
-	 * @var ManiaLive\PluginHandler\PluginHandler
-	 */
+	/** @var \ManiaLive\PluginHandler\PluginHandler */
 	private $pluginHandler;
-	/**
-	 * @var array[\ReflectionMethod]
-	 */
+	/** @var \ReflectionMethod[] */
 	private $methods;
-	/**
-	 * @var array[\ManiaLive\Features\ChatCommand\Command]
-	 */
+	/** @var \ManiaLive\Features\ChatCommand\Command[] */
 	private $chatCommands;
-	/**
-	 * @var ManiaLive\Data\Storage
-	 */
+	/** @var \ManiaLive\Data\Storage */
 	protected $storage;
-	/**
-	 * @var DedicatedApi\Connection
-	 */
+	/** @var \DedicatedApi\Connection */
 	protected $connection;
-	/**
-	 * @var \ManiaLive\Database\Connection
-	 */
+	/** @var \ManiaLive\Database\Connection */
 	protected $db;
 
 	final function __construct()

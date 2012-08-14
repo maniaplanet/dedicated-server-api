@@ -530,13 +530,13 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	}
 
 	function onBeginMap($map, $warmUp, $matchContinuation) {}
-	function onBeginMatch($map) {}
+	function onBeginMatch() {}
 	function onBeginRound() {}
 	function onBillUpdated($billId, $state, $stateName, $transactionId) {}
 	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {}
 	function onEcho($internal, $public) {}
 	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
-	function onEndMatch($rankings, $map) {}
+	function onEndMatch($rankings) {}
 	function onEndRound() {}
 	function onManualFlowControlTransition($transition) {}
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
