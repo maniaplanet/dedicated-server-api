@@ -16,26 +16,10 @@ abstract class CommandLineInterpreter
 	static function preConfigLoad()
 	{
 		$options = getopt(null,array(
+			'help::',//Display Help
 			'manialive_cfg::',//Set a configuration file to load instead of config.ini
 		));
 		
-		if(isset($options['manialive_cfg']))
-			return $options['manialive_cfg'];
-		else
-			return 'config.ini';
-	}
-	
-	static function postConfigLoad()
-	{
-		$options = getopt(null,array(
-			'help::',//Display Help
-			'rpcport::',//Set the XML RPC Port to use
-			'address::',//Set the adresse of the server
-			'password::',//Set the User Password
-			'dedicated_cfg::',//Set the configuration file to use to define XML RPC Port, SuperAdmin, Admin and User passwords
-			'user::'//Set the user to use during the communication with the server
-		));
-
 		$help = 'ManiaLive v2.1.14 (2012 Jul 13)'."\n"
 		.'Authors : '."\n"
 		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'."\n"
@@ -55,6 +39,22 @@ abstract class CommandLineInterpreter
 			exit;
 		}
 		
+		if(isset($options['manialive_cfg']))
+			return $options['manialive_cfg'];
+		else
+			return 'config.ini';
+	}
+	
+	static function postConfigLoad()
+	{
+		$options = getopt(null,array(
+			'rpcport::',//Set the XML RPC Port to use
+			'address::',//Set the adresse of the server
+			'password::',//Set the User Password
+			'dedicated_cfg::',//Set the configuration file to use to define XML RPC Port, SuperAdmin, Admin and User passwords
+			'user::'//Set the user to use during the communication with the server
+		));
+
 		$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
 
 		if(isset($options['user']))
