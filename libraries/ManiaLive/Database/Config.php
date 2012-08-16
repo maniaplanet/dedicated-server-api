@@ -15,7 +15,7 @@ class Config extends \ManiaLib\Utils\Singleton
 	public $port = 3306;
 	public $username = 'root';
 	public $password = '';
-	public $database = '';
+	public $database = 'manialive';
 	public $type = 'MySQL';
 }
 
