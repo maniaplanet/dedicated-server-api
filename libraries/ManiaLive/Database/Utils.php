@@ -14,21 +14,21 @@ namespace ManiaLive\Database;
 abstract class Utils
 {
 	/**
-	 * Returns the "LIMIT x,x" string depending on both values
+	 * Returns the "LIMIT x OFFSET x" string depending on both values
 	 */
 	static function getLimitString($offset, $length)
 	{
-		if(!$offset && !$length)
+		if(!$length)
 		{
 			return '';
 		}
-		elseif(!$offset && $length==1)
+		elseif(!$offset)
 		{
-			return 'LIMIT 1';
+			return 'LIMIT '.$length;
 		}
 		else
 		{
-			return 'LIMIT '.$offset.', '.$length;
+			return 'LIMIT '.$length.' OFFSET '.$offset;
 		}
 	}
 	

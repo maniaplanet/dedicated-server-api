@@ -11,55 +11,100 @@
 
 namespace ManiaLive\Database;
 
-interface RecordSet
+abstract class RecordSet
 {
-	function __construct($result);
+	abstract function __construct($result);
 	
-	function fetchScalar();
+	/**
+	 * @deprecated use fetchSingleValue instead
+	 */
+	function fetchScalar()
+	{
+		return $this->fetchSingleValue();
+	}
+	
+	function fetchSingleValue($default = 0)
+	{
+		$row = $this->fetchRow();
+		return $row ? reset($row) : $default;
+	}
+
+	function fetchArrayOfSingleValues()
+	{
+		$array = array();
+		while($row = $this->fetchRow())
+		{
+			$array[] = reset($row);
+		}
+		return $array;
+	}
 	
 	/**
 	 * Get a result row as an enumerated array
 	 * Returns an numerical array of strings that corresponds to the fetched row
 	 * @return array 
 	 */
-	function fetchRow();
+	abstract function fetchRow();
+
+	function fetchArrayOfRow()
+	{
+		$array = array();
+		while($row = $this->fetchRow())
+		{
+			$array[] = $row;
+		}
+		return $array;
+	}
 	
 	/**
 	 * Fetch a result row as an associative array
 	 * Returns an associative array of strings that corresponds to the fetched row
 	 * @return array
 	 */
-	function fetchAssoc();
+	abstract function fetchAssoc();
+
+	function fetchArrayOfAssoc()
+	{
+		$array = array();
+		while($row = $this->fetchAssoc())
+		{
+			$array[] = $row;
+		}
+		return $array;
+	}
 	
 	/**
 	 * Fetch a result row as an associative array, a numeric array, or both
 	 * Returns an array that corresponds to the fetched row and moves the internal data pointer ahead.
 	 * @return array
 	 */
-	function fetchArray();
-	
-	/**
-	 * Fetch a result row as a StdClass object
-	 * Returns an object with properties that correspond to the fetched row and moves the internal data pointer ahead.
-	 * @return stdClass
-	 */
-	function fetchStdObject();
+	abstract function fetchArray();
 	
 	/**
 	 * Fetch a result row as an Object
 	 * Returns an object with properties that correspond to the fetched row and moves the internal data pointer ahead.
 	 * @return object
 	 */
-	function fetchObject($className, array $params=array() );
+	abstract function fetchObject($className='\\stdClass', array $params=array());
+
+	function fetchArrayOfObject($className='\\stdClass', array $params=array())
+	{
+		$array = array();
+		while($row = $this->fetchObject($className, $params))
+		{
+			$array[] = $row;
+		}
+		return $array;
+	}
 	
 	/**
 	 * Give the number of rows in the ResultSet
 	 * This command is only valid for statements like SELECT or SHOW
 	 * @return int
 	 */
-	function recordCount();
+	abstract function recordCount();
 	
-	function recordAvailable();
+	abstract function recordAvailable();
 }
 
 ?>

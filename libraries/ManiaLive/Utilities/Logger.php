@@ -19,31 +19,26 @@ class Logger
 
 	/**
 	 * @param string $name
-	 * @param string $subfolder
 	 * @return \ManiaLive\Utilities\Logger
 	 */
-	static function getLog($name, $subfolder = '')
+	static function getLog($name)
 	{
-		$id = $subfolder.'_'.$name;
-		if(isset(self::$logs[$id]))
-			return self::$logs[$id];
+		if(isset(self::$logs[$name]))
+			return self::$logs[$name];
 
-		$log = new Logger($name, $subfolder);
-		self::$logs[$id] = $log;
+		$log = new Logger($name);
+		self::$logs[$name] = $log;
 		return $log;
 	}
 
-	private function __construct($name, $subfolder = '')
+	private function __construct($name)
 	{
 		// if path does not exist ...
 		$config = \ManiaLive\Config\Config::getInstance();
 		if(!is_dir($config->logsPath))
 			mkdir($config->logsPath, '0777', true);
 
-		if($subfolder != '')
-			$subfolder = $subfolder.'_';
-
-		$this->path = $config->logsPath.'/'.$config->logsPrefix.$subfolder.'log_'.$name.'.txt';
+		$this->path = $config->logsPath.'/'.($config->logsPrefix ? $config->logsPrefix.'-' : '').$name.'.txt';
 		$this->enabled = true;
 	}
 
@@ -57,10 +52,11 @@ class Logger
 		$this->enabled = false;
 	}
 
-	function write($text)
+	function write($text, $tags=array())
 	{
+		array_unshift($tags, date('Y.m.d H:i:s'));
 		if($this->enabled)
-			error_log('['.date('Y.m.d H:i:s').'] '.$text.PHP_EOL, 3, $this->path);
+			file_put_contents($this->path, '['.implode('][', $tags).'] '.$text.PHP_EOL, FILE_APPEND);
 	}
 }
 

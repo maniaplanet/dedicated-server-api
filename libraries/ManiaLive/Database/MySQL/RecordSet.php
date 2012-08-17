@@ -11,7 +11,7 @@
 
 namespace ManiaLive\Database\MySQL;
 
-class RecordSet implements \ManiaLive\Database\RecordSet
+class RecordSet extends \ManiaLive\Database\RecordSet
 {
 	const FETCH_ASSOC = MYSQL_ASSOC;
 	const FETCH_NUM = MYSQL_NUM;
@@ -22,12 +22,6 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 	function __construct($result)
 	{
 		$this->result = $result;
-	}
-	
-	function fetchScalar()
-	{
-		$row = mysql_fetch_row($this->result);
-		return $row[0];
 	}
 	
 	function fetchRow()
@@ -45,14 +39,23 @@ class RecordSet implements \ManiaLive\Database\RecordSet
 		return mysql_fetch_array($this->result, $resultType);
 	}
 	
-	function fetchStdObject()
+	function fetchObject($className='\\stdClass', array $params=array())
 	{
-		return mysql_fetch_object($this->result);
-	}
-	
-	function fetchObject($className, array $params=array())
-	{
-		return mysql_fetch_object($this->result, $className, $params);
+		if($className)
+		{
+			if($params)
+			{
+				return mysql_fetch_object($this->result, $className, $params);
+			}
+			else
+			{
+				return mysql_fetch_object($this->result, $className);
+			}
+		}
+		else
+		{
+			return mysql_fetch_object($this->result);
+		}
 	}
 	
 	function recordCount()

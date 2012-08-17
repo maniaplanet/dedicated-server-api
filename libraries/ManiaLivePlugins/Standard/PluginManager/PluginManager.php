@@ -17,7 +17,6 @@ use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\PluginHandler\PluginHandler;
 use ManiaLive\Threading\Command;
 use ManiaLive\Threading\ThreadHandler;
-use ManiaLivePlugins\Standard\PluginManager\Gui\Controls\Plugin;
 use ManiaLivePlugins\Standard\PluginManager\Gui\Windows\Manager;
 
 class PluginManager extends \ManiaLive\PluginHandler\Plugin
@@ -50,6 +49,9 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 
 	function pluginsParsed(Command $command)
 	{
+		if(!$command->isDone())
+			PluginHandler::getInstance()->unload('Standard\\PluginManager');
+		
 		ThreadHandler::getInstance()->killThread($this->threadId);
 		$this->threadId = null;
 		

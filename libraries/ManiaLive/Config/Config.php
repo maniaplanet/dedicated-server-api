@@ -15,7 +15,7 @@ class Config extends \ManiaLib\Utils\Singleton
 {
 	// base path for logging
 	public $logsPath;
-	public $logsPrefix = '';
+	public $logsPrefix = 'manialive';
 	// enable runtime logging?
 	public $runtimeLog = false;
 	// log all errors from all instances?

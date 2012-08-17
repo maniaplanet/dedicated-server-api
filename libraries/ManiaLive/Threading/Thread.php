@@ -12,7 +12,6 @@
 namespace ManiaLive\Threading;
 
 use ManiaLive\Database\Connection;
-use ManiaLive\Utilities\Console;
 
 /**
  * This class is running in it's own process and is being instanciated by the thread_ignitor.php.
@@ -20,10 +19,10 @@ use ManiaLive\Utilities\Console;
  */
 class Thread extends \ManiaLib\Utils\Singleton
 {
-
 	private $threadId;
 	private $parentId;
 	private $database;
+	private $logger;
 	private $taskBuffer = array();
 
 	protected function __construct()
@@ -32,10 +31,11 @@ class Thread extends \ManiaLib\Utils\Singleton
 		$this->threadId = (int) $options['threadId'];
 		$this->parentId = (int) $options['parentId'];
 		$this->initDatabase();
+		$this->logger = \ManiaLive\Utilities\Logger::getLog('threading');
 
-		Console::println('Thread started successfully!');
-
-		if($this->database->isConnected()) Console::println('DB is connected, waiting for jobs ...');
+		$this->logger->write('Thread started successfully!', array('Process #'.$this->parentId.'.'.$this->threadId));
+		if($this->database->isConnected())
+			$this->logger->write('DB is connected, waiting for jobs ...', array('Process #'.$this->parentId.'.'.$this->threadId));
 	}
 
 	private function initDatabase()
@@ -43,18 +43,20 @@ class Thread extends \ManiaLib\Utils\Singleton
 		$options = getopt(null, array('dbHost::', 'dbPort::', 'dbUsername::', 'dbPassword::', 'dbDatabase::'));
 
 		$dbConfig = \ManiaLive\Database\Config::getInstance();
-		$dbConfig->host = array_key_exists('dbHost', $options) ? $options['dbHost'] : $dbConfig->host;
-		$dbConfig->port = array_key_exists('dbPort', $options) ? $options['dbPort'] : $dbConfig->port;
-		$dbConfig->username = array_key_exists('dbUsername', $options) ? $options['dbUsername'] : $dbConfig->username;
-		$dbConfig->password = array_key_exists('dbPassword', $options) ? $options['dbPassword'] : $dbConfig->password;
-		$dbConfig->database = array_key_exists('dbDatabase', $options) ? $options['dbDatabase'] : $dbConfig->database
-		;
-		$this->database = Connection::getConnection($dbConfig->host, $dbConfig->username, $dbConfig->password,
-				$dbConfig->database, 'MySQL', $dbConfig->port);
+		foreach($options as $key => $value)
+			$dbConfig->$key = $value;
+		
+		$this->database = Connection::getConnection(
+				$dbConfig->host,
+				$dbConfig->username,
+				$dbConfig->password,
+				$dbConfig->database,
+				'MySQL',
+				$dbConfig->port
+			);
 		// load configs from DB
 		$configs = array(
 			'config' => \ManiaLive\Config\Config::getInstance(),
-			'database' => $dbConfig,
 			'wsapi' => \ManiaLive\Features\WebServices\Config::getInstance(),
 			'manialive' => \ManiaLive\Application\Config::getInstance(),
 			'server' => \ManiaLive\DedicatedApi\Config::getInstance(),
@@ -62,28 +64,33 @@ class Thread extends \ManiaLib\Utils\Singleton
 		);
 		foreach($configs as $dbName => $instance)
 		{
-			$data = $this->getData($dbName);
-			if($data) foreach((array) $data as $key => $value)
-					$instance->$key = $value;
+			$data = $this->getData($dbName, array());
+			foreach((array) $data as $key => $value)
+				$instance->$key = $value;
 		}
 	}
 
 	function setData($key, $value)
 	{
 		$this->database->execute(
-			'INSERT INTO data (parentId, name, value) VALUES (%d, %s, %s)', $this->parentId, $this->database->quote($key),
-			$this->database->quote(serialize($value)));
+				'INSERT INTO ThreadingData(parentId, name, value) VALUES (%d, %s, %s)',
+				getmypid(),
+				$this->database->quote($key),
+				$this->database->quote(base64_encode(serialize($value)))
+			);
 
 		return $this->database->affectedRows() > 0;
 	}
 
 	function getData($key, $default = null)
 	{
-		$result = $this->database->query('SELECT value FROM data WHERE name=%s AND parentId = %d',
-			$this->database->quote($key), $this->parentId);
+		$result = $this->database->execute(
+				'SELECT value FROM ThreadingData WHERE name=%s AND parentId=%d',
+				$this->database->quote($key),
+				getmypid()
+			);
 
-		if($result->recordAvailable()) return unserialize($result->fetchScalar());
-		else return $default;
+		return $result->recordAvailable() ? unserialize(base64_decode($result->fetchSingleValue())) : $default;
 	}
 
 	function run()
@@ -94,18 +101,27 @@ class Thread extends \ManiaLib\Utils\Singleton
 
 			if($task)
 			{
+				$this->logger->write('Executing Command #'.$task['commandId'].'...', array('Process #'.$this->parentId.'.'.$this->threadId));
+				
 				$startTime = microtime(true);
 				$result = $task['task']->run();
-				$timeTaken = microtime(true) - $startTime;
-				echo $this->database->quote(serialize($result))."\n";
+				$timeTaken = (microtime(true) - $startTime) * 1000;
 
 				$this->database->execute(
-					'UPDATE commands SET result=%s, timeTaken=%f WHERE commandId=%d AND parentId = %d',
-					$this->database->quote(serialize($result)), $timeTaken, $task['commandId'], $this->parentId);
+						'UPDATE ThreadingCommands SET result=%s, timeTaken=%f WHERE commandId=%d AND parentId=%d',
+						$this->database->quote(base64_encode(serialize($result))),
+						$timeTaken,
+						$task['commandId'],
+						$this->parentId
+					);
+				
+				$this->logger->write('Command #'.$task['commandId'].' done in '.round($timeTaken, 3).' ms!', array('Process #'.$this->parentId.'.'.$this->threadId));
 			}
-			else sleep(1);
+			else
+				sleep(1);
 
-			if(!$this->isParentRunning()) exit();
+			if(!$this->isParentRunning())
+				exit();
 		}
 	}
 
@@ -113,12 +129,15 @@ class Thread extends \ManiaLib\Utils\Singleton
 	{
 		if(empty($this->taskBuffer))
 		{
-			$tasks = $this->database->query('SELECT commandId, task FROM commands WHERE threadId=%d AND result IS NULL AND parentId = %d ORDER BY commandId ASC',
-				$this->threadId, $this->parentId);
-			Console::println('Incoming Tasks: '.$tasks->recordCount());
+			$tasks = $this->database->execute(
+					'SELECT commandId, task FROM ThreadingCommands WHERE threadId=%d AND result IS NULL AND parentId=%d ORDER BY commandId ASC',
+					$this->threadId,
+					$this->parentId
+				);
+			
 			while(($task = $tasks->fetchAssoc()))
 			{
-				$task['task'] = unserialize($task['task']);
+				$task['task'] = unserialize(base64_decode($task['task']));
 				$this->taskBuffer[] = $task;
 			}
 		}
@@ -131,18 +150,14 @@ class Thread extends \ManiaLib\Utils\Singleton
 		// Unix case
 		if(stripos(PHP_OS, 'WIN') !== 0)
 		{
-			exec('ps '.$this->parentId, $output, $result);
-
-			if(count($output) >= 2) return strpos($output[1], 'bootstrapper.php') !== false;
-			return false;
+			exec('ps '.$this->parentId, $output);
+			return count($output) >= 2 && strpos($output[1], 'bootstrapper.php') !== false;
 		}
 		// Windows case
 		else
 		{
-			exec('tasklist /FI "PID eq '.$this->parentId.'"', $output, $result);
-
-			if(count($output) >= 4) return strpos($output[3], 'php.exe') !== false;
-			return false;
+			exec('tasklist /FI "PID eq '.$this->parentId.'"', $output);
+			return count($output) >= 4 && strpos($output[3], 'php.exe') !== false;
 		}
 	}
 

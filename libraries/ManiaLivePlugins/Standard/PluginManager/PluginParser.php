@@ -26,8 +26,6 @@ class PluginParser implements \ManiaLive\Threading\Runnable
 
 	private function validatePlugin($plugin)
 	{
-		$path = array();
-		$start = false;
 		$matches = array();
 		if(preg_match('/(ManiaLivePlugins.*)\.php/', $plugin, $matches))
 		{

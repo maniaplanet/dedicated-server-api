@@ -127,16 +127,13 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 		return '\''.mysql_real_escape_string($string, $this->connection).'\'';
 	}
 
-	/**
-	 * @param string The query
-	 * @return DatabaseRecordSet
-	 */
-	function query($query)
+	function execute($query)
 	{
 		if(!$this->isConnected())
 		{
 			$this->connect($this->database);
 		}
+		
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -150,26 +147,6 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 			throw new QueryException(mysql_error($this->connection), mysql_errno($this->connection));
 		}
 		return new RecordSet($result);
-	}
-
-	function execute($query)
-	{
-		if(!$this->isConnected())
-		{
-			$this->connect($this->database);
-		}
-		Connection::startMeasuring($this);
-		if(func_num_args() > 1)
-		{
-			$query = call_user_func_array('sprintf', func_get_args());
-		}
-		$result = mysql_unbuffered_query($query);
-		Connection::endMeasuring($this);
-
-		if (!$result)
-		{
-			throw new QueryException(mysql_error($this->connection), mysql_errno($this->connection));
-		}
 	}
 
 	function affectedRows()
@@ -212,7 +189,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 
 	function tableExists($tableName)
 	{
-		$table = $this->query('SHOW TABLES LIKE '.$this->quote($tableName));
+		$table = $this->execute('SHOW TABLES LIKE '.$this->quote($tableName));
 		return ($table->recordCount() > 0);
 	}
 }

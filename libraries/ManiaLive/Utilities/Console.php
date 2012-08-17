@@ -19,7 +19,7 @@ abstract class Console
 {
 	public static function println($string)
 	{
-		Logger::getLog('Runtime')->write($string);
+		Logger::getLog('runtime')->write($string);
 		if(Config::getInstance()->verbose)
 			echo $string.PHP_EOL;
 	}
@@ -27,7 +27,7 @@ abstract class Console
 	public static function print_rln($string)
 	{
 		$line = print_r($string, true);
-		Logger::getLog('Runtime')->write($line);
+		Logger::getLog('runtime')->write($line);
 		if(Config::getInstance()->verbose)
 			echo $line.PHP_EOL;
 	}

@@ -66,7 +66,8 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			}
 
 			// disable logging?
-			if(!$manialiveConfig->runtimeLog) \ManiaLive\Utilities\Logger::getLog('Runtime')->disableLog();
+			if(!$manialiveConfig->runtimeLog)
+				\ManiaLive\Utilities\Logger::getLog('runtime')->disableLog();
 		}
 		catch(\Exception $e)
 		{

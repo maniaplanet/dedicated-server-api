@@ -93,7 +93,7 @@ class OverviewTab extends \ManiaLive\Gui\Controls\Tabbable implements MonitorLis
 		$processHandler = ThreadHandler::getInstance();
 		if($processHandler->isEnabled())
 			$text .= 'Enabled; Running:'.$processHandler->countThreads().'; Restarted:'.$processHandler->countRestartedThreads()."\n"
-					.$processHandler->countFinishedCommands().' commands finished at avg '.round($processHandler->getAverageResponseTime(), 3).' sec';
+					.$processHandler->countFinishedCommands().' commands finished at avg '.round($processHandler->getAverageResponseTime(), 3).' ms';
 		else
 			$text .= "Disabled\n";
 		

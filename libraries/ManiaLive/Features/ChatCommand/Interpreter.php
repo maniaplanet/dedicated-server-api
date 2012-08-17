@@ -205,7 +205,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
 		{
 			if($command->log)
-				Logger::getLog('Command')->write('[ChatCommand from '.$login.'] '.$text);
+				Logger::getLog('commands')->write('[ChatCommand from '.$login.'] '.$text);
 
 			if($command->addLoginAsFirstParameter)
 				array_unshift($parameters, $login);

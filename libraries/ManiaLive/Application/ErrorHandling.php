@@ -111,7 +111,7 @@ abstract class ErrorHandling
 		}
 		Console::println('');
 
-		Logger::getLog('Error')->write($log);
+		Logger::getLog('error')->write($log);
 
 		// write into global error log if config says so
 		if(\ManiaLive\Config\Config::getInstance()->globalErrorLog)

@@ -20,30 +20,28 @@ use ManiaLive\Database\ConnectionException;
 
 /**
  * SQLite Database Connection implementation.
- * @author Florian Schnell
  */
 class Connection extends \ManiaLive\Database\Connection
 {
+	/** @var \SQLite3 */
 	protected $connection;
 	protected $filename;
 
 	function __construct($host, $username, $password, $database, $port)
 	{
-		// create the data subfolder in root directory ...
 		$datapath = APP_ROOT.'data';
 		if(!file_exists($datapath))
 			mkdir($datapath);
 
-		// move the database file in data subfolder ...
 		$this->filename = $datapath.'/'.$host.'.db';
-
-		// create new connection ...
-		$this->connection = sqlite_open($this->filename);
-
-		// check
-		if (!$this->connection)
+		try
 		{
-			throw new ConnectionException;
+			$this->connection = new \SQLite3($this->filename);
+		}
+		catch(\Exception $e)
+		{
+			$this->connection = null;
+			throw new ConnectionException($e->getMessage());
 		}
 	}
 
@@ -54,12 +52,12 @@ class Connection extends \ManiaLive\Database\Connection
 	
 	function setCharset($charset)
 	{
-		throw new NotSupportedException;
+		throw new NotSupportedException();
 	}
 
 	function isConnected()
 	{
-		return ($this->connection != null && $this->connection != false);
+		return $this->connection != null;
 	}
 
 	function getDatabase()
@@ -69,17 +67,17 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function affectedRows()
 	{
-		return sqlite_changes($this->connection);
+		return $this->connection->changes();
 	}
 
 	function insertID()
 	{
-		return sqlite_last_insert_rowid($this->connection);
+		return $this->connection->lastInsertRowID();
 	}
 
-	function query($query)
+	function execute($query)
 	{
-		if (!$this->isConnected())
+		if(!$this->isConnected())
 		{
 			throw new NotConnectedException;
 		}
@@ -89,40 +87,23 @@ class Connection extends \ManiaLive\Database\Connection
 		{
 			$query = call_user_func_array('sprintf', func_get_args());
 		}
-		$result = sqlite_query($this->connection, $query);
+		$result = $this->connection->query($query);
 		Connection::endMeasuring($this);
 		
-		if (!$result)
+		if(!$result)
 		{
-			$errno = sqlite_last_error($this->connection);
-			$errstr = sqlite_error_string($errno);
-			throw new QueryException($errstr, $errno);
+			throw new QueryException($this->connection->lastErrorMsg(), $this->connection->lastErrorCode());
 		}
-
-		return new RecordSet($result);
-	}
-
-	function execute($query)
-	{
-		Connection::startMeasuring($this);
-		if(func_num_args() > 1)
+		if($result instanceof \SQLite3Result)
 		{
-			$query = call_user_func_array('sprintf', func_get_args());
+			return new RecordSet($result);
 		}
-		$result = sqlite_exec($this->connection, $query);
-		Connection::endMeasuring($this);
-		
-		if ($result === false)
-		{
-			$errno = sqlite_last_error($this->connection);
-			$errstr = sqlite_error_string($errno);
-			throw new QueryException($errstr, $errno);
-		}
+		return $result;
 	}
 
 	function disconnect()
 	{
-		if (!sqlite_close($this->connection))
+		if (!$this->connection->close())
 		{
 			throw new DisconnectionException;
 		}
@@ -130,18 +111,22 @@ class Connection extends \ManiaLive\Database\Connection
 
 	function quote($string)
 	{
-		return '\''.sqlite_escape_string($string).'\'';
+		return '\''.\SQLite3::escapeString($string).'\'';
 	}
 
 	function select($database)
 	{
-		throw new NotSupportedException;
+		throw new NotSupportedException();
 	}
 
 	function tableExists($tableName)
 	{
-		$table = $this->query('SELECT name FROM sqlite_master WHERE name='.$this->quote($tableName).' AND type=\'table\'');
-		return ($table->recordCount() > 0);
+		$table = $this->execute(
+				'SELECT name FROM sqlite_master WHERE name=%s AND type=%s',
+				$this->quote($tableName),
+				$this->quote('table')
+			);
+		return $table->recordAvailable();
 	}
 }
 

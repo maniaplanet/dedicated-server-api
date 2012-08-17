@@ -44,6 +44,11 @@ class Command
 		return $this->task;
 	}
 	
+	function isDone()
+	{
+		return $this->resultSet;
+	}
+	
 	function getResult()
 	{
 		return $this->result;
@@ -62,6 +67,12 @@ class Command
 		$this->result = $result;
 		$this->resultSet = true;
 		$this->timeTaken = $timeTaken;
+		if(is_callable($this->callback))
+			call_user_func($this->callback, $this);
+	}
+	
+	function fail()
+	{
 		if(is_callable($this->callback))
 			call_user_func($this->callback, $this);
 	}

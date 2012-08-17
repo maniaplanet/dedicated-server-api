@@ -96,13 +96,18 @@ abstract class Connection
 
 	/**
 	 * Execute a query and return the result
+	 * @deprecated use execute instead
 	 * @return \ManiaLive\Database\RecordSet
 	 */
-	abstract function query($query);
+	final function query($query)
+	{
+		return call_user_func_array(array($this, 'execute'), func_get_args());
+	}
 
 	/**
-	 * Execute a query but it does not return any result
+	 * Execute a query and return the result
 	 * @param string $query
+	 * @return \ManiaLive\Database\RecordSet
 	 */
 	abstract function execute($query);
 

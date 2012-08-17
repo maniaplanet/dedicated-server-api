@@ -12,7 +12,6 @@
 namespace ManiaLivePlugins\Standard\ChatLogger;
 
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
-use ManiaLive\Utilities\Logger;
 
 class ChatLogger extends \ManiaLive\PluginHandler\Plugin
 {
@@ -32,8 +31,7 @@ class ChatLogger extends \ManiaLive\PluginHandler\Plugin
 		
 		if($player)
 		{
-			$log = Logger::getLog(Config::getInstance()->logFilename);
-			$log->write('['.$player->login.':'.$player->nickName.'] '.$text);
+			$this->writeLog('['.$player->login.':'.$player->nickName.'] '.$text);
 		}
 	}
 }
