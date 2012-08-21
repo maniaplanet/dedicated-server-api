@@ -47,7 +47,7 @@ class Text implements ViewerInterface
    * @param  array $siblings
    * @return string
    */
-  public function fetchObject(AbstractNode $node, array $siblings = array())
+  public function fetchObject(\ManiaLivePlugins\Standard\TeamSpeak\TeamSpeak3\Node\AbstractNode $node, array $siblings = array())
   {
     $this->currObj = $node;
     $this->currSib = $siblings;
