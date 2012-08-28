@@ -11,26 +11,18 @@
 
 namespace ManiaLive\Application;
 
-use ManiaLive\Config\Loader;
 use DedicatedApi\Connection;
+use ManiaLive\Config\Loader;
 use ManiaLive\Event\Dispatcher;
 
 abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 {
-
 	const CYCLES_PER_SECOND = 60;
 
 	static $startTime;
-
-	/**
-	 * @var bool
-	 */
+	/** @var bool */
 	protected $running = true;
-
-	/**
-	 * @var Connection
-	 * @todo Connection is not the best name here. $dedicatedApi ? $api? $apiConnection ? etc.
-	 */
+	/** @var Connection */
 	protected $connection;
 
 	protected function __construct()
@@ -60,8 +52,7 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
 			if($manialiveConfig->logsPrefix != null)
 			{
-				$manialiveConfig->logsPrefix = str_replace('%ip%', str_replace('.', '-', $serverConfig->host),
-					$manialiveConfig->logsPrefix);
+				$manialiveConfig->logsPrefix = str_replace('%ip%', str_replace('.', '-', $serverConfig->host), $manialiveConfig->logsPrefix);
 				$manialiveConfig->logsPrefix = str_replace('%port%', $serverConfig->port, $manialiveConfig->logsPrefix);
 			}
 
@@ -79,12 +70,18 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 	protected function init()
 	{
 		new \ManiaLive\Features\Tick\Ticker();
-		$ConnectionConfig = \ManiaLive\DedicatedApi\Config::getInstance();
-		$this->connection = Connection::factory($ConnectionConfig->host, $ConnectionConfig->port, $ConnectionConfig->timeout,
-				$ConnectionConfig->user, $ConnectionConfig->password);
+		$config = \ManiaLive\DedicatedApi\Config::getInstance();
+		$this->connection = Connection::factory(
+				$config->host,
+				$config->port,
+				$config->timeout,
+				$config->user,
+				$config->password
+			);
 		$this->connection->enableCallbacks(true);
 		\ManiaLive\Data\Storage::getInstance();
 		\ManiaLive\Features\ChatCommand\Interpreter::getInstance();
+		\ManiaLive\Features\EchoHandler::getInstance();
 		\ManiaLive\PluginHandler\PluginHandler::getInstance();
 		\ManiaLive\Gui\GuiHandler::getInstance();
 		\ManiaLive\Threading\ThreadHandler::getInstance();

@@ -54,9 +54,11 @@ class Logger
 
 	function write($text, $tags=array())
 	{
-		array_unshift($tags, date('Y.m.d H:i:s'));
 		if($this->enabled)
+		{
+			array_unshift($tags, date('Y.m.d H:i:s'));
 			file_put_contents($this->path, '['.implode('][', $tags).'] '.$text.PHP_EOL, FILE_APPEND);
+		}
 	}
 }
 

@@ -101,7 +101,8 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 
 	function onPluginLoaded($pluginId)
 	{
-		$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully loaded', array_keys($this->connectedAdmins));
+		if($this->connectedAdmins)
+			$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully loaded', array_keys($this->connectedAdmins));
 		$plugin = Manager::GetPlugin($pluginId);
 		if($plugin)
 			$plugin->setIsLoaded(true);
@@ -112,7 +113,8 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 
 	function onPluginUnloaded($pluginId)
 	{
-		$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully unloaded', array_keys($this->connectedAdmins));
+		if($this->connectedAdmins)
+			$this->connection->chatSendServerMessage('$0A0plugin '.$pluginId.' has been successfully unloaded', array_keys($this->connectedAdmins));
 		$plugin = Manager::GetPlugin($pluginId);
 		if($plugin)
 			$plugin->setIsLoaded(false);
