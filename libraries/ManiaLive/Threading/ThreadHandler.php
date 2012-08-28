@@ -191,7 +191,8 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 
 	function killThread($threadId)
 	{
-		if(!$this->enabled || !isset($this->threads[$threadId])) return;
+		if(!$this->enabled || !isset($this->threads[$threadId]))
+			return;
 
 		$threadHandle = $this->threads[$threadId];
 		proc_terminate($threadHandle);
@@ -214,6 +215,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		if(!$this->enabled || !isset($this->threads[$threadId]))
 			return;
 
+		$commandDiscarded = false;
 		if(empty($this->pendings[$threadId]))
 		{
 			$this->logger->write('Thread #'.$threadId.' died...', array('Process #'.getmypid()));
@@ -236,7 +238,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 				unset($this->pendings[$threadId][$lastCommandId]);
 				unset($this->tries[$lastCommandId]);
 				$this->logger->write('Command #'.$lastCommandId.' has been discarded after '.Config::getInstance()->maxTries.' unsuccessful tries...', array('Process #'.getmypid()));
-				$command->fail();
+				$commandDiscarded = true;
 			}
 		}
 
@@ -249,6 +251,9 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$this->lastTick[$threadId] = $this->tick;
 		Dispatcher::dispatch(new Event(Event::ON_THREAD_RESTART, $threadId));
 		$this->logger->write('Thread #'.$threadId.' restarted!', array('Process #'.getmypid()));
+		
+		if($commandDiscarded)
+			$command->fail();
 	}
 
 	function countThreads()
