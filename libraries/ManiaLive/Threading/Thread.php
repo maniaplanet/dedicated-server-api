@@ -44,7 +44,7 @@ class Thread extends \ManiaLib\Utils\Singleton
 
 		$dbConfig = \ManiaLive\Database\Config::getInstance();
 		foreach($options as $key => $value)
-			$dbConfig->$key = $value;
+			$dbConfig->{lcfirst(substr($key, 2))} = $value;
 		
 		$this->database = Connection::getConnection(
 				$dbConfig->host,
