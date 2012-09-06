@@ -39,6 +39,14 @@ class RecordSet extends \ManiaLive\Database\RecordSet
 		return mysql_fetch_array($this->result, $resultType);
 	}
 	
+	/**
+	 * @deprecated
+	 */
+	function fetchStdObject()
+	{
+		return $this->fetchObject(null);
+	}
+	
 	function fetchObject($className='\\stdClass', array $params=array())
 	{
 		if($className)
