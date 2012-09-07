@@ -297,7 +297,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 	function onServerStart() {}
 	function onServerStop() {}
 	function onBeginMatch() {}
-	function onEndMatch($rankings) {}
+	function onEndMatch($rankings, $winnerTeamOrMap) {}
 	function onBeginMap($map, $warmUp, $matchContinuation) {}
 	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
 	function onBeginRound() {}

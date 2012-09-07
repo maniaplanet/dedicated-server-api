@@ -3552,8 +3552,7 @@ class Connection
 			throw new InvalidArgumentException('compatibility = '.print_r($compatibility, true));
 		}
 
-		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__),
-					array($length, $offset, $compatibility)));
+		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($length, $offset, $compatibility)));
 	}
 
 	/**
@@ -3668,6 +3667,15 @@ class Connection
 		$login = $this->getLogin($player) ? : '';
 
 		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($login)));
+	}
+	
+	/**
+	 * Returns the current winning team for the race in progress. (-1: if not in team mode, or draw match)
+	 * @return int -1, 0 or 1
+	 */
+	function getCurrentWinnerTeam()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**

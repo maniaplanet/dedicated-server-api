@@ -67,15 +67,18 @@ interface Listener extends \ManiaLive\Event\Listener
 	 *	string NickName;
 	 *	int PlayerId;
 	 *	int Rank;
+	 * [for legacy TrackMania modes also:
 	 *	int BestTime;
 	 *	int[] BestCheckpoints;
 	 *	int Score;
 	 *	int NbrLapsFinished;
 	 *	double LadderScore;
+	 * ]
 	 * } 
 	 * @param SPlayerRanking[] $rankings
+	 * @param int|SMapInfo $winnerTeamOrMap Winner team if API version >= 2012-06-19, else the map
 	 */
-	function onEndMatch($rankings);
+	function onEndMatch($rankings, $winnerTeamOrMap);
 	/**
 	 * Method called when a map begin
 	 * @param SMapInfo $map
@@ -85,7 +88,7 @@ interface Listener extends \ManiaLive\Event\Listener
 	function onBeginMap($map, $warmUp, $matchContinuation);
 	/**
 	 * Method called when a map end
-	 * @param array[SPlayerRanking] $rankings
+	 * @param SPlayerRanking[] $rankings
 	 * @param SMapInfo $map
 	 * @param bool $wasWarmUp
 	 * @param bool $matchContinuesOnNextMap
@@ -161,7 +164,6 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param string $transition
 	*/
 	function onManualFlowControlTransition($transition);
-	
 	/**
 	 * Method called when a vote change of State
 	 * @param string $stateName can be NewVote, VoteCancelled, votePassed, voteFailed
@@ -170,7 +172,6 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param string $cmdParam the parameters of the vote
 	 */
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam);
-	
 	/**
 	 * @param string 
 	 * @param string

@@ -61,7 +61,7 @@ class EchoHandler extends \ManiaLib\Utils\Singleton implements Listener
 	public function onBeginRound() {}
 	public function onBillUpdated($billId, $state, $stateName, $transactionId) {}
 	public function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
-	public function onEndMatch($rankings) {}
+	public function onEndMatch($rankings, $winnerTeamOrMap) {}
 	public function onEndRound() {}
 	public function onManualFlowControlTransition($transition) {}
 	public function onMapListModified($curMapIndex, $nextMapIndex, $isListModified) {}

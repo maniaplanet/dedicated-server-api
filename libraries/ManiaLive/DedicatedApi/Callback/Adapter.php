@@ -21,7 +21,7 @@ abstract class Adapter implements Listener
 	function onServerStart() {}
 	function onServerStop() {}
 	function onBeginMatch() {}
-	function onEndMatch($rankings) {}
+	function onEndMatch($rankings, $winnerTeamOrMap) {}
 	function onBeginMap($map, $warmUp, $matchContinuation) {}
 	function onEndMap($rankings, $map, $wasWarmUp, $matchContinuesOnNextMap, $restartMap) {}
 	function onBeginRound() {}
