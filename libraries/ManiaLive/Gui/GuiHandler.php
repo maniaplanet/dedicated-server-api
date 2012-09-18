@@ -295,14 +295,14 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	{
 		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING)
 			$this->connection->sendHideManialinkPage();
+		
+		$this->groupAll = Group::Create('all');
+		$this->groupPlayers = Group::Create('players');
+		$this->groupSpectators = Group::Create('spectators');
 	}
 
 	function onRun()
 	{
-		$this->groupAll = Group::Create('all');
-		$this->groupPlayers = Group::Create('players');
-		$this->groupSpectators = Group::Create('spectators');
-
 		foreach(Storage::getInstance()->players as $login => $player)
 			$this->onPlayerConnect($login, false);
 

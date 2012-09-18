@@ -82,8 +82,8 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 		\ManiaLive\Data\Storage::getInstance();
 		\ManiaLive\Features\ChatCommand\Interpreter::getInstance();
 		\ManiaLive\Features\EchoHandler::getInstance();
-		\ManiaLive\PluginHandler\PluginHandler::getInstance();
 		\ManiaLive\Gui\GuiHandler::getInstance();
+		\ManiaLive\PluginHandler\PluginHandler::getInstance();
 		\ManiaLive\Threading\ThreadHandler::getInstance();
 
 		Dispatcher::dispatch(new Event(Event::ON_INIT));
