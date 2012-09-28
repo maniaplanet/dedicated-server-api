@@ -19,7 +19,7 @@ use ManiaLib\Gui\Manialink;
  * 
  * @author Florian Schnell
  */
-class Xml extends \ManiaLive\Gui\Windowing\Element
+class Xml extends \ManiaLive\Gui\Element
 {
 	protected $xml;
 	
