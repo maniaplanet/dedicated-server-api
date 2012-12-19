@@ -3170,6 +3170,23 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($nextMapIndex), $multicall);
 	}
+	
+	/**
+	 * Immediately jumps to the map designated by the index in the selection
+	 * @param int $nextMapIndex
+	 * @param bool $multicall
+	 * @throws InvalidArgumentException
+	 * @return bool
+	 */
+	function jumpToMapIndex($mapIndex, $multicall = false)
+	{
+		if(!is_int($mapIndex))
+		{
+			throw new InvalidArgumentException('mapIndex = '.print_r($mapIndex, true));
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__), array($mapIndex), $multicall);
+	}
 
 	/**
 	 * Set Team names and colors. Only available to Admin.

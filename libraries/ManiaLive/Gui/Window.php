@@ -49,7 +49,7 @@ abstract class Window extends Container implements TickListener
 	 * you can deactivate it by setting singleton to false.
 	 * @param Group|string|null $recipient
 	 * @param bool $singleton
-	 * @return \ManiaLive\Gui\Windowing\Window
+	 * @return Window
 	 */
 	static function Create($recipient = self::RECIPIENT_ALL, $singleton = true)
 	{
@@ -97,6 +97,7 @@ abstract class Window extends Container implements TickListener
 	/**
 	 * Gets all currently opened instances of this
 	 * window type.
+	 * @return Window[]
 	 */
 	static function GetAll()
 	{
@@ -113,6 +114,7 @@ abstract class Window extends Container implements TickListener
 	 * Gets all instances of this window type for a specific player
 	 * (or group of players) that is (are) currently on the server.
 	 * @param Group|string $recipient
+	 * @return Window[]
 	 */
 	static function Get($recipient)
 	{
