@@ -337,7 +337,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = new Xmlrpc\Request('MapRestart', array());
+		$tmpCmd = new Xmlrpc\Request('RestartMap', array());
 
 		return $this->execute('CallVoteEx', array($tmpCmd->getXml(), $ratio, $timeout, $voters), $multicall);
 	}
@@ -2324,9 +2324,9 @@ class Connection
 	}
 
 	/**
-	 * Send an event to the rules script. Only available to Admin.
+	 * Send an event to the mode script. Only available to Admin.
 	 * @param string $param1
-	 * @param srting $param2
+	 * @param string $param2
 	 * @param bool $multicall
 	 * @return bool
 	 */
@@ -2337,6 +2337,26 @@ class Connection
 			throw new InvalidArgumentException('param1 = '.print_r($param1, true));
 		}
 		if(!is_string($param2))
+		{
+			throw new InvalidArgumentException('param2 = '.print_r($param2, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($param1, $param2), $multicall);
+	}
+
+	/**
+	 * Send an event to the mode script. Only available to Admin.
+	 * @param string $param1
+	 * @param mixed[] $param2
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function triggerModeScriptEventArray($param1, $param2, $multicall = false)
+	{
+		if(!is_string($param1))
+		{
+			throw new InvalidArgumentException('param1 = '.print_r($param1, true));
+		}
+		if(!is_array($param2))
 		{
 			throw new InvalidArgumentException('param2 = '.print_r($param2, true));
 		}
