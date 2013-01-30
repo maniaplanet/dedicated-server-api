@@ -130,6 +130,8 @@ abstract class Control extends Container implements Drawable, Containable
 		// layout cloning, because manialib is used to erase objects after usage. 2 frames because of ManiaLib
 		// (someday something better should be done about this)
 		Manialink::beginFrame($posX, $posY, $this->posZ, $this->scale);
+		if($this->id !== null)                  
+           Manialink::setFrameId($this->id);
 		if($this->layout)
 			Manialink::beginFrame(0, 0, 0, null, $this->layout ? clone $this->layout : null);
 		if($this->linksDisabled)
