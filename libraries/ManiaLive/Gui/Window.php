@@ -432,6 +432,7 @@ abstract class Window extends Container implements TickListener
 			$posY += $this->getRealSizeY() / 2;
 		
 		Manialink::beginFrame($posX, $posY, $this->posZ, $this->scale);
+		Manialink::setFrameId($this->id);
 		if($this->linksDisabled)
 			Manialink::disableLinks();
 		
