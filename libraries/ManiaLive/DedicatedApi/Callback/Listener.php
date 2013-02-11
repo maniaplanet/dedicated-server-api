@@ -177,6 +177,12 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param string
 	 */
 	function onModeScriptCallback($param1, $param2);
+	
+	/**
+	 * Method called when the player in parameter has changed its allies
+	 * @param string $login
+	 */
+	function onPlayerAlliesChanged($login);
 }
 
 ?>

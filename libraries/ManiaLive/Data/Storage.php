@@ -547,6 +547,11 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	{
 		
 	}
+	
+	function onPlayerAlliesChanged($login)
+	{
+		$this->getPlayerObject($login)->allies = $this->connection->getDetailedPlayerInfo($login)->allies;
+	}
 
 	#endRegion
 

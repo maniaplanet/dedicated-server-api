@@ -551,6 +551,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	function onTunnelDataReceived($playerUid, $login, $data) {}
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam) {}
 	function onModeScriptCallback($param1, $param2) {}
+	function onPlayerAlliesChanged($login) {}
 }
 
 ?>

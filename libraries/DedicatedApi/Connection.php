@@ -1136,7 +1136,7 @@ class Connection
 	{
 		$player = $this->getLogin($player) ? : '';
 
-		return $this->execute(ucfirst(__FUNCTION__), $params);
+		return $this->execute(ucfirst(__FUNCTION__), array($player));
 	}
 
 	/**
@@ -1668,6 +1668,31 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
+	
+	/**
+	 * Declare if the server is a lobby, the number and maximum number of players currently managed by it.
+	 * Only available to Admin.
+	 * @param bool $isLobby
+	 * @param int $lobbyPlayers
+	 * @param int $maxPlayers
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function setLobbyInfo($isLobby, $lobbyPlayers, $maxPlayers, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array($isLobby, $lobbyPlayers, $maxPlayers), $multicall);
+	}
+	
+	/**
+	 * Get whether the server if a lobby, and the number of players currently managed by it. 
+	 * The struct returned contains two fields IsLobby and LobbyPlayers.
+	 */
+	function getLobbyInfo()
+	{
+		$result = $this->execute(ucfirst(__FUNCTION__));
+		return Structures\LobbyInfo::fromArray($result);
+	}
+
 
 	/**
 	 * Enable or disable peer-to-peer upload from server.
@@ -1812,7 +1837,7 @@ class Connection
 	{
 		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.$print_r($filename, true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -1832,7 +1857,7 @@ class Connection
 	{
 		if(!is_string($filename))
 		{
-			throw new InvalidArgumentException('filename = '.$print_r($filename, true));
+			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
 		$playerLogin = $this->getLogin($player) ? : '';
@@ -1917,7 +1942,7 @@ class Connection
 	 * The struct returned contains two fields CurrentValue and NextValue.
 	 * @return array
 	 */
-	function getVehicleNetQuality($multicall = false)
+	function getVehicleNetQuality()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -2925,7 +2950,7 @@ class Connection
 	 * @param bool $multicall
 	 * @return array
 	 */
-	function getRoundCustomPoints($multicall = false)
+	function getRoundCustomPoints()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
@@ -3506,7 +3531,7 @@ class Connection
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
-		return $this->execute(ucfirst(__FUNCTION__), array($filename));
+		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
 
 	/**
@@ -3814,7 +3839,7 @@ class Connection
 
 		return $this->execute('ForceSpectatorTarget', array($playerLogin, $targetLogin, $cameraType), $multicall);
 	}
-
+	
 	/**
 	 * Pass the login of the spectator. A spectator that once was a player keeps his player slot, so that he can go back to race mode.
 	 * Calling this function frees this slot for another player to connect.

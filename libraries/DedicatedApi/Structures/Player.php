@@ -45,6 +45,7 @@ class Player extends AbstractStructure
 	public $ladderRanking;
 	public $flags;
 	public $isConnected = true;
+	public $allies = array();
 
 	//Flags details
 	public $forceSpectator;
