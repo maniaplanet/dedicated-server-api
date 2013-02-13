@@ -442,7 +442,7 @@ class Connection
 	 */
 	function setCallVoteRatio($ratio, $multicall = false)
 	{
-		if($ratio !== -1 && !(is_float($ratio) && $ratio >= 0 && $ratio <= 1))
+		if($ratio !== -1. && !(is_float($ratio) && $ratio >= 0 && $ratio <= 1))
 		{
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
 		}
@@ -486,7 +486,7 @@ class Connection
 			{
 				throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios['Command'], true));
 			}
-			if($ratio['Ratio'] !== -1 && !(is_float($ratio['Ratio']) && $ratio['Ratio'] >= 0 || $ratio['Ratio'] <= 1))
+			if($ratio['Ratio'] !== -1. && !(is_float($ratio['Ratio']) && $ratio['Ratio'] >= 0 && $ratio['Ratio'] <= 1))
 			{
 				throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratio['Ratio'], true));
 			}
@@ -3793,7 +3793,8 @@ class Connection
 	}
 
 	/**
-	 * Force the spectating status of the player. You have to pass the login and the spectator mode (0: user selectable, 1: spectator, 2: player).
+	 * Force the spectating status of the player. You have to pass the login and the spectator mode
+	 * (0: user selectable, 1: spectator, 2: player, 3:spectator but keep selectable). Only available to Admin.
 	 * @param Structures\Player|string $player
 	 * @param int $spectatorMode
 	 * @param bool $multicall
@@ -3805,7 +3806,7 @@ class Connection
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if($spectatorMode !== 0 && $spectatorMode !== 1 && $spectatorMode !== 2)
+		if(!array_search($spectatorMode, range(0, 3), true))
 		{
 			throw new InvalidArgumentException('spectatorMode = '.print_r($spectatorMode, true));
 		}

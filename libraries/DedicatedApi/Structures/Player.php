@@ -55,6 +55,7 @@ class Player extends AbstractStructure
 	public $isManagedByAnOtherServer;
 	public $isServer;
 	public $hasPlayerSlot;
+	public $isBroadcasting;
 
 	//SpectatorStatus details
 	public $spectator;
@@ -84,6 +85,7 @@ class Player extends AbstractStructure
 		$object->isManagedByAnOtherServer = (bool) (intval($object->flags / 10000) % 10);
 		$object->isServer = (bool) (intval($object->flags / 100000) % 10);
 		$object->hasPlayerSlot = (bool) (intval($object->flags / 1000000) % 10);
+		$object->isBroadcasting = (bool) (intval($object->flags / 10000000) % 10);
 		//Details spectatorStatus
 		$object->spectator = (bool) ($object->spectatorStatus % 10);
 		$object->temporarySpectator = (bool) (intval($object->spectatorStatus / 10) % 10);
