@@ -37,8 +37,7 @@ class Event extends \ManiaLive\Event\Event
 	const ON_MANUAL_FLOW_CONTROL_TRANSITION = 0x200000;
 	const ON_VOTE_UPDATED                   = 0x400000;
 	const ON_MODE_SCRIPT_CALLBACK           = 0x800000;
-	const ON_MODE_SCRIPT_CALLBACK_ARRAY     = 0x1000000;
-	const ON_PLAYER_ALLIES_CHANGE           = 0x1200000;
+	const ON_PLAYER_ALLIES_CHANGED          = 0x1000000;
 	
 	static private $rc;
 	protected $params;
@@ -91,23 +90,15 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_MANUAL_FLOW_CONTROL_TRANSITION: $listener->onManualFlowControlTransition($p[0]); break;
 			case self::ON_VOTE_UPDATED: $listener->onVoteUpdated($p[0], $p[1], $p[2], $p[3]); break;
 			case self::ON_MODE_SCRIPT_CALLBACK: $listener->onModeScriptCallback($p[0], $p[1]); break;
-			case self::ON_MODE_SCRIPT_CALLBACK_ARRAY:
-				foreach($p[1] as $p2)
-				{
-					$listener->onModeScriptCallback($p[0], $p2);
-				}
-				break;
-			case self::ON_PLAYER_ALLIES_CHANGE: $listener->onPlayerAlliesChanged($p[0]);break;
+			case self::ON_PLAYER_ALLIES_CHANGED: $listener->onPlayerAlliesChanged($p[0]);break;
 		}
 	}
 	
 	private static function getOnWhat($method)
 	{
 		$constName = 'ON_'.strtoupper(preg_replace('/([a-z])([A-Z])/', '$1_$2', $method));
-		
 		if(!self::$rc)
 			self::$rc = new \ReflectionClass(get_called_class());
-		
 		return self::$rc->getConstant($constName);
 	}
 }
