@@ -517,10 +517,13 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		Window::Erase($login);
 		CustomUI::Erase($login);
 
-		foreach($this->modals[$login] as $dialog)
-			$this->onModalClosed($login, $dialog);
-		if($this->modalShown[$login])
-			$this->onModalClosed($login, $this->modalShown[$login]);
+		if(array_key_exists($login, $this->modals))
+		{
+			foreach($this->modals[$login] as $dialog)
+				$this->onModalClosed($login, $dialog);
+			if($this->modalShown[$login])
+				$this->onModalClosed($login, $this->modalShown[$login]);
+		}
 
 		unset($this->hidingGui[$login]);
 		unset($this->modals[$login]);
