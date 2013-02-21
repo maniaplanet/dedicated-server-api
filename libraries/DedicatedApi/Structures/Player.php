@@ -46,6 +46,7 @@ class Player extends AbstractStructure
 	public $flags;
 	public $isConnected = true;
 	public $allies = array();
+	public $clubLink;
 
 	//Flags details
 	public $forceSpectator;
