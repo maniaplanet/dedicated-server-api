@@ -111,7 +111,7 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 		$plugin->onInit();
 		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING || $plugin instanceof WaitingCompliant)
 		{
-			Console::println('[PluginHandler] Loading plugin "'.$pluginId.'"...');
+			Console::println('[PluginHandler] Loading plugin "'.$pluginId.'" '.$plugin->getVersion().'...');
 			return $this->loadedPlugins[$pluginId] = $plugin;
 		}
 		Console::println('[PluginHandler] Server is waiting, plugin "'.$pluginId.'" will be loaded later...');

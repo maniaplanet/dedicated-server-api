@@ -37,6 +37,7 @@ class Event extends \ManiaLive\Event\Event
 	const ON_MANUAL_FLOW_CONTROL_TRANSITION = 0x200000;
 	const ON_VOTE_UPDATED                   = 0x400000;
 	const ON_MODE_SCRIPT_CALLBACK           = 0x800000;
+	const ON_MODE_SCRIPT_CALLBACK_ARRAY     = self::ON_MODE_SCRIPT_CALLBACK;
 	const ON_PLAYER_ALLIES_CHANGED          = 0x1000000;
 	
 	static private $rc;

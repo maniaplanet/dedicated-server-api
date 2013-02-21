@@ -19,6 +19,7 @@ class Application extends \ManiaLive\Application\AbstractApplication
 {
 	protected function init()
 	{
+		\ManiaLive\Utilities\Console::println('Running ManiaLive '.Version.'...');
 		parent::init();
 		
 		if(!\ManiaLive\Config\Config::getInstance()->lanMode)

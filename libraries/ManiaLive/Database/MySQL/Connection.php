@@ -43,7 +43,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 	
 	function onTick()
 	{
-		if($this->tick++ % 3600 == 0)
+		if(++$this->tick % 3600 == 0)
 		{
 			$this->execute('SELECT 1');
 			$this->tick = 0;
