@@ -391,7 +391,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 					$this->drawWindow($toDraw);
 				}
 			}
-			$this->connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false, true);
+			$this->connection->sendDisplayManialinkPage((string) $login, Manialinks::getXml(), 0, false, true);
 		}
 		$this->connection->executeMulticall();
 
