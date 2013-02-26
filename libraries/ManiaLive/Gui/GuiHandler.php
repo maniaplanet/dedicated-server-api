@@ -51,7 +51,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	private $modalBg;
 
 	private $groupAll;
-	private $groupAllLogin;
 	private $groupPlayers;
 	private $groupSpectators;
 
@@ -392,7 +391,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 					$this->drawWindow($toDraw);
 				}
 			}
-			$this->connection->sendDisplayManialinkPage($login == $this->groupAllLogin ? null : $login, Manialinks::getXml(), 0, false, true);
+			$this->connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false, true);
 		}
 		$this->connection->executeMulticall();
 
@@ -499,9 +498,6 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$sk->show();
 
 		$this->groupAll->add($login, true);
-		$allLogins = $this->groupAll->toArray();
-		sort($allLogins);
-		$this->groupAllLogin = implode(',', $allLogins);
 		if($isSpectator)
 			$this->groupSpectators->add($login, true);
 		else
