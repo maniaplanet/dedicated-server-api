@@ -88,11 +88,11 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		if($this->hidingGui[$login])
 		{
 			$this->connection->chatSendServerMessage('ManiaLive interface has been deactivated, press F8 to enable...', $login, true);
-			$this->connection->sendHideManialinkPageToLogin($login, true);
+			$this->connection->sendHideManialinkPage($login, true);
 			Manialinks::load();
 			$this->drawWindow(Shortkey::Create($login));
 			CustomUI::Create($login)->saveToDefault();
-			$this->connection->sendDisplayManialinkPageToLogin($login, Manialinks::getXml(), 0, false, true);
+			$this->connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false, true);
 			$this->connection->executeMulticall();
 		}
 		else
@@ -105,7 +105,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 				$this->drawModal($this->modalShown[$login]);
 			$this->drawWindow(Shortkey::Create($login));
 			CustomUI::Create($login)->save();
-			$this->connection->sendDisplayManialinkPageToLogin($login, Manialinks::getXml(), 0, false);
+			$this->connection->sendDisplayManialinkPage($login, Manialinks::getXml(), 0, false);
 		}
 	}
 
@@ -392,14 +392,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 					$this->drawWindow($toDraw);
 				}
 			}
-			if($login == $this->groupAllLogin)
-			{
-				$this->connection->sendDisplayManialinkPage(Manialinks::getXml(), 0, false, true);
-			}
-			else
-			{
-				$this->connection->sendDisplayManialinkPageToLogin($login, Manialinks::getXml(), 0, false, true);
-			}
+			$this->connection->sendDisplayManialinkPage($login == $this->groupAllLogin ? null : $login, Manialinks::getXml(), 0, false, true);
 		}
 		$this->connection->executeMulticall();
 
