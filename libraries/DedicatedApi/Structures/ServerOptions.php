@@ -42,4 +42,5 @@ class ServerOptions extends AbstractStructure
 	public $useChangingValidationSeed;
 	public $nextUseChangingValidationSeed;
 	public $clientInputsMaxLatency;
+	public $keepPlayerSlots;
 }

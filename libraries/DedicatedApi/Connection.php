@@ -1693,6 +1693,32 @@ class Connection
 		return Structures\LobbyInfo::fromArray($result);
 	}
 
+	/**
+	 * Set whether, when a player is switching to spectator, the server should still consider him a player
+	 * and keep his player slot, or not. Only available to Admin.
+	 * @param bool $keep
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function keepPlayerSlots($keep, $multicall = false)
+	{
+		if(!is_bool($keep))
+		{
+			throw new InvalidArgumentException('keep = '.print_r($keep, true));
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__), array($keep), $multicall);
+	}
+	
+	/**
+	 * Get whether the server keeps player slots when switching to spectator.
+	 * @return bool
+	 */
+	function isKeepingPlayerSlots()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
 
 	/**
 	 * Enable or disable peer-to-peer upload from server.
@@ -1948,21 +1974,17 @@ class Connection
 	}
 
 	/**
-	 * Set new server options using the struct passed as parameters.
-	 * This struct must contain the following fields :
-	 * Name, Comment, Password, PasswordForSpectator, NextMaxPlayers,
-	 * NextMaxSpectators, IsP2PUpload, IsP2PDownload, NextLadderMode,
-	 * NextVehicleNetQuality, NextCallVoteTimeOut, CallVoteRatio,
-	 * AllowMapDownload, AutoSaveReplays,
-	 *
-	 * optionally for forever:
-	 * RefereePassword, RefereeMode, AutoSaveValidationReplays,
-	 * HideServer, UseChangingValidationSeed.
-	 *
-	 * A change of :
-	 * NextMaxPlayers, NextMaxSpectators, NextLadderMode, NextVehicleNetQuality,
-	 * NextCallVoteTimeOut or UseChangingValidationSeed
-	 * requires a map restart to be taken into account.
+	 * Set new server options using the struct passed as parameters. This struct must contain the following fields :
+	 * Name, Comment, Password, PasswordForSpectator, NextMaxPlayers, NextMaxSpectators, IsP2PUpload, IsP2PDownload,
+	 * NextLadderMode, NextVehicleNetQuality, NextCallVoteTimeOut, CallVoteRatio, AllowMapDownload, AutoSaveReplays,
+	 * 
+	 * and optionally for forever:
+	 * RefereePassword, RefereeMode, AutoSaveValidationReplays, HideServer, UseChangingValidationSeed,
+	 * ClientInputsMaxLatency, KeepPlayerSlots.
+	 * 
+	 * Only available to Admin.
+	 * A change of NextMaxPlayers, NextMaxSpectators, NextLadderMode, NextVehicleNetQuality, NextCallVoteTimeOut
+	 * or UseChangingValidationSeed requires a map restart to be taken into account.
 	 * @param array $options
 	 * @param bool $multicall
 	 * @return bool
@@ -1984,27 +2006,18 @@ class Connection
 	}
 
 	/**
-	 * Optional parameter for compatibility: struct version (0 = united, 1 = forever).
 	 * Returns a struct containing the server options:
-	 * Name, Comment, Password, PasswordForSpectator, CurrentMaxPlayers, NextMaxPlayers,
-	 * CurrentMaxSpectators, NextMaxSpectators, IsP2PUpload, IsP2PDownload, CurrentLadderMode,
-	 * NextLadderMode, CurrentVehicleNetQuality, NextVehicleNetQuality, CurrentCallVoteTimeOut,
-	 * NextCallVoteTimeOut, CallVoteRatio, AllowMapDownload and AutoSaveReplays,
-	 *
-	 * and additionally for forever:
-	 * RefereePassword, RefereeMode, AutoSaveValidationReplays, HideServer,
-	 * CurrentUseChangingValidationSeed, NextUseChangingValidationSeed.
-	 * @param int $compability
+	 * Name, Comment, Password, PasswordForSpectator, CurrentMaxPlayers, NextMaxPlayers, CurrentMaxSpectators,
+	 * NextMaxSpectators, KeepPlayerSlots, IsP2PUpload, IsP2PDownload, CurrentLadderMode, NextLadderMode,
+	 * CurrentVehicleNetQuality, NextVehicleNetQuality, CurrentCallVoteTimeOut, NextCallVoteTimeOut, CallVoteRatio,
+	 * AllowMapDownload, AutoSaveReplays, RefereePassword, RefereeMode, AutoSaveValidationReplays, HideServer,
+	 * CurrentUseChangingValidationSeed, NextUseChangingValidationSeed, ClientInputsMaxLatency.
 	 * @return Structures\ServerOptions
 	 * @throws InvalidArgumentException
 	 */
-	function getServerOptions($compatibility = 1)
+	function getServerOptions()
 	{
-		if($compatibility !== 0 && $compatibility !== 1)
-		{
-			throw new InvalidArgumentException('compatibility = '.print_r($compatibility, true));
-		}
-		return Structures\ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__), array($compatibility)));
+		return Structures\ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -3793,8 +3806,10 @@ class Connection
 	}
 
 	/**
-	 * Force the spectating status of the player. You have to pass the login and the spectator mode
-	 * (0: user selectable, 1: spectator, 2: player, 3:spectator but keep selectable). Only available to Admin.
+	 * Force the spectating status of the player.
+	 * You have to pass the login and the spectator mode
+	 * (0: user selectable, 1: spectator, 2: player, 3: spectator but keep selectable).
+	 * Only available to Admin.
 	 * @param Structures\Player|string $player
 	 * @param int $spectatorMode
 	 * @param bool $multicall
