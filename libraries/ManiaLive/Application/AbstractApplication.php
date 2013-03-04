@@ -99,8 +99,15 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			self::$startTime = microtime(true);
 			$nextCycleStart = self::$startTime;
 			$cycleTime = 1 / static::CYCLES_PER_SECOND;
+		}
+		catch(\Exception $e)
+		{
+			ErrorHandling::processRuntimeException($e);
+		}
 
-			while($this->running)
+		while($this->running)
+		{
+			try
 			{
 				Dispatcher::dispatch(new Event(Event::ON_PRE_LOOP));
 				$calls = $this->connection->executeCallbacks();
@@ -124,10 +131,12 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				while($nextCycleStart < $endCycleTime);
 				@time_sleep_until($nextCycleStart);
 			}
-		}
-		catch(\Exception $e)
-		{
-			ErrorHandling::processRuntimeException($e);
+			catch(\Exception $e)
+			{
+				ErrorHandling::processRuntimeException($e);
+				if($e->getCode() == -32700)
+					break;
+			}
 		}
 
 		Dispatcher::dispatch(new Event(Event::ON_TERMINATE));
