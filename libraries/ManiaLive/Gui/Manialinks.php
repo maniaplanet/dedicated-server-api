@@ -93,7 +93,7 @@ abstract class Manialinks
 
 	static function appendXML($XML)
 	{
-		$doc = new DOMDocument();
+		$doc = new \DOMDocument();
 		$doc->loadXML($XML);
 		$node = self::$domDocument->importNode($doc->firstChild, true);
 		end(self::$parentNodes)->appendChild($node);
