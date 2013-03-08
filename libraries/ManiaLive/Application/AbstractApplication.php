@@ -105,9 +105,9 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 			ErrorHandling::processRuntimeException($e);
 		}
 
-		while($this->running)
+		try
 		{
-			try
+			while($this->running)
 			{
 				Dispatcher::dispatch(new Event(Event::ON_PRE_LOOP));
 				$calls = $this->connection->executeCallbacks();
@@ -131,12 +131,10 @@ abstract class AbstractApplication extends \ManiaLib\Utils\Singleton
 				while($nextCycleStart < $endCycleTime);
 				@time_sleep_until($nextCycleStart);
 			}
-			catch(\Exception $e)
-			{
-				ErrorHandling::processRuntimeException($e);
-				if($e->getCode() == -32700)
-					break;
-			}
+		}
+		catch(\Exception $e)
+		{
+			ErrorHandling::processRuntimeException($e);
 		}
 
 		Dispatcher::dispatch(new Event(Event::ON_TERMINATE));

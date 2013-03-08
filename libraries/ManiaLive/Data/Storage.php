@@ -195,24 +195,22 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onPlayerConnect($login, $isSpectator)
 	{
-		try
+		$playerInfos = $this->connection->getPlayerInfo($login, 1);
+		$details = $this->connection->getDetailedPlayerInfo($login);
+		foreach($details as $key => $value)
 		{
-			$playerInfos = $this->connection->getPlayerInfo($login, 1);
-			$details = $this->connection->getDetailedPlayerInfo($login);
-
-			foreach($details as $key => $value)
-				if($value) $playerInfos->$key = $value;
-
-			if($isSpectator) $this->spectators[$login] = $playerInfos;
-			else $this->players[$login] = $playerInfos;
-		}
-
-		// if player can not be added to array, then we stop the onPlayerConnect event!
-		catch(\Exception $e)
-		{
-			if($e->getCode() == -1000 && $e->getMessage() == 'Login unknown.')
-					throw new SilentCriticalEventException($e->getMessage());
-			else throw new CriticalEventException($e->getMessage());
+			if($value)
+			{
+				$playerInfos->$key = $value;
+			}
+			if($isSpectator)
+			{
+				$this->spectators[$login] = $playerInfos;
+			}
+			else
+			{
+				$this->players[$login] = $playerInfos;
+			}
 		}
 	}
 
@@ -509,7 +507,13 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	{
 		$playerInfo = Player::fromArray($playerInfo);
 		$player = $this->getPlayerObject($playerInfo->login);
-		if(!$player) return;
+		if(!$player)
+		{
+			if(!$playerInfo->hasJoinedGame)
+				return;
+			$this->onPlayerConnect($playerInfo->login, $playerInfo->isSpectator);
+			$player = $this->getPlayerObject($login);
+		}
 
 		$wasSpectator = $player->spectator;
 		foreach($playerInfo as $key => $value)
