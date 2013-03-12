@@ -509,10 +509,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		$player = $this->getPlayerObject($playerInfo->login);
 		if(!$player)
 		{
-			if(!$playerInfo->hasJoinedGame)
 				return;
-			$this->onPlayerConnect($playerInfo->login, $playerInfo->isSpectator);
-			$player = $this->getPlayerObject($login);
 		}
 
 		$wasSpectator = $player->spectator;

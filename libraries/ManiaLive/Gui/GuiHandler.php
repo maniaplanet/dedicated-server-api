@@ -494,6 +494,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$this->thumbnails[$login] = array();
 
 		$sk = Shortkey::Create($login);
+		$sk->addCallback(Shortkey::F8, array($this, 'toggleGui'));
 		$sk->show();
 
 		$this->groupAll->add($login, true);

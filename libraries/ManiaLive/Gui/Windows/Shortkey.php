@@ -74,7 +74,7 @@ final class Shortkey extends \ManiaLive\Gui\Window
 	// to avoid memory leaks !!!!
 	function removeCallback($key)
 	{
-		if($key != self::F8)
+//		if($key != self::F8)
 			$this->onKey[$key] = null;
 	}
 	
