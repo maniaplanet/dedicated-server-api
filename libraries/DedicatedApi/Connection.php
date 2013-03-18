@@ -3821,7 +3821,7 @@ class Connection
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		if(!array_search($spectatorMode, range(0, 3), true))
+		if(array_search($spectatorMode, range(0, 3), true) === false)
 		{
 			throw new InvalidArgumentException('spectatorMode = '.print_r($spectatorMode, true));
 		}
