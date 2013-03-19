@@ -148,7 +148,7 @@ class Client
 	{
 		$xml = $request->getXml();
 
-		@stream_set_timeout($this->socket, 5);  // timeout 20 s (to write the request)
+		@stream_set_timeout($this->socket, 20);  // timeout 20 s (to write the request)
 		// send request
 		$this->reqhandle++;
 		if ($this->protocol == 1) 
