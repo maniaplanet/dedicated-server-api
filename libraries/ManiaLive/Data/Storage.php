@@ -23,8 +23,6 @@ use DedicatedApi\Structures\Map;
 use DedicatedApi\Structures\Player;
 use DedicatedApi\Structures\Vote;
 use ManiaLive\Utilities\Console;
-use ManiaLive\Application\SilentCriticalEventException;
-use ManiaLive\Application\CriticalEventException;
 
 /**
  * Contain every important data about the server
@@ -134,7 +132,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			}
 			catch(\Exception $e)
 			{
-				
+
 			}
 		}
 
@@ -177,17 +175,17 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onRun()
 	{
-		
+
 	}
 
 	function onPreLoop()
 	{
-		
+
 	}
 
 	function onTerminate()
 	{
-		
+
 	}
 
 	#endRegion
@@ -224,17 +222,17 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd)
 	{
-		
+
 	}
 
 	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries)
 	{
-		
+
 	}
 
 	function onEcho($internal, $public)
 	{
-		
+
 	}
 
 	function onServerStart()
@@ -253,12 +251,12 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onServerStop()
 	{
-		
+
 	}
 
 	function onBeginMatch()
 	{
-		
+
 	}
 
 	function onEndMatch($rankings, $winnerTeamOrMap)
@@ -310,7 +308,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onBeginRound()
 	{
-		
+
 	}
 
 	function onEndRound()
@@ -323,7 +321,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		}
 		catch(\Exception $ex)
 		{
-			
+
 		}
 	}
 
@@ -473,17 +471,17 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onPlayerIncoherence($playerUid, $login)
 	{
-		
+
 	}
 
 	function onBillUpdated($billId, $state, $stateName, $transactionId)
 	{
-		
+
 	}
 
 	function onTunnelDataReceived($playerUid, $login, $data)
 	{
-		
+
 	}
 
 	function onMapListModified($curMapIndex, $nextMapIndex, $isListModified)
@@ -505,16 +503,21 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onPlayerInfoChanged($playerInfo)
 	{
-		$playerInfo = Player::fromArray($playerInfo);
-		$player = $this->getPlayerObject($playerInfo->login);
+		$player = $this->getPlayerObject($playerInfo['Login']);
 		if(!$player)
 		{
+//			if(!$playerInfo->hasJoinedGame)
 				return;
+//			$this->onPlayerConnect($playerInfo->login, $playerInfo->isSpectator);
+//			$player = $this->getPlayerObject($login);
 		}
 
 		$wasSpectator = $player->spectator;
 		foreach($playerInfo as $key => $value)
-			$player->$key = $value;
+		{
+			$property = lcfirst($key);
+			$player->$property = $value;
+		}
 
 		if($wasSpectator && !$player->spectator)
 		{
@@ -532,7 +535,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onManualFlowControlTransition($transition)
 	{
-		
+
 	}
 
 	function onVoteUpdated($stateName, $login, $cmdName, $cmdParam)
@@ -546,14 +549,19 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 
 	function onModeScriptCallback($param1, $param2)
 	{
-		
+
 	}
-	
+
 	function onPlayerAlliesChanged($login)
 	{
 		try
 		{
-			$this->getPlayerObject($login)->allies = $this->connection->getDetailedPlayerInfo($login)->allies;
+			$allies = $this->connection->getDetailedPlayerInfo($login)->allies;
+			$this->getPlayerObject($login)->allies = $allies;
+			foreach($allies as $ally)
+			{
+				$this->getPlayerObject($ally)->allies = $this->connection->getDetailedPlayerInfo($ally)->allies;
+			}
 		}
 		catch(\Exception $e)
 		{
