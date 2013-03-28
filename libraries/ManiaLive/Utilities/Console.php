@@ -19,17 +19,16 @@ abstract class Console
 {
 	public static function println($string)
 	{
-		Logger::getLog('runtime')->write($string);
+		Logger::runtime($string);
 		if(Config::getInstance()->verbose)
 			echo $string.PHP_EOL;
 	}
 
 	public static function print_rln($string)
 	{
-		$line = print_r($string, true);
-		Logger::getLog('runtime')->write($line);
+		Logger::runtime($string);
 		if(Config::getInstance()->verbose)
-			echo $line.PHP_EOL;
+			echo print_r($string);
 	}
 
 	public static function getDatestamp()
@@ -47,8 +46,7 @@ abstract class Console
 	{
 		if(Config::getInstance()->debug)
 		{
-			$line = '['.self::getDatestamp().'|Debug] '.$string;
-			self::println($line);
+			Logger::debug($string);
 		}
 	}
 

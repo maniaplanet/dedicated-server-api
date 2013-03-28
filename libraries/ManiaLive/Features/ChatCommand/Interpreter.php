@@ -23,9 +23,9 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 	const REGISTERED_DIFFERENTLY    = 1;
 	const REGISTERED_AS_POLYMORPHIC = 2;
 	const REGISTERED_EXACTLY        = 3;
-	
+
 	private $registeredCommands = array();
-	
+
 	/**
 	 * @var Connection
 	 */
@@ -60,7 +60,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		$command->callback = array($this, 'man');
 
 		$this->register($command);
-		
+
 		$config = \ManiaLive\DedicatedApi\Config::getInstance();
 		$this->connection = Connection::factory($config->host, $config->port, $config->timeout, $config->user, $config->password);
 	}
@@ -157,14 +157,14 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 	{
 		if(!$isRegistredCmd)
 			return;
-		
+
 		$cmdAndArgs = explode(' ', $text, 2);
 		$command = substr($cmdAndArgs[0], 1);
 		$parameters = count($cmdAndArgs) > 1 ? $cmdAndArgs[1] : '';
-		
+
 		if($command === 'version')
 			return;
-		
+
 		$isRegistered = $this->isRegistered($command);
 		if($isRegistered == self::REGISTERED_AS_POLYMORPHIC)
 			$this->callCommand($login, $text, $command, $parameters ? array($parameters) : array(), true);
@@ -184,7 +184,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 			}
 			else
 				$parameters = array();
-			
+
 			$isRegistered = $this->isRegistered($command, count($parameters));
 			if($isRegistered == self::REGISTERED_EXACTLY)
 				$this->callCommand($login, $text, $command, $parameters);
@@ -205,11 +205,11 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 		if(!count($command->authorizedLogin) || in_array($login, $command->authorizedLogin))
 		{
 			if($command->log)
-				Logger::getLog('commands')->write('[ChatCommand from '.$login.'] '.$text);
+				Logger::info('[ChatCommand from '.$login.'] '.$text);
 
 			if($command->addLoginAsFirstParameter)
 				array_unshift($parameters, $login);
-			
+
 			call_user_func_array($command->callback, $parameters);
 		}
 		else
@@ -278,12 +278,12 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 				list($class, $method) = $command->callback;
 			else
 				list($class, $method) = explode('::', $command->callback);
-			
+
 			$reflection = new \ReflectionMethod($class, $method);
-			
+
 			$requiredCount = $reflection->getNumberOfRequiredParameters();
 			$totalCount = $reflection->getNumberOfParameters();
-			
+
 			if($command->addLoginAsFirstParameter)
 				return array($requiredCount-1, $totalCount-1);
 			return array($requiredCount, $totalCount);
