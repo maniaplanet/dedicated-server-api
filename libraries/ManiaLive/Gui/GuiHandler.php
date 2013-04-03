@@ -33,7 +33,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 {
 	const MAX_THUMBNAILS = 5;
 	const NEXT_IS_MODAL = 0xFA15EADD;
-	
+
 	/**
 	 * @var Connection
 	 */
@@ -71,7 +71,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		Dispatcher::register(AppEvent::getClass(), $this, AppEvent::ALL & ~AppEvent::ON_POST_LOOP);
 		Dispatcher::register(PlayerEvent::getClass(), $this, PlayerEvent::ON_PLAYER_CHANGE_SIDE);
 		Dispatcher::register(ServerEvent::getClass(), $this, ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_PLAYER_DISCONNECT);
-		
+
 		$config = \ManiaLive\DedicatedApi\Config::getInstance();
 		$this->connection = Connection::factory($config->host, $config->port, $config->timeout, $config->user, $config->password);
 	}
@@ -294,7 +294,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	{
 		if(Storage::getInstance()->serverStatus->code > Status::LAUNCHING)
 			$this->connection->sendHideManialinkPage();
-		
+
 		$this->groupAll = Group::Create('all');
 		$this->groupPlayers = Group::Create('players');
 		$this->groupSpectators = Group::Create('spectators');
@@ -493,9 +493,12 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$this->managedWindow[$login] = null;
 		$this->thumbnails[$login] = array();
 
-		$sk = Shortkey::Create($login);
-		$sk->addCallback(Shortkey::F8, array($this, 'toggleGui'));
-		$sk->show();
+		if(\ManiaLive\Config\Config::getInstance()->enableToggleGUI)
+		{
+			$sk = Shortkey::Create($login);
+			$sk->addCallback(Shortkey::F8, array($this, 'toggleGui'));
+			$sk->show();
+		}
 
 		$this->groupAll->add($login, true);
 		if($isSpectator)

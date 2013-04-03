@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -42,12 +42,12 @@ abstract class Manialinks
 	{
 		// Create DOM element
 		$manialink = self::$domDocument->createElement('manialink');
-		
+
 		if($id)
 			$manialink->setAttribute('id', $id);
 		if($version)
 			$manialink->setAttribute('version', $version);
-		
+
 		end(self::$parentNodes)->appendChild($manialink);
 
 		// Update stacks
@@ -83,7 +83,7 @@ abstract class Manialinks
 	{
 		array_pop(self::$parentNodes);
 	}
-	
+
 	final public static function setVisibility($parameter, $visibility)
 	{
 		$parameterNode = self::$domDocument->createElement($parameter);
@@ -97,6 +97,13 @@ abstract class Manialinks
 		$doc->loadXML($XML);
 		$node = self::$domDocument->importNode($doc->firstChild, true);
 		end(self::$parentNodes)->appendChild($node);
+	}
+
+	static function appendScript($maniaScript)
+	{
+		$script = self::$domDocument->createElement('script');
+		$script->appendChild(self::$domDocument->createTextNode($maniaScript));
+		end(self::$parentNodes)->appendChild($script);
 	}
 }
 ?>
