@@ -493,12 +493,12 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		$this->managedWindow[$login] = null;
 		$this->thumbnails[$login] = array();
 
+		$sk = Shortkey::Create($login);
 		if(\ManiaLive\Config\Config::getInstance()->enableToggleGUI)
 		{
-			$sk = Shortkey::Create($login);
 			$sk->addCallback(Shortkey::F8, array($this, 'toggleGui'));
-			$sk->show();
 		}
+		$sk->show();
 
 		$this->groupAll->add($login, true);
 		if($isSpectator)
