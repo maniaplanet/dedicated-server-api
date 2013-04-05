@@ -511,7 +511,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 //			$this->onPlayerConnect($playerInfo->login, $playerInfo->isSpectator);
 //			$player = $this->getPlayerObject($login);
 		}
-		
+
 		$wasSpectator = $player->spectator;
 		foreach($playerInfo as $key => $value)
 		{
@@ -527,6 +527,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		$player->isServer = (bool) (intval($player->flags / 100000) % 10);
 		$player->hasPlayerSlot = (bool) (intval($player->flags / 1000000) % 10);
 		$player->isBroadcasting = (bool) (intval($player->flags / 10000000) % 10);
+		$player->hasJoinedGame = (bool) (intval($player->flags / 100000000) % 10);
 		//Details spectatorStatus
 		$player->spectator = (bool) ($player->spectatorStatus % 10);
 		$player->temporarySpectator = (bool) (intval($player->spectatorStatus / 10) % 10);

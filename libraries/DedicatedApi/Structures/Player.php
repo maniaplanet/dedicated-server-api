@@ -2,7 +2,7 @@
 /**
  * Represents a Dedicated TrackMania Server Player
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -57,6 +57,7 @@ class Player extends AbstractStructure
 	public $isServer;
 	public $hasPlayerSlot;
 	public $isBroadcasting;
+	public $hasJoinedGame;
 
 	//SpectatorStatus details
 	public $spectator;
@@ -87,13 +88,14 @@ class Player extends AbstractStructure
 		$object->isServer = (bool) (intval($object->flags / 100000) % 10);
 		$object->hasPlayerSlot = (bool) (intval($object->flags / 1000000) % 10);
 		$object->isBroadcasting = (bool) (intval($object->flags / 10000000) % 10);
+		$object->hasJoinedGame = (bool) (intval($object->flags / 100000000) % 10);
 		//Details spectatorStatus
 		$object->spectator = (bool) ($object->spectatorStatus % 10);
 		$object->temporarySpectator = (bool) (intval($object->spectatorStatus / 10) % 10);
 		$object->pureSpectator = (bool) (intval($object->spectatorStatus / 100) % 10);
 		$object->autoTarget = (bool) (intval($object->spectatorStatus / 1000) % 10);
 		$object->currentTargetId = intval($object->spectatorStatus / 10000);
-		
+
 		return $object;
 	}
 }
