@@ -462,8 +462,9 @@ class Connection
 
 	/**
 	 * Set new ratios for passing specific votes.
-	 * The parameter is an array of struct
-	 * {string votecommand, double ratio}, ratio is in [0,1] or -1 for vote disabled.
+	 * The parameter is an array of associative arrays
+	 * {string votecommand, double ratio}, ratio is in [0,1] or -1. for vote disabled.
+	 * @example setCallVoteRatios(array(array('Command' => 'Kick', 'Ratio' => -1. ));
 	 * @param array $ratios
 	 * @param bool $multicall
 	 * @return bool
@@ -1668,7 +1669,7 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
 	 * Declare if the server is a lobby, the number and maximum number of players currently managed by it.
 	 * Only available to Admin.
@@ -1682,9 +1683,9 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($isLobby, $lobbyPlayers, $maxPlayers), $multicall);
 	}
-	
+
 	/**
-	 * Get whether the server if a lobby, and the number of players currently managed by it. 
+	 * Get whether the server if a lobby, and the number of players currently managed by it.
 	 * The struct returned contains two fields IsLobby and LobbyPlayers.
 	 */
 	function getLobbyInfo()
@@ -1710,7 +1711,7 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($keep), $multicall);
 	}
-	
+
 	/**
 	 * Get whether the server keeps player slots when switching to spectator.
 	 * @return bool
@@ -1977,11 +1978,11 @@ class Connection
 	 * Set new server options using the struct passed as parameters. This struct must contain the following fields :
 	 * Name, Comment, Password, PasswordForSpectator, NextMaxPlayers, NextMaxSpectators, IsP2PUpload, IsP2PDownload,
 	 * NextLadderMode, NextVehicleNetQuality, NextCallVoteTimeOut, CallVoteRatio, AllowMapDownload, AutoSaveReplays,
-	 * 
+	 *
 	 * and optionally for forever:
 	 * RefereePassword, RefereeMode, AutoSaveValidationReplays, HideServer, UseChangingValidationSeed,
 	 * ClientInputsMaxLatency, KeepPlayerSlots.
-	 * 
+	 *
 	 * Only available to Admin.
 	 * A change of NextMaxPlayers, NextMaxSpectators, NextLadderMode, NextVehicleNetQuality, NextCallVoteTimeOut
 	 * or UseChangingValidationSeed requires a map restart to be taken into account.
@@ -2342,7 +2343,7 @@ class Connection
 	}
 
 	/**
-	 * Get the xml-rpc variables of the mode script. 
+	 * Get the xml-rpc variables of the mode script.
 	 * Only available to Admin.
 	 * @return array
 	 */
@@ -3228,7 +3229,7 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($nextMapIndex), $multicall);
 	}
-	
+
 	/**
 	 * Immediately jumps to the map designated by the index in the selection
 	 * @param int $nextMapIndex
@@ -3280,7 +3281,7 @@ class Connection
 				array('unused', 0., 'World', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
 				$multicall);
 	}
-	
+
 	/**
 	 * Disable player horns. Only available to Admin.
 	 * @param bool $disable
@@ -3294,10 +3295,10 @@ class Connection
 		{
 			throw new InvalidArgumentException('disable = '.print_r($disable, true));
 		}
-		
+
 		return $this->execute(ucfirst(__FUNCTION__), array($disable), $multicall);
 	}
-	
+
 	/**
 	 * Returns whether the horns are disabled.
 	 * @return bool
@@ -3743,7 +3744,7 @@ class Connection
 
 		return Structures\Player::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__), array($login)));
 	}
-	
+
 	/**
 	 * Returns the current winning team for the race in progress. (-1: if not in team mode, or draw match)
 	 * @return int -1, 0 or 1
@@ -3855,7 +3856,7 @@ class Connection
 
 		return $this->execute('ForceSpectatorTarget', array($playerLogin, $targetLogin, $cameraType), $multicall);
 	}
-	
+
 	/**
 	 * Pass the login of the spectator. A spectator that once was a player keeps his player slot, so that he can go back to race mode.
 	 * Calling this function frees this slot for another player to connect.
@@ -4048,7 +4049,7 @@ class Connection
  */
 class QueryException extends \Exception
 {
-	
+
 }
 
 /**
@@ -4056,7 +4057,7 @@ class QueryException extends \Exception
  */
 class ConnectionException extends \Exception
 {
-	
+
 }
 
 /**
@@ -4064,7 +4065,7 @@ class ConnectionException extends \Exception
  */
 class InvalidArgumentException extends \Exception
 {
-	
+
 }
 
 ?>
