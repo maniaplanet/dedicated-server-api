@@ -40,6 +40,11 @@ echo 'SQLite3               -> optional  -> '.($sqliteOk ? '[ Yes ]' : '[ No  ]'
 echo '-----------------------------------------------------'.PHP_EOL;
 
 
+if(!$curlOk)
+{
+	echo 'You should install cURL PHP extension'.PHP_EOL;
+	echo '  on debian/ubuntu : sudo apt-get install php5-curl'.PHP_EOL;
+
 if(!$phpOk || !$curlOk || !$splOk || !$jsonOk)
 {
     echo 'Your system is not compatible, check your php configuration.'.PHP_EOL;
