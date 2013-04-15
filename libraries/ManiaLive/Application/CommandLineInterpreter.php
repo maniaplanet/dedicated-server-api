@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -19,7 +19,7 @@ abstract class CommandLineInterpreter
 			'help::',//Display Help
 			'manialive_cfg::',//Set a configuration file to load instead of config.ini
 		));
-		
+
 		$help = 'ManiaLive v2.1.14 (2012 Jul 13)'."\n"
 		.'Authors : '."\n"
 		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'."\n"
@@ -38,13 +38,13 @@ abstract class CommandLineInterpreter
 			echo $help;
 			exit;
 		}
-		
+
 		if(isset($options['manialive_cfg']))
 			return $options['manialive_cfg'];
 		else
 			return 'config.ini';
 	}
-	
+
 	static function postConfigLoad()
 	{
 		$options = getopt(null,array(
@@ -52,10 +52,22 @@ abstract class CommandLineInterpreter
 			'address::',//Set the adresse of the server
 			'password::',//Set the User Password
 			'dedicated_cfg::',//Set the configuration file to use to define XML RPC Port, SuperAdmin, Admin and User passwords
-			'user::'//Set the user to use during the communication with the server
+			'user::',//Set the user to use during the communication with the server
+			'logsPrefix::', //Set the log prefix option
+			'debug::'
 		));
 
 		$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
+
+		if (isset($options['logsPrefix']))
+		{
+			\ManiaLive\Config\Config::getInstance()->logsPrefix = $options['logsPrefix'];
+		}
+
+		if (isset($options['debug']))
+		{
+			\ManiaLive\Config\Config::getInstance()->debug = $options['debug'];
+		}
 
 		if(isset($options['user']))
 		{
@@ -95,7 +107,7 @@ abstract class CommandLineInterpreter
 			if(isset($options['password']))
 				$serverConfig->password = $options['password'];
 		}
-		
+
 		if(isset($options['address']))
 			$serverConfig->host = $options['address'];
 	}
