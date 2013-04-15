@@ -20,18 +20,19 @@ abstract class CommandLineInterpreter
 			'manialive_cfg::',//Set a configuration file to load instead of config.ini
 		));
 
-		$help = 'ManiaLive v2.1.14 (2012 Jul 13)'."\n"
+		$help = 'ManiaLive '."\n"
 		.'Authors : '."\n"
-		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'."\n"
-		.'Usage: php bootstrapper.php [args]'."\n"
+		.'	Philippe "farfa" Melot, Maxime "Gouxim" Raoust, Florian "aseco" Schnell, Gwendal "Newbo.O" Martin'.PHP_EOL
+		.'Usage: php bootstrapper.php [args]'.PHP_EOL
 		.'Arguments:'."\n"
-		.'  --help               - displays the present help'."\n"
-		.'  --rpcport=xxx        - xxx represents the xmlrpc to use for the connection to the server'."\n"
-		.'  --address=xxx        - xxx represents the address of the server, it should be an IP address or localhost'."\n"
-		.'  --user=xxx           - xxx represents the name of the user to use for the communication. It should be User, Admin or SuperAdmin'."\n"
-		.'  --password=xxx       - xxx represents the password relative to --user Argument'."\n"
-		.'  --dedicated_cfg=xxx  - xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated\'s config file.'."\n"
-		.'  --manialive_cfg=xxx  - xxx represents the name of the ManiaLive\'s configuration file. This file should be present in the ManiaLive\'s config file.'."\n";
+		.'  --help               - displays the present help'.PHP_EOL
+		.'  --rpcport=xxx        - xxx represents the xmlrpc to use for the connection to the server'.PHP_EOL
+		.'  --address=xxx        - xxx represents the address of the server, it should be an IP address or localhost'.PHP_EOL
+		.'  --user=xxx           - xxx represents the name of the user to use for the communication. It should be User, Admin or SuperAdmin'.PHP_EOL
+		.'  --password=xxx       - xxx represents the password relative to --user Argument'.PHP_EOL
+		.'  --dedicated_cfg=xxx  - xxx represents the name of the Dedicated configuration file to use to get the connection data. This file should be present in the Dedicated\'s config file.'.PHP_EOL
+		.'  --logsPrefix=xxx     - xxx reprents the prefix used for this instance log.'.PHP_EOL
+		.'  --debug              - activate debug log.'.PHP_EOL;
 
 		if(isset($options['help']))
 		{
@@ -54,7 +55,7 @@ abstract class CommandLineInterpreter
 			'dedicated_cfg::',//Set the configuration file to use to define XML RPC Port, SuperAdmin, Admin and User passwords
 			'user::',//Set the user to use during the communication with the server
 			'logsPrefix::', //Set the log prefix option
-			'debug::'
+			'debug::' // Set up the debug option
 		));
 
 		$serverConfig = \ManiaLive\DedicatedApi\Config::getInstance();
@@ -66,7 +67,7 @@ abstract class CommandLineInterpreter
 
 		if (isset($options['debug']))
 		{
-			\ManiaLive\Config\Config::getInstance()->debug = $options['debug'];
+			\ManiaLive\Config\Config::getInstance()->debug = true;
 		}
 
 		if(isset($options['user']))
