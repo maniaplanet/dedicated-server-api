@@ -28,7 +28,7 @@ abstract class Console
 	{
 		Logger::runtime($string);
 		if(Config::getInstance()->verbose)
-			echo print_r($string);
+			echo print_r($string, true);
 	}
 
 	public static function getDatestamp()

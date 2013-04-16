@@ -1693,6 +1693,33 @@ class Connection
 		$result = $this->execute(ucfirst(__FUNCTION__));
 		return Structures\LobbyInfo::fromArray($result);
 	}
+	
+	/**
+	 * Customize the clients 'leave server' dialog box. 
+	 * Parameters are: ManialinkPage, SendToServer url '#qjoin=login@title' and ProposeAddToFavorites. 
+	 * Only available to Admin.
+	 * @param string $manialinkPage
+	 * @param string $sendToServer
+	 * @param bool $proposeAddToFavorites
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function customizeQuitDialog($manialinkPage, $sendToServer, $proposeAddToFavorites, $multicall = false)
+	{
+		if(!is_string($manialinkPage))
+		{
+			throw new InvalidArgumentException('manialinkPage = '.print_r($manialinkPage, true));
+		}
+		if(!is_string($sendToServer))
+		{
+			throw new InvalidArgumentException('sendToServer = '.print_r($sendToServer, true));
+		}
+		if(!is_bool($proposeAddToFavorites))
+		{
+			throw new InvalidArgumentException('proposeAddToFavorites = '.print_r($proposeAddToFavorites, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($manialinkPage, $sendToServer, $proposeAddToFavorites), $multicall);
+	}
 
 	/**
 	 * Set whether, when a player is switching to spectator, the server should still consider him a player
@@ -2019,6 +2046,32 @@ class Connection
 	function getServerOptions()
 	{
 		return Structures\ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__)));
+	}
+	
+	/**
+	 * Set whether the players can choose their side or if the teams are forced by the server (using ForcePlayerTeam()). 
+	 * Only available to Admin.
+	 * @param bool $enable
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function setForcedTeams($enable, $multicall = false)
+	{
+		if(!is_bool($enable))
+		{
+			throw new InvalidArgumentException('enable = '.print_r($enable, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($enable), $multicall);
+	}
+	
+	/**
+	 * Returns whether the players can choose their side or if the teams are forced by the server.
+	 * @return bool
+	 */
+	function getForcedTeams()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
 	}
 
 	/**
@@ -3258,6 +3311,7 @@ class Connection
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
+	 * @deprecated since version 2013-04-11
 	 */
 	function setTeamInfo($teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country, $multicall = false)
 	{
@@ -3280,6 +3334,65 @@ class Connection
 		return $this->execute(ucfirst(__FUNCTION__),
 				array('unused', 0., 'World', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
 				$multicall);
+	}
+	
+	/**
+	 * Set the clublinks to use for the two clans. 
+	 * Only available to Admin.
+	 * @param string $team1ClubLink
+	 * @param string $team2ClubLink
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function setForcedClubLinks($team1ClubLink, $team2ClubLink, $multicall = false)
+	{
+		if(!is_string($team1ClubLink))
+		{
+			throw new InvalidArgumentException('team1ClubLink = '.print_r($team1ClubLink, true));
+		}
+		if(!is_string($team2ClubLink))
+		{
+			throw new InvalidArgumentException('team2ClubLink = '.print_r($team2ClubLink, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($team1ClubLink, $team2ClubLink), $multicall);
+	}
+	
+	/**
+	 * Get the forced clublinks.
+	 * @return array
+	 */
+	function getForcedClubLinks()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+	
+	/**
+	 * (debug tool) Connect a fake player to the server and returns the login. 
+	 * Only available to Admin.
+	 * @param bool $multicall
+	 * @return string
+	 */
+	function connectFakePlayer($multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+	}
+	
+	/**
+	 * (debug tool) Disconnect a fake player, or all the fake players if login is '*'. 
+	 * Only available to Admin.
+	 * @param string $fakePlayerLogin
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function disconnectFakePlayer($fakePlayerLogin, $multicall = false)
+	{
+		if(!is_string($fakePlayerLogin))
+		{
+			throw new InvalidArgumentException('fakePlayerLogin = '.print_r($fakePlayerLogin, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($fakePlayerLogin), $multicall);
 	}
 
 	/**
