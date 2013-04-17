@@ -506,13 +506,10 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		$player = $this->getPlayerObject($playerInfo['Login']);
 		if(!$player)
 		{
-//			if(!$playerInfo->hasJoinedGame)
 				return;
-//			$this->onPlayerConnect($playerInfo->login, $playerInfo->isSpectator);
-//			$player = $this->getPlayerObject($login);
 		}
 
-		$wasSpectator = $player->spectator;
+		$formerPlayerObject = clone $player;
 		foreach($playerInfo as $key => $value)
 		{
 			$property = lcfirst($key);
@@ -535,17 +532,25 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 		$player->autoTarget = (bool) (intval($player->spectatorStatus / 1000) % 10);
 		$player->currentTargetId = intval($player->spectatorStatus / 10000);
 
-		if($wasSpectator && !$player->spectator)
+		if($formerPlayerObject->spectator && !$player->spectator)
 		{
 			unset($this->spectators[$player->login]);
 			$this->players[$player->login] = $player;
 			Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_SIDE, $player, 'spectator'));
 		}
-		else if(!$wasSpectator && $player->spectator)
+		else if(!$formerPlayerObject->spectator && $player->spectator)
 		{
 			unset($this->players[$player->login]);
 			$this->spectators[$player->login] = $player;
 			Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_SIDE, $player, 'player'));
+		}
+		if($formerPlayerObject->hasJoinedGame == false && $player->hasJoinedGame == true)
+		{
+			Dispatcher::dispatch(new Event(Event::ON_PLAYER_JOIN_GAME, $player->login));
+		}
+		if(($formerPlayerObject->teamId != -1 || $player->teamId != -1) && $formerPlayerObject->teamId != $player->teamId)
+		{
+			Dispatcher::dispatch(new Event(Event::ON_PLAYER_CHANGE_TEAM, $player->login, $formerPlayerObject->teamId, $player->teamId));
 		}
 	}
 

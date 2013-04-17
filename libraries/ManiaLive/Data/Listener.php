@@ -51,6 +51,20 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * @param integer $nbLap
 	 */
 	function onPlayerFinishLap($player, $timeOrScore, $checkpoints, $nbLap);
+	
+	/**
+	 * Event fired when a player change team in a team mode
+	 * @param string $login
+	 * @param int $formerTeamId
+	 * @param int $newTeamId
+	 */
+	function onPlayerChangeTeam($login, $formerTeamId, $newTeamId);
+	
+	/**
+	 * Event fired when a player has finished to connect and is able to interact with other players
+	 * @param string $login
+	 */
+	function onPlayerJoinGame($login);
 }
 
 ?>

@@ -18,6 +18,8 @@ class Event extends \ManiaLive\Event\Event
 	const ON_PLAYER_NEW_BEST_SCORE = 4;
 	const ON_PLAYER_CHANGE_SIDE    = 8;
 	const ON_PLAYER_FINISH_LAP     = 16;
+	const ON_PLAYER_CHANGE_TEAM    = 32;
+	const ON_PLAYER_JOIN_GAME	    = 64;
 	
 	protected $params;
 	
@@ -40,6 +42,8 @@ class Event extends \ManiaLive\Event\Event
 			case self::ON_PLAYER_NEW_BEST_SCORE: $listener->onPlayerNewBestScore($p[0], $p[1], $p[2]); break;
 			case self::ON_PLAYER_CHANGE_SIDE: $listener->onPlayerChangeSide($p[0], $p[1]); break;
 			case self::ON_PLAYER_FINISH_LAP: $listener->onPlayerFinishLap($p[0], $p[1], $p[2], $p[3]); break;
+			case self::ON_PLAYER_CHANGE_TEAM: $listener->onPlayerChangeTeam($p[0], $p[1], $p[2]); break;
+			case self::ON_PLAYER_JOIN_GAME: $listener->onPlayerJoinGame($p[0]); break;
 		}
 	}
 }

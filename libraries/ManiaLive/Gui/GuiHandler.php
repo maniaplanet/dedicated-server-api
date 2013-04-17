@@ -482,6 +482,8 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 	}
 
 	function onPlayerFinishLap($player, $timeOrScore, $checkpoints, $nbLap) {}
+	function onPlayerChangeTeam($login, $formerTeamId, $newTeamId) {}
+	function onPlayerJoinGame($login) {}
 
 	// Dedicated Listener
 

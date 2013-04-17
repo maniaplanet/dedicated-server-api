@@ -535,6 +535,8 @@ abstract class Plugin extends ServerAdapter implements ThreadListener, TickListe
 	function onPlayerNewRank($player, $oldRank, $newRank) {}
 	function onPlayerChangeSide($player, $oldSide) {}
 	function onPlayerFinishLap($player, $time, $checkpoints, $nbLap) {}
+	function onPlayerChangeTeam($login, $formerTeamId, $newTeamId) {}
+	function onPlayerJoinGame($login) {}
 
 	// plugin events
 	function onPluginLoaded($pluginId) {}
