@@ -69,7 +69,7 @@ class EchoHandler extends \ManiaLib\Utils\Singleton implements Listener
 	public function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	public function onPlayerCheckpoint($playerUid, $login, $timeOrScore, $curLap, $checkpointIndex) {}
 	public function onPlayerConnect($login, $isSpectator) {}
-	public function onPlayerDisconnect($login) {}
+	public function onPlayerDisconnect($login, $disconnectionReason) {}
 	public function onPlayerFinish($playerUid, $login, $timeOrScore) {}
 	public function onPlayerIncoherence($playerUid, $login) {}
 	public function onPlayerInfoChanged($playerInfo) {}

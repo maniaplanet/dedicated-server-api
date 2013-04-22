@@ -291,7 +291,7 @@ final class Interpreter extends \ManiaLib\Utils\Singleton implements ServerListe
 	}
 
 	function onPlayerConnect($login, $isSpectator) {}
-	function onPlayerDisconnect($login) {}
+	function onPlayerDisconnect($login, $disconnectionReason) {}
 	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
 	function onEcho($internal, $public) {}
 	function onServerStart() {}

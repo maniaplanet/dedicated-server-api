@@ -23,7 +23,7 @@ interface Listener extends \ManiaLive\Event\Listener
 	 * Method called when a Player quit the server
 	 * @param string $login
 	 */
-	function onPlayerDisconnect($login);
+	function onPlayerDisconnect($login, $disconnectionReason);
 	/**
 	 * Method called when a Player chat on the server
 	 * @param int $playerUid

@@ -509,7 +509,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 			$this->groupPlayers->add($login, true);
 	}
 
-	function onPlayerDisconnect($login)
+	function onPlayerDisconnect($login, $disconnectionReason)
 	{
 		$this->groupAll->remove($login);
 		$this->groupPlayers->remove($login);

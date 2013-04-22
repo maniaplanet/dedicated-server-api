@@ -14,7 +14,7 @@ namespace ManiaLive\DedicatedApi\Callback;
 abstract class Adapter implements Listener
 {	
 	function onPlayerConnect($login, $isSpectator) {}
-	function onPlayerDisconnect($login) {}
+	function onPlayerDisconnect($login, $disconnectionReason) {}
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	function onPlayerManialinkPageAnswer($playerUid, $login, $answer,array $entries) {}
 	function onEcho($internal, $public) {}

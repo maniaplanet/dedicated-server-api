@@ -73,7 +73,7 @@ final class ActionHandler extends \ManiaLib\Utils\Singleton implements ServerLis
 	}
 	
 	function onPlayerConnect($login, $isSpectator) {}
-	function onPlayerDisconnect($login) {}
+	function onPlayerDisconnect($login, $disconnectionReason) {}
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	function onEcho($internal, $public) {}
 	function onServerStart() {}

@@ -107,7 +107,7 @@ abstract class ErrorHandling
 		foreach (self::computeMessage($e) as $line)
 		{
 			$log .= $line.PHP_EOL;
-			Console::println(wordwrap($line, 73, PHP_EOL.'      ', true));
+			Console::println(wordwrap('ERROR: '.$e->getMessage(), 73, PHP_EOL.'      '));
 		}
 		Console::println('');
 

@@ -265,7 +265,7 @@ final class PluginHandler extends \ManiaLib\Utils\Singleton implements AppListen
 	}
 	
 	function onPlayerConnect($login, $isSpectator) {}
-	function onPlayerDisconnect($login) {}
+	function onPlayerDisconnect($login, $disconnectionReason) {}
 	function onPlayerChat($playerUid, $login, $text, $isRegistredCmd) {}
 	function onPlayerManialinkPageAnswer($playerUid, $login, $answer, array $entries) {}
 	function onEcho($internal, $public) {}

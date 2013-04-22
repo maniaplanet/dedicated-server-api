@@ -71,7 +71,7 @@ class Connection
 	{
 		$this->xmlrpcClient = new Xmlrpc\ClientMulticall($host, $port, $timeout);
 		$this->authenticate($user, $password);
-		$this->setApiVersion('2012-06-19');
+		$this->setApiVersion('2013-04-16');
 	}
 
 	/**
@@ -472,28 +472,7 @@ class Connection
 	 */
 	function setCallVoteRatios(array $ratios, $multicall = false)
 	{
-		if(!is_array($ratios))
-		{
-			throw new InvalidArgumentException('ratios = '.print_r($ratios, true));
-		}
-
-		foreach($ratios as $i => $ratio)
-		{
-			if(!is_array($ratio) && !array_key_exists('Command', $ratio) && !array_key_exists('Ratio', $ratio))
-			{
-				throw new InvalidArgumentException('ratios['.$i.'] = '.print_r($ratio, true));
-			}
-			if(!is_string($ratio['Command']))
-			{
-				throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios['Command'], true));
-			}
-			if($ratio['Ratio'] !== -1. && !(is_float($ratio['Ratio']) && $ratio['Ratio'] >= 0 && $ratio['Ratio'] <= 1))
-			{
-				throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratio['Ratio'], true));
-			}
-		}
-
-		return $this->execute(ucfirst(__FUNCTION__), array($ratios), $multicall);
+		return $this->setCallVoteRatiosEx(true, $ratios, $multicall);
 	}
 
 	/**
@@ -503,6 +482,70 @@ class Connection
 	function getCallVoteRatios()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
+	}
+	
+	/**
+	 * Set the ratios list for passing specific votes, extended version with parameters matching. 
+	 * The parameters, a boolean ReplaceAll (or else, only modify specified ratios, leaving the previous ones unmodified) 
+	 * and an array of structs {string Command, string Param, double Ratio}, 
+	 * ratio is in [0,1] or -1 for vote disabled. 
+	 * Param is matched against the vote parameters to make more specific ratios, leave empty to match all votes for the command. 
+	 * Only available to Admin.
+	 * @param bool $replaceAll
+	 * @param array[array[]]|Structures\VoteRatio[] $ratios
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function setCallVoteRatiosEx($replaceAll, array $ratios, $multicall = false)
+	{
+		if(!is_array($ratios))
+		{
+			throw new InvalidArgumentException('ratios = '.print_r($ratios, true));
+		}
+
+		foreach($ratios as $i => $ratio)
+		{
+			if($ratio instanceof Structures\VoteRatio)
+			{
+				$ratios[$i] = $ratio->toArray();
+			}
+			else
+			{
+				if(!is_array($ratio) && !array_key_exists('Command', $ratio) && !array_key_exists('Ratio', $ratio))
+				{
+					throw new InvalidArgumentException('ratios['.$i.'] = '.print_r($ratio, true));
+				}
+				if(!is_string($ratio['Command']))
+				{
+					throw new InvalidArgumentException('ratios['.$i.'][Command] = '.print_r($ratios['Command'], true));
+				}
+				if($ratio['Ratio'] !== -1. && !(is_float($ratio['Ratio']) && $ratio['Ratio'] >= 0 && $ratio['Ratio'] <= 1))
+				{
+					throw new InvalidArgumentException('ratios['.$i.'][Ratio] = '.print_r($ratio['Ratio'], true));
+				}
+				if(array_key_exists('Param', $ratio) && !is_string($ratio['Param']))
+				{
+					throw new InvalidArgumentException('ratios['.$i.'][Param] = '.print_r($ratio['Param'], true));
+				}
+				elseif(!array_key_exists('Param', $ratio))
+				{
+					$ratio['Param'] = '';
+					$ratios[$i] = $ratio;
+				}
+			}
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__), array($replaceAll, $ratios), $multicall);
+	}
+	
+	/**
+	 * Get the current ratios for passing votes, extended version with parameters matching.
+	 * @return Structures\VoteRatio[]
+	 */
+	function getCallVoteRatiosEx()
+	{
+		return Structures\VoteRatio::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -3337,6 +3380,23 @@ class Connection
 	}
 	
 	/**
+	 * Return Team info for a given clan (0 = no clan, 1, 2). 
+	 * The structure contains: name, zonePath, city, emblemUrl, huePrimary, hueSecondary, rGB, clubLinkUrl. 
+	 * Only available to Admin.
+	 * @param int $teamId
+	 * @return Structures\Team
+	 * @throws InvalidArgumentException
+	 */
+	function getTeamInfo($teamId)
+	{
+		if(!is_int($teamId))
+		{
+			throw new InvalidArgumentException('teamId = '.print_r($teamId, true));
+		}
+		return Structures\Team::fromArray($this->execute(ucfirst(__FUNCTION__), array($teamId)));
+	}
+	
+	/**
 	 * Set the clublinks to use for the two clans. 
 	 * Only available to Admin.
 	 * @param string $team1ClubLink
@@ -3417,6 +3477,33 @@ class Connection
 	 * @return bool
 	 */
 	function areHornsDisabled()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+	
+	/**
+	 * Disable the automatic mesages when a player connects/disconnects from the server. 
+	 * Only available to Admin.
+	 * @param bool $disable
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function disableServiceAnnounces($disable, $multicall = false)
+	{
+		if(!is_bool($disable))
+		{
+			throw new InvalidArgumentException('disable = '.print_r($disable, true));
+		}
+
+		return $this->execute(ucfirst(__FUNCTION__), array($disable), $multicall);
+	}
+	
+	/**
+	 * Returns whether the automatic mesages are disabled.
+	 * @return bool
+	 */
+	function areServiceAnnouncesDisabled()
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
