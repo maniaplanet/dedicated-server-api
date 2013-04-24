@@ -155,7 +155,7 @@ class AutoQueue extends \ManiaLive\PluginHandler\Plugin
 			$this->mapsPlayed[$login] = 0;
 	}
 	
-	function onPlayerDisconnect($login)
+	function onPlayerDisconnect($login, $disconnectionReason)
 	{
 		unset($this->queueable[$login]);
 		unset($this->lastActivityTime[$login]);

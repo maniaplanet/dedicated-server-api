@@ -164,7 +164,7 @@ class TeamSpeak extends \ManiaLive\PluginHandler\Plugin
 		$main->show();
 	}
 	
-	function onPlayerDisconnect($login)
+	function onPlayerDisconnect($login, $disconnectionReason)
 	{
 		if(!$this->tsConnection->isConnected())
 			return;

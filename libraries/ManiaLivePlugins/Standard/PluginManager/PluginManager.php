@@ -126,7 +126,7 @@ class PluginManager extends \ManiaLive\PluginHandler\Plugin
 			$this->connectedAdmins[$login] = true;
 	}
 	
-	function onPlayerDisconnect($login)
+	function onPlayerDisconnect($login, $disconnectionReason)
 	{
 		if(AdminGroup::contains($login))
 			unset($this->connectedAdmins[$login]);
