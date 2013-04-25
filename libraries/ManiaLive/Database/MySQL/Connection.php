@@ -169,7 +169,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 
 	function isConnected()
 	{
-		return (bool)$this->connection;
+		return (bool)$this->connection && mysql_ping($this->connection);;
 	}
 
 	function disconnect()
