@@ -21,7 +21,7 @@ abstract class AdminGroup
 	public static function contains($login)
 	{
 		$login = explode('/', $login, 1);
-		return array_search($login[0], \ManiaLive\Application\Config::getInstance()->admins) !== false;
+		return \ManiaLive\Application\Config::getInstance()->admins && array_search($login[0], \ManiaLive\Application\Config::getInstance()->admins) !== false;
 	}
 
 	/**
