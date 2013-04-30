@@ -216,12 +216,12 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 		$commandDiscarded = false;
 		if(empty($this->pendings[$threadId]))
 		{
-			Looger::debug('Thread #'.$threadId.' died...', true, array('Process #'.getmypid()));
+			Logger::debug('Thread #'.$threadId.' died...', true, array('Process #'.getmypid()));
 			Dispatcher::dispatch(new Event(Event::ON_THREAD_DIES, $threadId));
 		}
 		else
 		{
-			Looger::debug('Thread #'.$threadId.' timed out...', true, array('Process #'.getmypid()));
+			Logger::debug('Thread #'.$threadId.' timed out...', true, array('Process #'.getmypid()));
 			Dispatcher::dispatch(new Event(Event::ON_THREAD_TIMES_OUT, $threadId));
 			// If we already tried this command too many times, we discard it...
 			$command = reset($this->pendings[$threadId]);
@@ -235,7 +235,7 @@ final class ThreadHandler extends \ManiaLib\Utils\Singleton implements TickListe
 					);
 				unset($this->pendings[$threadId][$lastCommandId]);
 				unset($this->tries[$lastCommandId]);
-				Looger::debug('Command #'.$lastCommandId.' has been discarded after '.Config::getInstance()->maxTries.' unsuccessful tries...', true, array('Process #'.getmypid()));
+				Logger::debug('Command #'.$lastCommandId.' has been discarded after '.Config::getInstance()->maxTries.' unsuccessful tries...', true, array('Process #'.getmypid()));
 				$commandDiscarded = true;
 			}
 		}
