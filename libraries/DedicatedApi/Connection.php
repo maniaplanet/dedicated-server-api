@@ -1739,7 +1739,8 @@ class Connection
 	
 	/**
 	 * Customize the clients 'leave server' dialog box. 
-	 * Parameters are: ManialinkPage, SendToServer url '#qjoin=login@title' and ProposeAddToFavorites. 
+	 * Parameters are: ManialinkPage, SendToServer url '#qjoin=login@title',
+	 * ProposeAddToFavorites and DelayQuitButton (in milliseconds).
 	 * Only available to Admin.
 	 * @param string $manialinkPage
 	 * @param string $sendToServer
@@ -1747,7 +1748,7 @@ class Connection
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function customizeQuitDialog($manialinkPage, $sendToServer, $proposeAddToFavorites, $multicall = false)
+	function customizeQuitDialog($manialinkPage, $sendToServer, $proposeAddToFavorites, $delayQuitButton, $multicall = false)
 	{
 		if(!is_string($manialinkPage))
 		{
@@ -1761,7 +1762,11 @@ class Connection
 		{
 			throw new InvalidArgumentException('proposeAddToFavorites = '.print_r($proposeAddToFavorites, true));
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($manialinkPage, $sendToServer, $proposeAddToFavorites), $multicall);
+		if(!is_int($delayQuitButton))
+		{
+			throw new InvalidArgumentException('delayQuitButton = '.print_r($delayQuitButton, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($manialinkPage, $sendToServer, $proposeAddToFavorites, $delayQuitButton), $multicall);
 	}
 
 	/**
