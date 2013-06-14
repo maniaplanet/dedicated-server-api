@@ -483,13 +483,13 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
-	 * Set the ratios list for passing specific votes, extended version with parameters matching. 
-	 * The parameters, a boolean ReplaceAll (or else, only modify specified ratios, leaving the previous ones unmodified) 
-	 * and an array of structs {string Command, string Param, double Ratio}, 
-	 * ratio is in [0,1] or -1 for vote disabled. 
-	 * Param is matched against the vote parameters to make more specific ratios, leave empty to match all votes for the command. 
+	 * Set the ratios list for passing specific votes, extended version with parameters matching.
+	 * The parameters, a boolean ReplaceAll (or else, only modify specified ratios, leaving the previous ones unmodified)
+	 * and an array of structs {string Command, string Param, double Ratio},
+	 * ratio is in [0,1] or -1 for vote disabled.
+	 * Param is matched against the vote parameters to make more specific ratios, leave empty to match all votes for the command.
 	 * Only available to Admin.
 	 * @param bool $replaceAll
 	 * @param array[array[]]|Structures\VoteRatio[] $ratios
@@ -538,7 +538,7 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($replaceAll, $ratios), $multicall);
 	}
-	
+
 	/**
 	 * Get the current ratios for passing votes, extended version with parameters matching.
 	 * @return Structures\VoteRatio[]
@@ -2095,9 +2095,9 @@ class Connection
 	{
 		return Structures\ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__)));
 	}
-	
+
 	/**
-	 * Set whether the players can choose their side or if the teams are forced by the server (using ForcePlayerTeam()). 
+	 * Set whether the players can choose their side or if the teams are forced by the server (using ForcePlayerTeam()).
 	 * Only available to Admin.
 	 * @param bool $enable
 	 * @param bool $multicall
@@ -2112,7 +2112,7 @@ class Connection
 		}
 		return $this->execute(ucfirst(__FUNCTION__), array($enable), $multicall);
 	}
-	
+
 	/**
 	 * Returns whether the players can choose their side or if the teams are forced by the server.
 	 * @return bool
@@ -3383,10 +3383,10 @@ class Connection
 				array('unused', 0., 'World', $teamName1, $teamColor1, $team1Country, $teamName2, $teamColor2, $team2Country),
 				$multicall);
 	}
-	
+
 	/**
-	 * Return Team info for a given clan (0 = no clan, 1, 2). 
-	 * The structure contains: name, zonePath, city, emblemUrl, huePrimary, hueSecondary, rGB, clubLinkUrl. 
+	 * Return Team info for a given clan (0 = no clan, 1, 2).
+	 * The structure contains: name, zonePath, city, emblemUrl, huePrimary, hueSecondary, rGB, clubLinkUrl.
 	 * Only available to Admin.
 	 * @param int $teamId
 	 * @return Structures\Team
@@ -3400,9 +3400,9 @@ class Connection
 		}
 		return Structures\Team::fromArray($this->execute(ucfirst(__FUNCTION__), array($teamId)));
 	}
-	
+
 	/**
-	 * Set the clublinks to use for the two clans. 
+	 * Set the clublinks to use for the two clans.
 	 * Only available to Admin.
 	 * @param string $team1ClubLink
 	 * @param string $team2ClubLink
@@ -3422,7 +3422,7 @@ class Connection
 		}
 		return $this->execute(ucfirst(__FUNCTION__), array($team1ClubLink, $team2ClubLink), $multicall);
 	}
-	
+
 	/**
 	 * Get the forced clublinks.
 	 * @return array
@@ -3431,9 +3431,9 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
-	 * (debug tool) Connect a fake player to the server and returns the login. 
+	 * (debug tool) Connect a fake player to the server and returns the login.
 	 * Only available to Admin.
 	 * @param bool $multicall
 	 * @return string
@@ -3442,9 +3442,9 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
 	}
-	
+
 	/**
-	 * (debug tool) Disconnect a fake player, or all the fake players if login is '*'. 
+	 * (debug tool) Disconnect a fake player, or all the fake players if login is '*'.
 	 * Only available to Admin.
 	 * @param string $fakePlayerLogin
 	 * @param bool $multicall
@@ -3485,16 +3485,16 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
-	
+
 	/**
-	 * Disable the automatic mesages when a player connects/disconnects from the server. 
+	 * Disable the automatic mesages when a player connects/disconnects from the server.
 	 * Only available to Admin.
 	 * @param bool $disable
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function disableServiceAnnounces($disable, $multicall = false)
+	function disableServiceAnnounces($disable = true, $multicall = false)
 	{
 		if(!is_bool($disable))
 		{
@@ -3503,7 +3503,7 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($disable), $multicall);
 	}
-	
+
 	/**
 	 * Returns whether the automatic mesages are disabled.
 	 * @return bool
