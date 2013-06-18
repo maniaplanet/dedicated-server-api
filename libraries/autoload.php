@@ -11,6 +11,11 @@
 
 define('APP_ROOT', __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
 
+if(!defined('MANIALIB_APP_PATH'))
+{
+	define('MANIALIB_APP_PATH', __DIR__.'/../');
+}
+
 spl_autoload_register(
 		function ($className)
 		{
