@@ -836,6 +836,36 @@ class Connection
 	{
 		return $this->execute(ucfirst(__FUNCTION__));
 	}
+	
+	/**
+	 * Opens a link in the client with the specified players. 
+	 * The parameters are the login of the client to whom the link to open is sent, the link url, and the 'LinkType' 
+	 * (0 in the external browser, 1 in the internal manialink browser). 
+	 * Login can be a single login or a list of comma-separated logins. Only available to
+	 * @param Structures\Player|string|mixed[] $player
+	 * @param string $link
+	 * @param int $linkType
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function sendOpenLink($player, $link, $linkType, $multicall = false)
+	{
+		if(!($login = $this->getLogins($player)))
+		{
+			throw new InvalidArgumentException('player must be set');
+		}
+		if(!is_string($link))
+		{
+			throw new InvalidArgumentException('link = '.print_r($link, true));
+		}
+		if($linkType !== 0 && $linkType !== 1)
+		{
+			throw new InvalidArgumentException('linkType = '.print_r($linkType, true));
+		}
+		
+		return $this->execute('SendOpenLinkToLogin', array($login, $link, $linkType), $multicall);
+	}
 
 	/**
 	 * Kick the player with an optional message.
@@ -1714,22 +1744,40 @@ class Connection
 	}
 
 	/**
-	 * Declare if the server is a lobby, the number and maximum number of players currently managed by it.
+	 * Declare if the server is a lobby, the number and maximum number of players currently managed by it, and the average level of the players.
 	 * Only available to Admin.
 	 * @param bool $isLobby
 	 * @param int $lobbyPlayers
 	 * @param int $maxPlayers
+	 * @param double $lobbyPlayersLevel
 	 * @param bool $multicall
 	 * @return bool
 	 */
-	function setLobbyInfo($isLobby, $lobbyPlayers, $maxPlayers, $multicall = false)
+	function setLobbyInfo($isLobby, $lobbyPlayers, $maxPlayers, $lobbyPlayersLevel, $multicall = false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array($isLobby, $lobbyPlayers, $maxPlayers), $multicall);
+		if(!is_bool($isLobby))
+		{
+			throw new InvalidArgumentException('isLobby = '.print_r($isLobby, true));
+		}
+		if(!is_int($lobbyPlayers))
+		{
+			throw new InvalidArgumentException('lobbyPlayers = '.print_r($lobbyPlayers, true));
+		}
+		if(!is_int($maxPlayers))
+		{
+			throw new InvalidArgumentException('maxPlayers = '.print_r($maxPlayers, true));
+		}
+		if(!is_double($lobbyPlayersLevel))
+		{
+			throw new InvalidArgumentException('lobbyPlayersLevel = '.print_r($lobbyPlayersLevel, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($isLobby, $lobbyPlayers, $maxPlayers, $lobbyPlayersLevel), $multicall);
 	}
 
 	/**
-	 * Get whether the server if a lobby, and the number of players currently managed by it.
-	 * The struct returned contains two fields IsLobby and LobbyPlayers.
+	 * Get whether the server if a lobby, the number and maximum number of players currently managed by it. 
+	 * The struct returned contains 4 fields IsLobby, LobbyPlayers, LobbyMaxPlayers, and LobbyPlayersLevel.
+	 * @return Structures\LobbyInfo
 	 */
 	function getLobbyInfo()
 	{
@@ -2532,6 +2580,31 @@ class Connection
 	function setModeScriptSettings($rules, $multicall = false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array($rules), $multicall);
+	}
+	
+	/**
+	 * Send commands to the mode script.
+	 * Only available to Admin.
+	 * @param array $commands
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function sendModeScriptCommands(array $commands, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array($commands), $multicall);
+	}
+	
+	/**
+	 * Change the settings and send commands to the mode script. 
+	 * Only available to Admin.
+	 * @param array $settings
+	 * @param array $commands
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function setModeScriptSettingsAndCommands(array $settings, array $commands, $multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array($settings, $commands), $multicall);
 	}
 
 	/**

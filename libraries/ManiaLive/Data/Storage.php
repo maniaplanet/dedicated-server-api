@@ -590,7 +590,7 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 	/**
 	 * Give a Player Object for the corresponding login
 	 * @param string $login
-	 * @return \ManiaLive\DedicatedApi\Structures\Player
+	 * @return \DedicatedApi\Structures\Player
 	 */
 	function getPlayerObject($login)
 	{
