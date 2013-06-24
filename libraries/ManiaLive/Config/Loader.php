@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -16,12 +16,12 @@ class Loader extends \ManiaLib\Utils\Singleton
 	static $aliases = array(
 		'config' => 'ManiaLive\\Config\\Config',
 		'database' => 'ManiaLive\\Database\\Config',
-		'wsapi' => 'ManiaLive\\Features\\WebServices\\Config',
+		'wsapi' => 'ManiaLib\\WebServices\\Config',
 		'manialive' => 'ManiaLive\\Application\\Config',
 		'server' => 'ManiaLive\\DedicatedApi\\Config',
 		'threading' => 'ManiaLive\\Threading\\Config',
 	);
-	
+
 	protected $configFilename;
 	protected $debugPrefix = '[CONFIG LOADER]';
 
@@ -29,7 +29,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 	{
 		$this->configFilename = $configFilename;
 	}
-	
+
 	final public function run()
 	{
 		$mtime = microtime(true);
@@ -38,7 +38,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 		$mtime = microtime(true) - $mtime;
 		$this->postLoad();
 	}
-	
+
 	protected function preLoad()
 	{
 		if(!file_exists($this->configFilename))
@@ -46,12 +46,12 @@ class Loader extends \ManiaLib\Utils\Singleton
 			throw new \Exception($this->configFilename.' does not exist');
 		}
 	}
-	
+
 	protected function postLoad()
 	{
-		
+
 	}
-	
+
 	/**
 	 * @return \ManiaLive\Config\Config
 	 */
@@ -65,13 +65,13 @@ class Loader extends \ManiaLib\Utils\Singleton
 		$instances = $this->arrayToSingletons($values);
 		return $instances;
 	}
-	
+
 	/**
 	 * @return array
 	 */
 	protected function loadINI($filename)
 	{
-		try 
+		try
 		{
 			return parse_ini_file($filename, true);
 		}
@@ -80,7 +80,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 			throw new Exception('Could not parse INI file: '.$e->getMessage());
 		}
 	}
-	
+
 	/**
 	 * Creates two arrays (values and ovverides) from one array
 	 * @return array(array values, array overrides)
@@ -89,7 +89,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 	{
 		$values = array();
 		$overrides = array();
-		
+
 		foreach($array as $key => $value)
 		{
 			if(strstr($key, ':'))
@@ -103,7 +103,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 		}
 		return array($values, $overrides);
 	}
-	
+
 	/**
 	 * Checks if the values from overrides actually match an ovveride rule, anb
 	 * override teh values array if it's the case
@@ -128,7 +128,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 		}
 		return $values;
 	}
-	
+
 	/**
 	 * Overrides the values of the source array with values from teh overrride array
 	 * It does not work with associate arrays
@@ -142,7 +142,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 		}
 		return $source;
 	}
-	
+
 	/**
 	 * @return array
 	 */
@@ -161,7 +161,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 		}
 		return $values;
 	}
-	
+
 	/**
 	 * @return array
 	 */
@@ -188,7 +188,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 		}
 		return $newValues;
 	}
-	
+
 	/**
 	 * @return array[Singleton]
 	 */
@@ -201,7 +201,7 @@ class Loader extends \ManiaLib\Utils\Singleton
 			$className = reset($callback);
 			$propertyName = end($callback);
 			$instance = call_user_func(array($className, 'getInstance'));
-			
+
 			$instance->$propertyName = $value;
 			$instances[$className] = $instance;
 		}
