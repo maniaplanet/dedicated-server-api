@@ -1545,6 +1545,68 @@ class Connection
 
 		return $this->execute(ucfirst(__FUNCTION__), array($downloadRate, $uploadRate), $multicall);
 	}
+	
+	/**
+	 * Returns the list of tags and associated values set on this server. 
+	 * The list is an array of structures {string Name, string Value}.
+	 * Only available to Admin.
+	 * @return array
+	 */
+	function getServerTags()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+	
+	/**
+	 * Set a tag and its value on the server. This method takes two parameters. 
+	 * The first parameter specifies the name of the tag, and the second one its value.  
+	 * Only available to Admin.
+	 * @param string $key
+	 * @param string $value
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function setServerTag($key, $value, $multicall = false)
+	{
+		if(!is_string($key))
+		{
+			throw new InvalidArgumentException('key = '.print_r($key, true));
+		}
+		if(!is_string($value))
+		{
+			throw new InvalidArgumentException('value = '.print_r($value, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($key, $value), $multicall);
+	}
+	
+	/**
+	 * Unset the tag with the specified name on the server. 
+	 * Only available to Admin.
+	 * @param string $key
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function unsetServerTag($key, $multicall = false)
+	{
+		if(!is_string($key))
+		{
+			throw new InvalidArgumentException('key = '.print_r($key, true));
+		}
+		return $this->execute(ucfirst(__FUNCTION__), array($key), $multicall);
+	}
+	
+	/**
+	 * Reset all tags on the server. 
+	 * Only available to Admin.
+	 * @param bool $multicall
+	 * @return bool
+	 */
+	function resetServerTags($multicall = false)
+	{
+		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+	}
 
 	/**
 	 * Set a new server name in utf8 format.
@@ -3531,6 +3593,18 @@ class Connection
 			throw new InvalidArgumentException('fakePlayerLogin = '.print_r($fakePlayerLogin, true));
 		}
 		return $this->execute(ucfirst(__FUNCTION__), array($fakePlayerLogin), $multicall);
+	}
+	
+	/**
+	 * Returns the token infos for a player. 
+	 * The returned structure is { TokenCost, CanPayToken }.
+	 * @param Structures\Player|string $player
+	 * @return array
+	 */
+	function getPlayerTokenInfos($player)
+	{
+		$login = $this->getLogin($player);
+		return (object) $this->execute(ucfirst(__FUNCTION__), array($login));
 	}
 
 	/**
