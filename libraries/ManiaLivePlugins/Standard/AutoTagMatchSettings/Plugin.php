@@ -13,7 +13,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$settings = $this->connection->getModeScriptSettings();
 		foreach ($settings as $setting => $value)
 		{
-			$this->connection->setServerTag('MS-'.$setting, $value, true);
+			$this->connection->setServerTag($setting, $value, true);
 		}
 		$this->connection->executeMulticall();
 	}
