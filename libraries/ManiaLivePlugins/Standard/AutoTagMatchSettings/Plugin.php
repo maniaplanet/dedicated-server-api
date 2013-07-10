@@ -6,14 +6,30 @@
  */
 namespace ManiaLivePlugins\Standard\AutoTagMatchSettings;
 
+use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
+
 class Plugin extends \ManiaLive\PluginHandler\Plugin
 {
 	public function onLoad()
 	{
+		$this->setModeScriptSettingsTags();
+
+		$this->enableDedicatedEvents(
+			ServerEvent::ON_BEGIN_MAP
+		);
+	}
+
+	public function onBeginMap($map, $warmUp, $matchContinuation)
+	{
+		$this->setModeScriptSettingsTags();
+	}
+
+	protected function setModeScriptSettingsTags()
+	{
 		$settings = $this->connection->getModeScriptSettings();
 		foreach ($settings as $setting => $value)
 		{
-			$this->connection->setServerTag($setting, $value, true);
+			$this->connection->setServerTag($setting, json_encode($value), true);
 		}
 		$this->connection->executeMulticall();
 	}
