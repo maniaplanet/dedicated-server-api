@@ -24,7 +24,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$this->setModeScriptSettingsTags();
 	}
 
-	protected function setModeScriptSettingsTags()
+	public function setModeScriptSettingsTags()
 	{
 		$settings = $this->connection->getModeScriptSettings();
 		foreach ($settings as $setting => $value)
