@@ -10,6 +10,11 @@ use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 
 class Plugin extends \ManiaLive\PluginHandler\Plugin
 {
+	public function onInit()
+	{
+		$this->setPublicMethod('setModeScriptSettingsTags');
+	}
+	
 	public function onLoad()
 	{
 		$this->setModeScriptSettingsTags();
@@ -17,8 +22,6 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$this->enableDedicatedEvents(
 			ServerEvent::ON_BEGIN_MAP
 		);
-
-		$this->setPublicMethod('setModeScriptSettingsTags');
 	}
 
 	public function onBeginMap($map, $warmUp, $matchContinuation)
