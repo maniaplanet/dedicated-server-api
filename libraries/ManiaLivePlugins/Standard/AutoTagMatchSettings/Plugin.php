@@ -17,6 +17,8 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin
 		$this->enableDedicatedEvents(
 			ServerEvent::ON_BEGIN_MAP
 		);
+
+		$this->setPublicMethod('setModeScriptSettingsTags');
 	}
 
 	public function onBeginMap($map, $warmUp, $matchContinuation)
