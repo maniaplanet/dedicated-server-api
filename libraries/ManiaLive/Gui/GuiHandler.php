@@ -432,7 +432,7 @@ final class GuiHandler extends \ManiaLib\Utils\Singleton implements AppListener,
 		else
 			$window->setPosZ($window->getMinZ());
 
-		Manialinks::beginManialink($window->getId());
+		Manialinks::beginManialink($window->getId(), 1, $window->getLayer());
 		$window->save();
 		Manialinks::endManialink();
 	}
