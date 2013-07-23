@@ -186,6 +186,7 @@ class Pager extends \ManiaLive\Gui\Control
 			$this->buttonPrev->setSubStyle(Icons64x64_1::EmptyIcon);
 			$this->buttonNext->setAction(null);
 			$this->buttonNext->setSubStyle(Icons64x64_1::EmptyIcon);
+			$this->label->setText('');
 		}
 	}
 
