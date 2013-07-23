@@ -3601,7 +3601,7 @@ class Connection
 	 * @param Structures\Player|string $player
 	 * @return array
 	 */
-	function getPlayerTokenInfos($player)
+	function getDemoTokenInfosForPlayer($player)
 	{
 		$login = $this->getLogin($player);
 		return (object) $this->execute(ucfirst(__FUNCTION__), array($login));
