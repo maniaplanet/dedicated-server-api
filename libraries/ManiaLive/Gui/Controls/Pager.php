@@ -81,6 +81,7 @@ class Pager extends \ManiaLive\Gui\Control
 	function clearItems()
 	{
 		$this->items = array();
+		$this->container->clearComponents();
 		$this->needRefresh = true;
 	}
 
@@ -110,12 +111,16 @@ class Pager extends \ManiaLive\Gui\Control
 
 	function nextPage($login)
 	{
+		if ($this->currentPage == $this->getPages()-1)
+			return;
 		$this->currentPage++;
 		$this->redraw();
 	}
 
 	function previousPage($login)
 	{
+		if ($this->currentPage == 0)
+			return;
 		$this->currentPage--;
 		$this->redraw();
 	}
@@ -187,6 +192,10 @@ class Pager extends \ManiaLive\Gui\Control
 	private function refreshPages()
 	{
 		$current = null;
+		
+		if ($this->currentPage > $this->getPages()-1 && $this->getPages() > 0)
+			$this->currentPage = $this->getPages()-1;
+		
 		if(isset($this->pages[$this->currentPage]) && isset($this->pages[$this->currentPage][0]))
 				$current = $this->pages[$this->currentPage][0];
 
