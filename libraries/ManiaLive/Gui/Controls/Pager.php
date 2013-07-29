@@ -25,10 +25,16 @@ use ManiaLib\Gui\Layouts\Column;
  */
 class Pager extends \ManiaLive\Gui\Control
 {
-	private $buttonNext;
-	private $buttonPrev;
+	public $buttonNext;
+	public $buttonPrev;
+	public $label;
+	
+	/**
+	 * @var Frame 
+	 */
+	public $pageNavigatorFrame;
+	
 	private $container;
-	private $label;
 
 	private $actionNext;
 	private $actionPrev;
@@ -49,21 +55,24 @@ class Pager extends \ManiaLive\Gui\Control
 
 		$this->actionNext = $this->createAction(array($this, 'nextPage'));
 		$this->actionPrev = $this->createAction(array($this, 'previousPage'));
+		
+		$this->pageNavigatorFrame = new Frame();
+		$this->addComponent($this->pageNavigatorFrame);
 
 		$this->buttonNext = new Icons64x64_1(9);
 		$this->buttonNext->setSubStyle(Icons64x64_1::ArrowNext);
-		$this->addComponent($this->buttonNext);
+		$this->pageNavigatorFrame->addComponent($this->buttonNext);
 
 		$this->buttonPrev = new Icons64x64_1(9);
 		$this->buttonPrev->setSubStyle(Icons64x64_1::ArrowPrev);
-		$this->addComponent($this->buttonPrev);
+		$this->pageNavigatorFrame->addComponent($this->buttonPrev);
 
 		$this->container = new Frame(0, 0, new Column());
 		$this->addComponent($this->container);
 
 		$this->label = new Label();
 		$this->label->setHalign('center');
-		$this->addComponent($this->label);
+		$this->pageNavigatorFrame->addComponent($this->label);
 	}
 
 	function addItem(Component $item)
@@ -195,7 +204,7 @@ class Pager extends \ManiaLive\Gui\Control
 		$current = null;
 		
 		if ($this->currentPage > $this->getPages()-1 && $this->getPages() > 0)
-			$this->currentPage = $this->getPages()-1;
+			$this->currentPage = 0;
 		
 		if(isset($this->pages[$this->currentPage]) && isset($this->pages[$this->currentPage][0]))
 				$current = $this->pages[$this->currentPage][0];
