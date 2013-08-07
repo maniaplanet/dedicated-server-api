@@ -201,14 +201,15 @@ class Storage extends \ManiaLib\Utils\Singleton implements ServerListener, AppLi
 			{
 				$playerInfos->$key = $value;
 			}
-			if($isSpectator)
-			{
-				$this->spectators[$login] = $playerInfos;
-			}
-			else
-			{
-				$this->players[$login] = $playerInfos;
-			}
+		}
+		$playerInfos->isConnected = true;
+		if($isSpectator)
+		{
+			$this->spectators[$login] = $playerInfos;
+		}
+		else
+		{
+			$this->players[$login] = $playerInfos;
 		}
 	}
 
