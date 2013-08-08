@@ -198,6 +198,11 @@ abstract class Control extends Container implements Drawable, Containable
 		$this->actions[] = $action;
 		return $action;
 	}
+	
+	function __destruct()
+	{
+		$this->destroy();
+	}
 }
 
 ?>

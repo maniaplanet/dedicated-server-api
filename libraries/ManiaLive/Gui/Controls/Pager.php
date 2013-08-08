@@ -89,6 +89,10 @@ class Pager extends \ManiaLive\Gui\Control
 
 	function clearItems()
 	{
+		foreach($this->items as $item)
+		{
+			$item->destroy();
+		}
 		$this->items = array();
 		$this->container->clearComponents();
 		$this->needRefresh = true;
