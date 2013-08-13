@@ -454,13 +454,20 @@ abstract class Window extends Container implements TickListener
 		$zCur = 0;
 		foreach($this->getComponents() as $component)
 		{
-			$component->setPosZ($zCur);
-			if($component instanceof Control)
-				$zCur += $component->save();
+			if ($component->getPosZ() === null)
+			{
+				$component->setPosZ($zCur);
+				if($component instanceof Control)
+					$zCur += $component->save();
+				else
+				{
+					$component->save();
+					$zCur += self::Z_OFFSET;
+				}
+			}
 			else
 			{
 				$component->save();
-				$zCur += self::Z_OFFSET;
 			}
 		}
 
