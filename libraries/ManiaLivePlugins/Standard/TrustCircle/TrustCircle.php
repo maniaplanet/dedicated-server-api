@@ -26,7 +26,7 @@ class TrustCircle extends \ManiaLive\PluginHandler\Plugin
 	
 	function onLoad()
 	{
-		$wsConfig = \ManiaLive\Features\WebServices\Config::getInstance();
+		$wsConfig = \ManiaLib\WebServices\Config::getInstance();
 		$this->wsClient = new TrustCircles($wsConfig->username, $wsConfig->password);
 
 		if($wsConfig->username && $wsConfig->password)
