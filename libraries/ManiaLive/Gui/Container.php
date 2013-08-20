@@ -79,6 +79,8 @@ abstract class Container extends \ManiaLib\Gui\Component
 	{
 		foreach($this->components as $component)
 		{
+			if(method_exists($component, 'destroy'))
+				$component->destroy();
 			if($component instanceof Containable)
 				$component->onIsRemoved($this);
 		}
