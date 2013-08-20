@@ -83,4 +83,14 @@ final class Shortkey extends \ManiaLive\Gui\Window
 		if(isset($this->onKey[$key]) && $this->onKey[$key] != null)
 			call_user_func($this->onKey[$key], $login);
 	}
+	
+	function destroy()
+	{
+		parent::destroy();
+		
+		foreach($this->onKey as $key => $callback)
+		{
+			$this->removeCallback($key);
+		}
+	}
 }
