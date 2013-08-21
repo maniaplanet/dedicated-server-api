@@ -179,7 +179,6 @@ abstract class Control extends Container implements Drawable, Containable
 	 */
 	function destroy()
 	{
-		\ManiaLive\Utilities\Logger::debug('destroying:'.get_called_class());
 		$this->clearComponents();
 		foreach($this->parents as $parent)
 			$parent->removeComponent($this);
@@ -198,12 +197,6 @@ abstract class Control extends Container implements Drawable, Containable
 		$action = call_user_func_array(array(ActionHandler::getInstance(), 'createAction'), func_get_args());
 		$this->actions[] = $action;
 		return $action;
-	}
-	
-	function __destruct()
-	{
-		\ManiaLive\Utilities\Logger::debug('destructing:'.get_called_class());
-		//$this->destroy();
 	}
 }
 
