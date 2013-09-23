@@ -43,45 +43,48 @@ class Vote extends \ManiaLive\Gui\Window
 	{
 		self::$mapVote = $mapVote;
 		
-		self::$background = new BgsPlayerCard(53, 15);
+		self::$background = new BgsPlayerCard(36, 24);
 		self::$background->setSubStyle(BgsPlayerCard::BgPlayerCardBig);
 		
-		self::$title = new Label(48, 3);
-		self::$title->setPosition(2, -0.5);
+		self::$title = new Label(33, 3);
+		self::$title->setPosition(14, -2);
 		self::$title->setTextSize(3.5);
-		self::$title->setText('Do you like this map?');
+		self::$title->setText("Do you like\nthis map?");
+		self::$title->setHalign('center');
+		self::$title->enableAutonewline();
+		self::$title->setTextColor('BBB');
 		self::$title->setSubStyle(Label::TextCardRaceRank);
 		
-		self::$description = new Label(40);
-		self::$description->setHalign('right');
-		self::$description->setTextSize(3.5);
-		self::$description->setText('Track\'s Score');
-		self::$description->setPosition(38, -16);
+//		self::$description = new Label(40);
+//		self::$description->setHalign('right');
+//		self::$description->setTextSize(3.5);
+//		self::$description->setText('Track\'s Score');
+//		self::$description->setPosition(38, -16);
 		
 		self::$scoreImage = new Quad(9, 9);		
 		self::$scoreImage->setAlign('center', 'center');
-		self::$scoreImage->setPosition(43, -21);
+		self::$scoreImage->setPosition(43, -25);
 		
-		self::$score = new Label();
-		self::$score->setHalign('right');
-		self::$score->setTextSize(3.5);
-		self::$score->setPosition(38, -21);
+//		self::$score = new Label();
+//		self::$score->setHalign('right');
+//		self::$score->setTextSize(3.5);
+//		self::$score->setPosition(38, -21);
 		
 		self::$good = new Quad(7, 7);
 		self::$good->setImage(self::GetScoreImage(1, 0), true);
-		self::$good->setPosition(15, -6.5);
+		self::$good->setPosition(4, -14);
 		self::$good->setAction(ActionHandler::getInstance()->createAction(array(self::$mapVote, 'voteGood'), true));
 		
 		self::$bad = new Quad(7, 7);
 		self::$bad->setImage(self::GetScoreImage(0, 1), true);
-		self::$bad->setPosition(28, -6.5);
+		self::$bad->setPosition(16, -14);
 		self::$bad->setAction(ActionHandler::getInstance()->createAction(array(self::$mapVote, 'voteBad'), true));
 	}
 	
 	static function Update()
 	{
-		self::$scoreImage->setImage(self::GetScoreImage(self::$mapVote->score['good'], self::$mapVote->score['bad']), true);
-		self::$score->setText(self::$mapVote->score['good'].' / '.self::$mapVote->score['bad']);
+//		self::$scoreImage->setImage(self::GetScoreImage(self::$mapVote->score['good'], self::$mapVote->score['bad']), true);
+//		self::$score->setText(self::$mapVote->score['good'].' / '.self::$mapVote->score['bad']);
 	}
 	
 	static function Unload()
@@ -100,17 +103,17 @@ class Vote extends \ManiaLive\Gui\Window
 	
 	protected function onConstruct()
 	{
-		$this->mark = new BgsPlayerCard(8, 8);
+		$this->mark = new BgsPlayerCard(9, 9);
 		$this->mark->setAlign('center', 'center');
-		$this->mark->setPositionY(-10);
+		$this->mark->setPositionY(-17.5);
 		$this->mark->setSubStyle(BgsPlayerCard::BgActivePlayerScore);
 		
 		$this->addComponent(self::$background);
 		$this->addComponent(self::$title);
-		$this->addComponent(self::$description);
+//		$this->addComponent(self::$description);
 		$this->addComponent($this->mark);
-		$this->addComponent(self::$scoreImage);
-		$this->addComponent(self::$score);
+//		$this->addComponent(self::$scoreImage);
+//		$this->addComponent(self::$score);
 		$this->addComponent(self::$good);
 		$this->addComponent(self::$bad);
 	}
@@ -120,12 +123,12 @@ class Vote extends \ManiaLive\Gui\Window
 		if($this->currentVote == MapVote::VOTE_GOOD)
 		{
 			$this->mark->setVisibility(true);
-			$this->mark->setPositionX(18.5);
+			$this->mark->setPositionX(7);
 		}
 		else if($this->currentVote == MapVote::VOTE_BAD)
 		{
 			$this->mark->setVisibility(true);
-			$this->mark->setPositionX(31.5);
+			$this->mark->setPositionX(19.5);
 		}
 		else
 			$this->mark->setVisibility(false);

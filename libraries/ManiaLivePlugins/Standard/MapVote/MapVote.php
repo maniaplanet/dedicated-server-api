@@ -11,7 +11,6 @@
 
 namespace ManiaLivePlugins\Standard\MapVote;
 
-use ManiaLive\Database\MySQL\Connection;
 use ManiaLive\DedicatedApi\Callback\Event as ServerEvent;
 use ManiaLivePlugins\Standard\MapVote\Gui\Windows\Vote;
 
@@ -26,7 +25,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 
 	function onInit()
 	{
-		$this->setVersion('1');
+		$this->setVersion('2.0.0');
 	}
 
 	function onLoad()
@@ -44,12 +43,14 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 		$this->enableDedicatedEvents(ServerEvent::ON_PLAYER_CONNECT | ServerEvent::ON_BEGIN_MAP);
 		$this->enableDatabase();
 		
-		if(!$this->db->tableExists('votes'))
+		if(!$this->db->tableExists('Votes'))
 		{
 			$this->db->execute(
 				'CREATE TABLE IF NOT EXISTS `Votes` ('.
 				'`login` VARCHAR(25) NOT NULL,'.
-				'`mapUid` VARCHAR(27) NOT NULL,'.
+				'`lp` INT UNSIGNED NULL, '.
+				'`mapUid` VARCHAR(27) NOT NULL, '.
+				'`mapName` VARCHAR(75) NOT NULL, '.
 				'`vote` TINYINT(1) NOT NULL,'.
 				'`serverLogin` VARCHAR(25) NOT NULL,'.
 				'`date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,'.
@@ -71,7 +72,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	{
 		$vote = Vote::Create($login);
 		$vote->currentVote = $this->getPlayerVote($login, $this->storage->currentMap->uId);
-		$vote->setPosition(121, 75);
+		$vote->setPosition(139, 30);
 		$vote->setScale(0.8);
 		$vote->show();
 	}
@@ -94,7 +95,7 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				$vote->currentVote = $votes[$login];
 			else
 				$vote->currentVote = null;
-			$vote->setPosition(121, 75);
+			$vote->setPosition(139, 30);
 			$vote->setScale(0.8);
 			$vote->show();
 		}
@@ -116,10 +117,9 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 			Vote::Update();
 			Vote::RedrawAll();
 
-			if(!$window)
-				$this->connection->chatSendServerMessage('$0c0Your vote has successfully been updated!', $login);
+			$this->connection->chatSendServerMessage('$0c0Your vote has successfully been updated!', $login);
 		}
-		else if (!$window)
+		else 
 			$this->connection->chatSendServerMessage('$c00Your vote has not been changed!', $login);
 	}
 
@@ -139,10 +139,9 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 			Vote::Update();
 			Vote::RedrawAll();
 
-			if(!$window)
-				$this->connection->chatSendServerMessage('$0c0Your vote has successfully been updated!', $login);
+			$this->connection->chatSendServerMessage('$0c0Your vote has successfully been updated!', $login);
 		}
-		else if(!$window)
+		else 
 			$this->connection->chatSendServerMessage('$c00Your vote has not been changed!', $login);
 	}
 
@@ -174,12 +173,15 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 
 	function doVote($login, $vote)
 	{
+		$player = $this->storage->players[$login];
 		$this->db->execute(
-				'INSERT INTO `Votes` (`login`, `mapUid`, `vote`, `serverLogin`) ' .
-				'VALUES (%s, %s, %d, %s) ' .
-				'ON DUPLICATE KEY UPDATE vote=VALUES(vote)',
+				'INSERT INTO `Votes` (`login`, `lp`, `mapUid`, `mapName`, `vote`, `serverLogin`) ' .
+				'VALUES (%s, %d, %s, %s, %d, %s) ' .
+				'ON DUPLICATE KEY UPDATE vote=VALUES(vote), lp=VALUES(lp), mapName=VALUES(mapName)',
 				$this->db->quote($login),
+				$player->ladderStats['PlayerRankings'][0]['Score'],
 				$this->db->quote($this->storage->currentMap->uId),
+				$this->db->quote(\ManiaLib\Utils\Formatting::stripStyles($this->storage->currentMap->name)),
 				$vote,
 				$this->db->quote($this->storage->serverLogin));
 		

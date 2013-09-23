@@ -1,7 +1,7 @@
 <?php
 /**
  * ManiaLive - TrackMania dedicated server manager in PHP
- * 
+ *
  * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  * @version     $Revision$:
@@ -29,7 +29,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 	protected $user;
 	protected $password;
 	protected $database;
-	
+
 	protected $tick = 0;
 
 	function __construct($host, $username, $password, $database, $port)
@@ -40,7 +40,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 		$this->password = $password;
 		$this->connect($database);
 	}
-	
+
 	function onTick()
 	{
 		if(++$this->tick % 3600 == 0)
@@ -96,7 +96,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 			{
 				$this->connect($this->database);
 			}
-			
+
 			if(!mysql_set_charset($charset, $this->connection))
 			{
 				throw new Exception;
@@ -133,7 +133,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 		{
 			$this->connect($this->database);
 		}
-		
+
 		Connection::startMeasuring($this);
 		if(func_num_args() > 1)
 		{
@@ -169,7 +169,7 @@ class Connection extends \ManiaLive\Database\Connection implements TickListener
 
 	function isConnected()
 	{
-		return (bool)$this->connection && mysql_ping($this->connection);;
+		return (bool)$this->connection;
 	}
 
 	function disconnect()
