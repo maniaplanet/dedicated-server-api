@@ -52,9 +52,8 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 				'`mapUid` VARCHAR(27) NOT NULL, '.
 				'`mapName` VARCHAR(75) NOT NULL, '.
 				'`vote` TINYINT(1) NOT NULL,'.
-				'`serverLogin` VARCHAR(25) NOT NULL,'.
 				'`date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,'.
-				'PRIMARY KEY (`serverLogin`, `mapUid`, `login`)'.
+				'PRIMARY KEY (`mapUid`, `login`)'.
 				') '.
 				'COMMENT=\'Used to rate maps by players.\' '.
 				'COLLATE=\'utf8_general_ci\' '.
@@ -149,10 +148,9 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	{
 		$votes = array();
 		$recordset = $this->db->execute(
-				'SELECT `login`, `vote` FROM `Votes` WHERE `login` IN (%s) AND `mapUid`=%s AND `serverLogin`=%s',
+				'SELECT `login`, `vote` FROM `Votes` WHERE `login` IN (%s) AND `mapUid`=%s',
 				implode(',', array_map(array($this->db, 'quote'), $logins)),
-				$this->db->quote($mapUid),
-				$this->db->quote($this->storage->serverLogin)
+				$this->db->quote($mapUid)
 		);
 
 		while($vote = $recordset->fetchRow())
@@ -164,10 +162,9 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	function getPlayerVote($login, $mapUid)
 	{
 		$recordset = $this->db->execute(
-				'SELECT `vote` FROM `Votes` WHERE `login`=%s AND `mapUid`=%s AND `serverLogin`=%s',
+				'SELECT `vote` FROM `Votes` WHERE `login`=%s AND `mapUid`=%s',
 				$this->db->quote($login),
-				$this->db->quote($mapUid),
-				$this->db->quote($this->storage->serverLogin));
+				$this->db->quote($mapUid));
 		return $recordset->fetchSingleValue();
 	}
 
@@ -175,15 +172,14 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	{
 		$player = $this->storage->players[$login];
 		$this->db->execute(
-				'INSERT INTO `Votes` (`login`, `lp`, `mapUid`, `mapName`, `vote`, `serverLogin`) ' .
+				'INSERT INTO `Votes` (`login`, `lp`, `mapUid`, `mapName`, `vote`) ' .
 				'VALUES (%s, %d, %s, %s, %d, %s) ' .
 				'ON DUPLICATE KEY UPDATE vote=VALUES(vote), lp=VALUES(lp), mapName=VALUES(mapName)',
 				$this->db->quote($login),
 				$player->ladderStats['PlayerRankings'][0]['Score'],
 				$this->db->quote($this->storage->currentMap->uId),
 				$this->db->quote(\ManiaLib\Utils\Formatting::stripStyles($this->storage->currentMap->name)),
-				$vote,
-				$this->db->quote($this->storage->serverLogin));
+				$vote);
 		
 		return $this->db->affectedRows() > 0;
 	}
@@ -191,9 +187,8 @@ class MapVote extends \ManiaLive\PluginHandler\Plugin
 	function getMapScore($mapUid)
 	{
 		$recordset = $this->db->execute(
-				'SELECT COUNT(*), SUM(vote) FROM `Votes` WHERE `mapUid`=%s AND `serverLogin`=%s',
-				$this->db->quote($mapUid),
-				$this->db->quote($this->storage->serverLogin));
+				'SELECT COUNT(*), SUM(vote) FROM `Votes` WHERE `mapUid`=%s',
+				$this->db->quote($mapUid));
 		$row = $recordset->fetchRow();
 
 		$total = intval($row[0]);
