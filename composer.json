@@ -1,0 +1,27 @@
+{
+    "name": "maniaplanet/manialive",
+    "type": "library",
+    "description": "ManiaPlanet dedicated server controller",
+    "keywords": ["Oauth2", "cURL", "ManiaPlanet", "ShootMania", "TrackMania", "WebService", "SDK"],
+    "homepage": "https://github.com/maniaplanet/maniaplanet-ws-sdk",
+	"license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "Nadeo",
+            "email": "contact@nadeo.com",
+            "homepage": "http://www.nadeo.com/"
+        }
+    ],
+	"support": {
+        "forum": "http://forum.maniaplanet.com/viewforum.php?f=463"
+    },
+    "require": {
+        "php": ">=5.3",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+	"require": {
+        "maniaplanet/maniaplanet-ws-sdk": "~5.0",
+        "maniaplanet/manialib": "~3.1"
+    }
+}

@@ -25,4 +25,11 @@ spl_autoload_register(
 				require_once $path;
 		}
 );
+
+$composerAutoloaderFile = __DIR__.'/../vendor/autoload.php';
+
+if (file_exists($composerAutoloaderFile))
+	require $composerAutoloaderFile;
+
+
 ?>

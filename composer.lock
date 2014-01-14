@@ -1,0 +1,117 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
+    "hash": "5db555bf0407485909290352adcbf55a",
+    "packages": [
+        {
+            "name": "maniaplanet/manialib",
+            "version": "3.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maniaplanet/manialib.git",
+                "reference": "f6793944f9ad4b348bae491efc4d69ff815f0bd2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maniaplanet/manialib/zipball/f6793944f9ad4b348bae491efc4d69ff815f0bd2",
+                "reference": "f6793944f9ad4b348bae491efc4d69ff815f0bd2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "libraries/ManiaLib"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Nadeo",
+                    "email": "contact@nadeo.com",
+                    "homepage": "http://www.nadeo.com/"
+                }
+            ],
+            "description": "Library to query ManiaPlanet webservices (shootmania and trackmania 2)",
+            "homepage": "https://github.com/maniaplanet/manialib",
+            "keywords": [
+                "ManiaPlanet",
+                "ShootMania",
+                "TrackMania"
+            ],
+            "time": "2014-01-14 15:28:42"
+        },
+        {
+            "name": "maniaplanet/maniaplanet-ws-sdk",
+            "version": "5.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maniaplanet/maniaplanet-ws-sdk.git",
+                "reference": "4be031223012561538d40644689760fba02e2daa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maniaplanet/maniaplanet-ws-sdk/zipball/4be031223012561538d40644689760fba02e2daa",
+                "reference": "4be031223012561538d40644689760fba02e2daa",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=5.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Maniaplanet\\": "libraries/Maniaplanet/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Nadeo",
+                    "email": "contact@nadeo.com",
+                    "homepage": "http://www.nadeo.com/"
+                }
+            ],
+            "description": "SDK for the ManiaPlanet Web Services API.",
+            "homepage": "https://github.com/maniaplanet/maniaplanet-ws-sdk",
+            "keywords": [
+                "ManiaPlanet",
+                "ShootMania",
+                "TrackMania",
+                "curl",
+                "oauth2",
+                "rest",
+                "web services"
+            ],
+            "time": "2014-01-14 15:29:22"
+        }
+    ],
+    "packages-dev": [
+
+    ],
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": [
+
+    ],
+    "platform": [
+
+    ],
+    "platform-dev": [
+
+    ]
+}
