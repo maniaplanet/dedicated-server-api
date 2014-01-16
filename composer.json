@@ -1,0 +1,26 @@
+{
+    "name": "maniaplanet/dedicated-server-api",
+    "type": "library",
+    "description": "XML-RPC library to connect to ManiaPlanet server",
+    "keywords": ["ManiaPlanet", "ShootMania", "TrackMania"],
+    "homepage": "https://github.com/maniaplanet/dedicated-server-api",
+	"license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "Nadeo",
+            "email": "contact@nadeo.com",
+            "homepage": "http://www.nadeo.com/"
+        }
+    ],
+	"support": {
+        "forum": "http://forum.maniaplanet.com/viewforum.php?f=40"
+    },
+    "require": {
+        "php": ">=5.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Maniaplanet\\": "libraries/"
+        }
+    }
+}
