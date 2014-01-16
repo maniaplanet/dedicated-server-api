@@ -1,14 +1,10 @@
 <?php
 /**
- * Represents the Options of a TrackMania Dedicated Server
- * ManiaLive - TrackMania dedicated server manager in PHP
- * 
- * @copyright   Copyright (c) 2009-2011 NADEO (http://www.nadeo.com)
+ * ManiaPlanet dedicated server Xml-RPC client
+ *
  * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
- * @version     $Revision$:
- * @author      $Author$:
- * @date        $Date$:
  */
+ 
 namespace Maniaplanet\DedicatedServer\Structures;
 
 class ServerOptions extends AbstractStructure
