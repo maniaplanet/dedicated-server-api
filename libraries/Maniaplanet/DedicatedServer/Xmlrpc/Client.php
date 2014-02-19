@@ -189,7 +189,7 @@ class Client
 			if ($this->protocol == 1) 
 			{
 				$contents = fread($this->socket, 4);
-				if (strlen($contents) == 0) 
+				if (strlen($contents) == 0 || $contents === false) 
 				{
 					throw new FatalException('transport error - connection interrupted!', FatalException::INTERRUPTED);
 				}
@@ -200,7 +200,7 @@ class Client
 			else 
 			{
 				$contents = fread($this->socket, 8);
-				if (strlen($contents) == 0) 
+				if (strlen($contents) == 0 || $contents === false) 
 				{
 					throw new FatalException('transport error - connection interrupted!', FatalException::INTERRUPTED);
 				}
@@ -390,7 +390,7 @@ class Client
 			$recvhandle = 0;
 			// Get result
 			$contents = fread($this->socket, 8);
-			if (strlen($contents) == 0) 
+			if (strlen($contents) == 0 || $contents === false) 
 			{
 				throw new FatalException('transport error - connection interrupted!', FatalException::INTERRUPTED);
 			}
