@@ -88,6 +88,12 @@ class Client
 		}
 	}
 
+	/**
+	 * 
+	 * @param string $hostname
+	 * @param int $port
+	 * @param int $timeout In milliseconds
+	 */
 	function __construct($hostname, $port, $timeout = 50) 
 	{
 		$this->socket = false;
@@ -107,7 +113,7 @@ class Client
 		$this->bigEndianTest();
 
 		// open connection
-		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, $this->timeout);
+		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, $this->timeout/1000);
 		if (!$this->socket) 
 		{
 			throw new FatalException("transport error - could not open socket (error: $errno, $errstr)", FatalException::NOT_INITIALIZED);
@@ -147,7 +153,7 @@ class Client
 	{
 		$xml = $request->getXml();
 
-		@stream_set_timeout($this->socket, 0, $this->timeout * 1000);
+		@stream_set_timeout($this->socket, 0, $this->timeout * 1000 * 100);
 		// send request
 		$this->reqhandle++;
 		if ($this->protocol == 1) 
