@@ -113,7 +113,7 @@ class Client
 		$this->bigEndianTest();
 
 		// open connection
-		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, $this->timeout/1000);
+		$this->socket = @fsockopen($hostname, $port, $errno, $errstr, $this->timeout);
 		if (!$this->socket) 
 		{
 			throw new FatalException("transport error - could not open socket (error: $errno, $errstr)", FatalException::NOT_INITIALIZED);
@@ -153,7 +153,7 @@ class Client
 	{
 		$xml = $request->getXml();
 
-		@stream_set_timeout($this->socket, 0, $this->timeout * 1000 * 100);
+		@stream_set_timeout($this->socket, 0, $this->timeout * 1000 * 10);
 		// send request
 		$this->reqhandle++;
 		if ($this->protocol == 1) 
@@ -196,7 +196,7 @@ class Client
 		{
 			$size = 0;
 			$recvhandle = 0;
-			@stream_set_timeout($this->socket, 0, $this->timeout * 1000);  
+			@stream_set_timeout($this->socket, 0, $this->timeout * 1000 * 5);  
 			// Get result
 			if ($this->protocol == 1) 
 			{
@@ -361,7 +361,7 @@ class Client
 		$contents = '';
 		$contents_length = 0;
 
-		@stream_set_timeout($this->socket, 0, $this->timeout * 1000);  // timeout 10 ms (to read available data)
+		@stream_set_timeout($this->socket, 0, $this->timeout * 100);  // timeout 5 ms (to read available data)
 		// (assignment in arguments is forbidden since php 5.1.1)
 		$read = array($this->socket);
 		$write = NULL;
@@ -370,7 +370,7 @@ class Client
 		
 		try
 		{
-			$nb = @stream_select($read, $write, $except, 0, $this->timeout * 1000);
+			$nb = @stream_select($read, $write, $except, 0, $this->timeout * 100);
 		}
 		catch (\Exception $e)
 		{
