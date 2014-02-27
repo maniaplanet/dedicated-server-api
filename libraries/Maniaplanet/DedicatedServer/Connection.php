@@ -27,12 +27,12 @@ class Connection
 	/**
 	 * @param string $host
 	 * @param int $port
-	 * @param int $timeout
+	 * @param int $timeout (in ms)
 	 * @param string $user
 	 * @param string $password
 	 * @return Connection
 	 */
-	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 5, $user = 'SuperAdmin', $password = 'SuperAdmin')
+	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 50, $user = 'SuperAdmin', $password = 'SuperAdmin')
 	{
 		$key = $host.':'.$port;
 		if(!isset(self::$instances[$key]))
