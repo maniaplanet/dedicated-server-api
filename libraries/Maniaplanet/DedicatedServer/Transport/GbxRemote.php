@@ -17,9 +17,9 @@ class GbxRemote
 	private $timeouts = array(
 		'open' => 5,
 		'read' => 1000,
-		'write' => 5000
+		'write' => 1000
 	);
-	private $requestHandle = 0x80000000;
+	private $requestHandle;
 	private $callbacksBuffer = array();
 	private $multicallBuffer = array();
 
@@ -30,8 +30,14 @@ class GbxRemote
 	 */
 	function __construct($host, $port, $timeouts = array())
 	{
+		$this->requestHandle = (int) 0x80000000;
 		$this->timeouts = array_merge($this->timeouts, $timeouts);
 		$this->connect($host, $port);
+	}
+
+	function __destruct()
+	{
+		$this->terminate();
 	}
 
 	/**
@@ -145,7 +151,7 @@ class GbxRemote
 				case 'fault':
 					throw new FaultException($value['faultString'], $value['faultCode']);
 				case 'response':
-					if($handle ^ $this->requestHandle == 0)
+					if($handle == $this->requestHandle)
 						return $value;
 					break;
 				case 'call':
@@ -188,8 +194,7 @@ class GbxRemote
 	private function write($data)
 	{
 		@stream_set_timeout($this->socket, 0, $this->timeouts['write'] * 1000);
-		$this->requestHandle = -(~$this->requestHandle);
-		$bytes = pack('V2a*', strlen($data), $this->requestHandle, $data);
+		$bytes = pack('V2a*', strlen($data), ++$this->requestHandle, $data);
 		while(strlen($bytes) > 0)
 		{
 			$written = fwrite($this->socket, $bytes);

@@ -7,16 +7,12 @@ namespace Maniaplanet\DedicatedServer\Transport;
 
 class Base64
 {
-	private $data;
+	public $scalar;
+	public $xmlrpc_type = 'base64';
 
 	function __construct($data)
 	{
-		$this->data = base64_encode($data);
-	}
-
-	function __toString()
-	{
-		return $this->data;
+		$this->scalar = $data;
 	}
 }
 

@@ -1225,14 +1225,7 @@ class Connection
 		}
 
 		$inputData = file_get_contents($localFilename);
-
 		$data = new Transport\Base64($inputData);
-
-		// TODO: should this test be kept? If the request is too large, it'll fail anyway and the size is hard to estimate anyway
-		if(strlen($data) > Transport\GbxRemote::MAX_REQUEST_SIZE - 128)
-		{
-			throw new InvalidArgumentException('file is too big');
-		}
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
 	}
@@ -1253,12 +1246,6 @@ class Connection
 		}
 
 		$data = new Transport\Base64($data);
-
-		// TODO: should this test be kept? If the request is too large, it'll fail anyway and the size is hard to estimate anyway
-		if(strlen($data) > Transport\GbxRemote::MAX_REQUEST_SIZE - 128)
-		{
-			throw new InvalidArgumentException('data are too big');
-		}
 
 		return $this->execute('WriteFile', array($filename, $data), $multicall);
 	}
@@ -1282,13 +1269,8 @@ class Connection
 		{
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
-		if(filesize($filename) > 4 * 1024)
-		{
-			throw new InvalidArgumentException('file is too big');
-		}
 
 		$inputData = file_get_contents($filename);
-
 		$data = new Transport\Base64($inputData);
 
 		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
@@ -2075,7 +2057,7 @@ class Connection
 	 * Returns a replay containing the data needed to validate the current best time of the player.
 	 * The parameter is the login of the player.
 	 * @param Structures\Player|string $player
-	 * @return string base64 encoded
+	 * @return string
 	 * @throws InvalidArgumentException
 	 */
 	function getValidationReplay($player)
@@ -2084,7 +2066,7 @@ class Connection
 		{
 			throw new InvalidArgumentException('player must be set');
 		}
-		return $this->execute(ucfirst(__FUNCTION__), array($login));
+		return $this->execute(ucfirst(__FUNCTION__), array($login))->scalar;
 	}
 
 	/**
