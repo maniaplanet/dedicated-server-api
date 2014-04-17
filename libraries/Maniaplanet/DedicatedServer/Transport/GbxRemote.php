@@ -52,13 +52,14 @@ class GbxRemote
 			throw new TransportException('Cannot open socket', TransportException::NOT_INITIALIZED);
 
 		// handshake
-		$header = unpack('Vsize', fread($this->socket, 4));
+		$header = $this->read(15);
+		if($header === false)
+			throw new TransportException('Connection interrupted during handshake', TransportException::INTERRUPTED);
+		
+		$header = unpack('Vsize/a*protocol', $header);
 		extract($header);
-		if($size != 11)
+		if($size != 11 || $protocol != 'GBXRemote 2')
 			throw new TransportException('Wrong protocol header', TransportException::WRONG_PROTOCOL);
-		$data = fread($this->socket, $size);
-		if($data != 'GBXRemote 2')
-			throw new TransportException('Wrong protocol version', TransportException::WRONG_PROTOCOL);
 	}
 
 	function terminate()
@@ -85,7 +86,7 @@ class GbxRemote
 			$this->query('system.multicall', array_slice($args, $mid));
 		}
 
-		$this->write($xml);
+		$this->writeMessage($xml);
 		return $this->flush(true);
 	}
 
@@ -144,7 +145,7 @@ class GbxRemote
 		$n = @stream_select($r=array($this->socket), $w=null, $e=null, 0);
 		while($waitResponse || $n > 0)
 		{
-			list($handle, $xml) = $this->read();
+			list($handle, $xml) = $this->readMessage();
 			list($type, $value) = XmlRpc::decode($xml);
 			switch($type)
 			{
@@ -163,11 +164,10 @@ class GbxRemote
 		};
 	}
 
-	private function read()
+	private function readMessage()
 	{
-		@stream_set_timeout($this->socket, 0, $this->timeouts['read'] * 1000);
-		$header = fread($this->socket, 8);
-		if($header === '' || $header === false)
+		$header = $this->read(8);
+		if($header === false)
 			throw new TransportException('Connection interrupted while reading header', TransportException::INTERRUPTED);
 
 		$header = unpack('Vsize/Vhandle', $header);
@@ -178,33 +178,52 @@ class GbxRemote
 		if($size > self::MAX_RESPONSE_SIZE)
 			throw new TransportException('Response too large', TransportException::RESPONSE_TOO_LARGE);
 
+		$data = $this->read($size);
+		if($data === false)
+			throw new TransportException('Connection interrupted while reading data', TransportException::INTERRUPTED);
+
+		return array($handle, $data);
+	}
+
+	private function writeMessage($xml)
+	{
+		$data = pack('V2a*', strlen($xml), ++$this->requestHandle, $xml);
+		if(!$this->write($data))
+			throw new TransportException('Connection interrupted while writing', TransportException::INTERRUPTED);
+	}
+
+	private function read($size)
+	{
+		@stream_set_timeout($this->socket, 0, $this->timeouts['read'] * 1000);
+
 		$data = '';
 		while(strlen($data) < $size)
 		{
 			$buf = fread($this->socket, $size - strlen($data));
 			if($buf === '' || $buf === false)
-				throw new TransportException('Connection interrupted while reading data', TransportException::INTERRUPTED);
+				return false;
 			$data .= $buf;
 		}
 
-		self::$received += $size+8;
-		return array($handle, $data);
+		self::$received += $size;
+		return $data;
 	}
 
 	private function write($data)
 	{
 		@stream_set_timeout($this->socket, 0, $this->timeouts['write'] * 1000);
-		$bytes = pack('V2a*', strlen($data), ++$this->requestHandle, $data);
-		while(strlen($bytes) > 0)
-		{
-			$written = fwrite($this->socket, $bytes);
-			if($written === 0 || $written === false)
-				throw new TransportException('Connection interrupted while writing', TransportException::INTERRUPTED);
 
-			$bytes = substr($bytes, $written);
+		while(strlen($data) > 0)
+		{
+			$written = fwrite($this->socket, $data);
+			if($written === 0 || $written === false)
+				return false;
+
+			$data = substr($data, $written);
 		}
 
-		self::$sent += strlen($data)+8;
+		self::$sent += strlen($data);
+		return true;
 	}
 }
 
