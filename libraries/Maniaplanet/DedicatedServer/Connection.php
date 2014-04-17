@@ -57,6 +57,16 @@ class Connection
 	}
 
 	/**
+	 * Change client timeouts
+	 * @param int $read read timeout (in ms), null or 0 to leave unchanged
+	 * @param int $write write timeout (in ms), null or 0 to leave unchanged
+	 */
+	function setTimeouts($read=null, $write=null)
+	{
+		$this->xmlrpcClient->setTimeouts($read, $write);
+	}
+
+	/**
 	 * @param string $host
 	 * @param int $port
 	 * @param int $timeout

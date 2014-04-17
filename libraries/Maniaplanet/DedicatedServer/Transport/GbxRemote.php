@@ -41,6 +41,19 @@ class GbxRemote
 	}
 
 	/**
+	 * Change timeouts
+	 * @param int $read read timeout (in ms), null or 0 to leave unchanged
+	 * @param int $write write timeout (in ms), null or 0 to leave unchanged
+	 */
+	function setTimeouts($read=null, $write=null)
+	{
+		if($read)
+			$this->timeouts['read'] = $read;
+		if($write)
+			$this->timeouts['write'] = $write;
+	}
+
+	/**
 	 * @param string $host
 	 * @param int $port
 	 */
@@ -55,7 +68,7 @@ class GbxRemote
 		$header = $this->read(15);
 		if($header === false)
 			throw new TransportException('Connection interrupted during handshake', TransportException::INTERRUPTED);
-		
+
 		$header = unpack('Vsize/a*protocol', $header);
 		extract($header);
 		if($size != 11 || $protocol != 'GBXRemote 2')
