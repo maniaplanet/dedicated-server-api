@@ -4383,27 +4383,8 @@ class Connection
 }
 
 /**
- * Exception Dedicated to Query Error
- */
-class QueryException extends \Exception
-{
-
-}
-
-/**
- * Exception Dedicated to Connection Error
- */
-class ConnectionException extends \Exception
-{
-
-}
-
-/**
  * Exception Dedicated to Invalid Argument Error on Request Call
  */
-class InvalidArgumentException extends \Exception
-{
-
-}
+class InvalidArgumentException extends \Exception {}
 
 ?>
