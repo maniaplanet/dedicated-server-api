@@ -1,13 +1,15 @@
 <?php
 /**
- * @author NewboO
+ * ManiaPlanet dedicated server Xml-RPC client
+ *
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  */
 
-namespace Maniaplanet\DedicatedServer\Transport;
+namespace Maniaplanet\DedicatedServer\Xmlrpc;
 
 if(extension_loaded('xmlrpc'))
 {
-	abstract class XmlRpc
+	abstract class Request
 	{
 		/**
 		 * @param string $method
@@ -22,6 +24,7 @@ if(extension_loaded('xmlrpc'))
 		/**
 		 * @param string $message
 		 * @return mixed
+		 * @throws ParseException
 		 */
 		static function decode($message)
 		{
@@ -41,7 +44,7 @@ if(extension_loaded('xmlrpc'))
 }
 else
 {
-	abstract class XmlRpc
+	abstract class Request
 	{
 		const DATE_FORMAT = 'Ymd\TH:i:s';
 
@@ -102,6 +105,7 @@ else
 		/**
 		 * @param string $message
 		 * @return mixed
+		 * @throws ParseException
 		 */
 		static function decode($message)
 		{
@@ -159,6 +163,6 @@ else
 	}
 }
 
-class ParseException extends \Exception {}
+class ParseException extends Exception {}
 
 ?>

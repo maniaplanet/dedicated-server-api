@@ -1,9 +1,11 @@
 <?php
 /**
- * @author NewboO
+ * ManiaPlanet dedicated server Xml-RPC client
+ *
+ * @license     http://www.gnu.org/licenses/lgpl.html LGPL License 3
  */
 
-namespace Maniaplanet\DedicatedServer\Transport;
+namespace Maniaplanet\DedicatedServer\Xmlrpc;
 
 class GbxRemote
 {
@@ -22,6 +24,7 @@ class GbxRemote
 	private $requestHandle;
 	private $callbacksBuffer = array();
 	private $multicallBuffer = array();
+	private $lastNetworkActivity = 0;
 
 	/**
 	 * @param string $host
@@ -54,8 +57,18 @@ class GbxRemote
 	}
 
 	/**
+	 * @return int Network idle time in seconds
+	 */
+	function getIdleTime()
+	{
+		$this->assertConnected();
+		return time() - $this->lastNetworkActivity;
+	}
+
+	/**
 	 * @param string $host
 	 * @param int $port
+	 * @throws TransportException
 	 */
 	private function connect($host, $port)
 	{
@@ -69,10 +82,12 @@ class GbxRemote
 		if($header === false)
 			throw new TransportException('Connection interrupted during handshake', TransportException::INTERRUPTED);
 
-		$header = unpack('Vsize/a*protocol', $header);
-		extract($header);
+		extract(unpack('Vsize/a*protocol', $header));
+		/** @var $size int */
+		/** @var $protocol string */
 		if($size != 11 || $protocol != 'GBXRemote 2')
 			throw new TransportException('Wrong protocol header', TransportException::WRONG_PROTOCOL);
+		$this->lastNetworkActivity = time();
 	}
 
 	function terminate()
@@ -84,15 +99,21 @@ class GbxRemote
 		}
 	}
 
+	/**
+	 * @param string $method
+	 * @param mixed[] $args
+	 * @return mixed
+	 * @throws MessageException
+	 */
 	function query($method, $args=array())
 	{
 		$this->assertConnected();
-		$xml = XmlRpc::encode($method, $args);
+		$xml = Request::encode($method, $args);
 
 		if(strlen($xml) > self::MAX_REQUEST_SIZE-8)
 		{
 			if($method != 'system.multicall' || count($args) < 2)
-				throw new TransportException('Request too large', TransportException::REQUEST_TOO_LARGE);
+				throw new MessageException('Request too large', MessageException::REQUEST_TOO_LARGE);
 
 			$mid = count($args) >> 1;
 			$this->query('system.multicall', array_slice($args, 0, $mid));
@@ -115,6 +136,9 @@ class GbxRemote
 		);
 	}
 
+	/**
+	 * @return mixed
+	 */
 	function multiquery()
 	{
 		switch(count($this->multicallBuffer))
@@ -143,6 +167,9 @@ class GbxRemote
 		return $cb;
 	}
 
+	/**
+	 * @throws TransportException
+	 */
 	private function assertConnected()
 	{
 		if(!$this->socket)
@@ -152,6 +179,7 @@ class GbxRemote
 	/**
 	 * @param bool $waitResponse
 	 * @return mixed
+	 * @throws FaultException
 	 */
 	private function flush($waitResponse=false)
 	{
@@ -159,11 +187,11 @@ class GbxRemote
 		while($waitResponse || $n > 0)
 		{
 			list($handle, $xml) = $this->readMessage();
-			list($type, $value) = XmlRpc::decode($xml);
+			list($type, $value) = Request::decode($xml);
 			switch($type)
 			{
 				case 'fault':
-					throw new FaultException($value['faultString'], $value['faultCode']);
+					throw FaultException::create($value['faultString'], $value['faultCode']);
 				case 'response':
 					if($handle == $this->requestHandle)
 						return $value;
@@ -177,34 +205,50 @@ class GbxRemote
 		};
 	}
 
+	/**
+	 * @return mixed[]
+	 * @throws TransportException
+	 * @throws MessageException
+	 */
 	private function readMessage()
 	{
 		$header = $this->read(8);
 		if($header === false)
 			throw new TransportException('Connection interrupted while reading header', TransportException::INTERRUPTED);
 
-		$header = unpack('Vsize/Vhandle', $header);
-		extract($header);
+		extract(unpack('Vsize/Vhandle', $header));
+		/** @var $size int */
+		/** @var $handle int */
 		if($size == 0 || $handle == 0)
 			throw new TransportException('Incorrect header', TransportException::PROTOCOL_ERROR);
 
 		if($size > self::MAX_RESPONSE_SIZE)
-			throw new TransportException('Response too large', TransportException::RESPONSE_TOO_LARGE);
+			throw new MessageException('Response too large', MessageException::RESPONSE_TOO_LARGE);
 
 		$data = $this->read($size);
 		if($data === false)
 			throw new TransportException('Connection interrupted while reading data', TransportException::INTERRUPTED);
 
+		$this->lastNetworkActivity = time();
 		return array($handle, $data);
 	}
 
+	/**
+	 * @param string $xml
+	 * @throws TransportException
+	 */
 	private function writeMessage($xml)
 	{
 		$data = pack('V2a*', strlen($xml), ++$this->requestHandle, $xml);
 		if(!$this->write($data))
 			throw new TransportException('Connection interrupted while writing', TransportException::INTERRUPTED);
+		$this->lastNetworkActivity = time();
 	}
 
+	/**
+	 * @param int $size
+	 * @return boolean|string
+	 */
 	private function read($size)
 	{
 		@stream_set_timeout($this->socket, 0, $this->timeouts['read'] * 1000);
@@ -222,6 +266,10 @@ class GbxRemote
 		return $data;
 	}
 
+	/**
+	 * @param string $data
+	 * @return boolean
+	 */
 	private function write($data)
 	{
 		@stream_set_timeout($this->socket, 0, $this->timeouts['write'] * 1000);
@@ -240,16 +288,34 @@ class GbxRemote
 	}
 }
 
-class TransportException extends \Exception
+class TransportException extends Exception
 {
-	const NOT_INITIALIZED    = 1;
-	const INTERRUPTED        = 2;
-	const WRONG_PROTOCOL     = 3;
-	const PROTOCOL_ERROR     = 4;
-	const REQUEST_TOO_LARGE  = 5;
-	const RESPONSE_TOO_LARGE = 6;
+	const NOT_INITIALIZED = 1;
+	const INTERRUPTED     = 2;
+	const WRONG_PROTOCOL  = 3;
+	const PROTOCOL_ERROR  = 4;
 }
 
-class FaultException extends \Exception {}
+class MessageException extends Exception
+{
+	const REQUEST_TOO_LARGE  = 1;
+	const RESPONSE_TOO_LARGE = 2;
+}
+
+class FaultException extends Exception
+{
+	static function create($faultString, $faultCode)
+	{
+		switch($faultString)
+		{
+			case 'Login unknown.':
+				return new LoginUnknownException($faultString, $faultCode);
+		}
+
+		return new self($faultString, $faultCode);
+	}
+}
+
+class LoginUnknownException extends FaultException {}
 
 ?>

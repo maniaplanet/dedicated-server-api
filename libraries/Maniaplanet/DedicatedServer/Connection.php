@@ -20,7 +20,7 @@ class Connection
 
 	/**
 	 * XML-RPC client instance
-	 * @var Transport\GbxRemote
+	 * @var Xmlrpc\GbxRemote
 	 */
 	protected $xmlrpcClient;
 
@@ -67,6 +67,14 @@ class Connection
 	}
 
 	/**
+	 * @return int Network idle time in seconds
+	 */
+	function getIdleTime()
+	{
+		return $this->xmlrpcClient->getIdleTime();
+	}
+
+	/**
 	 * @param string $host
 	 * @param int $port
 	 * @param int $timeout
@@ -75,7 +83,7 @@ class Connection
 	 */
 	protected function __construct($host, $port, $timeout, $user, $password)
 	{
-		$this->xmlrpcClient = new Transport\GbxRemote($host, $port, array('open' => $timeout));
+		$this->xmlrpcClient = new Xmlrpc\GbxRemote($host, $port, array('open' => $timeout));
 		$this->authenticate($user, $password);
 		$this->setApiVersion('2013-04-16');
 	}
@@ -233,7 +241,7 @@ class Connection
 			throw new InvalidArgumentException('vote->cmdParam = '.print_r($vote->cmdParam, true));
 		}
 
-		$tmpCmd = Transport\XmlRpc::encode($vote->cmdName, $vote->cmdName);
+		$tmpCmd = Xmlrpc\Request::encode($vote->cmdName, $vote->cmdName);
 
 		return $this->execute(ucfirst(__FUNCTION__).'Ex', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -270,7 +278,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Transport\XmlRpc::encode('Kick', array($login));
+		$tmpCmd = Xmlrpc\Request::encode('Kick', array($login));
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -307,7 +315,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Transport\XmlRpc::encode('Ban', array($login));
+		$tmpCmd = Xmlrpc\Request::encode('Ban', array($login));
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -339,7 +347,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Transport\XmlRpc::encode('RestartMap', array());
+		$tmpCmd = Xmlrpc\Request::encode('RestartMap', array());
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -371,7 +379,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Transport\XmlRpc::encode('NextMap', array());
+		$tmpCmd = Xmlrpc\Request::encode('NextMap', array());
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -1235,7 +1243,7 @@ class Connection
 		}
 
 		$inputData = file_get_contents($localFilename);
-		$data = new Transport\Base64($inputData);
+		$data = new Xmlrpc\Base64($inputData);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
 	}
@@ -1255,7 +1263,7 @@ class Connection
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
 		}
 
-		$data = new Transport\Base64($data);
+		$data = new Xmlrpc\Base64($data);
 
 		return $this->execute('WriteFile', array($filename, $data), $multicall);
 	}
@@ -1281,7 +1289,7 @@ class Connection
 		}
 
 		$inputData = file_get_contents($filename);
-		$data = new Transport\Base64($inputData);
+		$data = new Xmlrpc\Base64($inputData);
 
 		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
 	}
@@ -1302,7 +1310,7 @@ class Connection
 			throw new InvalidArgumentException('players = '.print_r($players, true));
 		}
 
-		$data = new Transport\Base64($data);
+		$data = new Xmlrpc\Base64($data);
 
 		return $this->execute('TunnelSendDataToLogin', array($login, $data), $multicall);
 	}
