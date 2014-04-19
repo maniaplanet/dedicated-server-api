@@ -13,7 +13,7 @@ if(extension_loaded('xmlrpc'))
 	{
 		private static $options = array(
 			'encoding' => 'utf-8',
-			'escaping' => 'markup',
+			'escaping' => 'cdata',
 			'verbosity' => 'no_white_space'
 		);
 
@@ -61,7 +61,7 @@ else
 		 */
 		static function encode($method, $args)
 		{
-			$xml = '<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>'.$method.'</methodName><params>';
+			$xml = '<?xml version="1.0" encoding="utf-8"?><methodCall><methodName><![CDATA['.$method.']]></methodName><params>';
 			foreach($args as $arg)
 				$xml .= '<param><value>'.self::encodeValue($arg).'</value></param>';
 			$xml .= '</params></methodCall>';
@@ -77,18 +77,18 @@ else
 			switch(gettype($v))
 			{
 				case 'boolean':
-					return '<boolean>'.((int) $v).'</boolean>';
+					return '<boolean><![CDATA['.((int) $v).']]></boolean>';
 				case 'integer':
-					return '<int>'.$v.'</int>';
+					return '<int><![CDATA['.$v.']]></int>';
 				case 'double':
-					return '<double>'.$v.'</double>';
+					return '<double><![CDATA['.$v.']]></double>';
 				case 'string':
-					return '<string>'.htmlspecialchars($v).'</string>';
+					return '<string><![CDATA['.$v.']]></string>';
 				case 'object':
 					if($v instanceof Base64)
-						return '<base64>'.base64_encode($v->scalar).'</base64>';
+						return '<base64><![CDATA['.base64_encode($v->scalar).']]></base64>';
 					if($v instanceof \DateTime)
-						return '<dateTime.iso8601>'.$v->format(self::DATE_FORMAT).'</dateTime.iso8601>';
+						return '<dateTime.iso8601><![CDATA['.$v->format(self::DATE_FORMAT).']]></dateTime.iso8601>';
 					$v = get_object_vars($v);
 					// fallthrough
 				case 'array':
@@ -102,7 +102,7 @@ else
 					}
 					// else it's a struct
 					foreach($v as $name => $value)
-						$return .= '<member><name>'.$name.'</name><value>'.self::encodeValue($value).'</value></member>';
+						$return .= '<member><name><![CDATA['.$name.']]></name><value>'.self::encodeValue($value).'</value></member>';
 					return '<struct>'.$return.'</struct>';
 			}
 			return '';
