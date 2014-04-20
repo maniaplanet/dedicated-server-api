@@ -94,7 +94,7 @@ else
 				case 'array':
 					$return = '';
 					// pure array case
-					if(array_keys($v) == range(0, count($v) - 1))
+					if(array_keys($v) === range(0, count($v) - 1))
 					{
 						foreach($v as $item)
 							$return .= '<value>'.self::encodeValue($item).'</value>';
