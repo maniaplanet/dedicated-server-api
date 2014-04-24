@@ -17,7 +17,6 @@ class GbxRemote
 
 	private $socket;
 	private $timeouts = array(
-		'open' => 5,
 		'read' => 1000,
 		'write' => 1000
 	);
@@ -29,13 +28,12 @@ class GbxRemote
 	/**
 	 * @param string $host
 	 * @param int $port
-	 * @param int[string] $timeouts Override default timeouts for 'open' (in s), 'read' (in ms) and 'write' (in ms) socket operations
+	 * @param int $timeout Timeout when opening connection
 	 */
-	function __construct($host, $port, $timeouts = array())
+	function __construct($host, $port, $timeout = 5)
 	{
 		$this->requestHandle = (int) 0x80000000;
-		$this->timeouts = array_merge($this->timeouts, $timeouts);
-		$this->connect($host, $port);
+		$this->connect($host, $port, $timeout);
 	}
 
 	function __destruct()
@@ -68,12 +66,12 @@ class GbxRemote
 	/**
 	 * @param string $host
 	 * @param int $port
+	 * @param int $timeout
 	 * @throws TransportException
 	 */
-	private function connect($host, $port)
+	private function connect($host, $port, $timeout)
 	{
-		$this->socket = @fsockopen($host, $port, $errno, $errstr, $this->timeouts['open']);
-
+		$this->socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
 		if(!$this->socket)
 			throw new TransportException('Cannot open socket', TransportException::NOT_INITIALIZED);
 
@@ -117,9 +115,10 @@ class GbxRemote
 			if($method != 'system.multicall' || count($args[0]) < 2)
 				throw new MessageException('Request too large', MessageException::REQUEST_TOO_LARGE);
 
-			$mid = count($args) >> 1;
-			$this->query('system.multicall', array(array_slice($args[0], 0, $mid)));
-			$this->query('system.multicall', array(array_slice($args[0], $mid)));
+			$mid = count($args[0]) >> 1;
+			$res1 = $this->query('system.multicall', array(array_slice($args[0], 0, $mid)));
+			$res2 = $this->query('system.multicall', array(array_slice($args[0], $mid)));
+			return array_merge($res1, $res2);
 		}
 
 		$this->writeMessage($xml);
