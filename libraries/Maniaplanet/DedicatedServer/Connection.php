@@ -43,12 +43,15 @@ class Connection
 	}
 
 	/**
-	 * @param string $host
+	 * @param string|Connection $host
 	 * @param int $port
 	 */
-	static function delete($host, $port)
+	static function delete($host, $port=null)
 	{
-		$key = $host.':'.$port;
+		if($host instanceof Connection)
+			$key = array_search($host, self::$instances);
+		else
+			$key = $host.':'.$port;
 		if(isset(self::$instances[$key]))
 		{
 			self::$instances[$key]->terminate();

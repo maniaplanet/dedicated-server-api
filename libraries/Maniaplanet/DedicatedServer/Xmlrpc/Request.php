@@ -61,11 +61,14 @@ else
 		 */
 		static function encode($method, $args)
 		{
-			$xml = '<?xml version="1.0" encoding="utf-8"?><methodCall><methodName><![CDATA['.$method.']]></methodName><params>';
+			$xml = '<?xml version="1.0" encoding="utf-8"?><methodCall><methodName><![CDATA['.$method.']]></methodName>';
+			if(!$args)
+				return $xml.'<params/></methodCall>';
+
+			$xml .= '<params>';
 			foreach($args as $arg)
 				$xml .= '<param><value>'.self::encodeValue($arg).'</value></param>';
-			$xml .= '</params></methodCall>';
-			return $xml;
+			return $xml.'</params></methodCall>';
 		}
 
 		/**
@@ -93,6 +96,9 @@ else
 					// fallthrough
 				case 'array':
 					$return = '';
+					// empty array case
+					if(!$v)
+						return '<array><data/></array>';
 					// pure array case
 					if(array_keys($v) === range(0, count($v) - 1))
 					{
@@ -142,7 +148,7 @@ else
 			switch($elt->getName())
 			{
 				case 'boolean':
-					return (bool) $elt;
+					return (bool) (int) $elt;
 				case 'i4':
 				case 'int':
 					return (int) $elt;

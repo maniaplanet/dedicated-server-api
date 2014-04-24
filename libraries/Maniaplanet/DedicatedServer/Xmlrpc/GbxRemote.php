@@ -78,7 +78,7 @@ class GbxRemote
 			throw new TransportException('Cannot open socket', TransportException::NOT_INITIALIZED);
 
 		stream_set_write_buffer($this->socket, 0);
-		
+
 		// handshake
 		$header = $this->read(15);
 		if($header === false)
@@ -114,12 +114,12 @@ class GbxRemote
 
 		if(strlen($xml) > self::MAX_REQUEST_SIZE-8)
 		{
-			if($method != 'system.multicall' || count($args) < 2)
+			if($method != 'system.multicall' || count($args[0]) < 2)
 				throw new MessageException('Request too large', MessageException::REQUEST_TOO_LARGE);
 
 			$mid = count($args) >> 1;
-			$this->query('system.multicall', array_slice($args, 0, $mid));
-			$this->query('system.multicall', array_slice($args, $mid));
+			$this->query('system.multicall', array(array_slice($args[0], 0, $mid)));
+			$this->query('system.multicall', array(array_slice($args[0], $mid)));
 		}
 
 		$this->writeMessage($xml);
@@ -151,7 +151,7 @@ class GbxRemote
 				$call = array_shift($this->multicallBuffer);
 				return $this->query($call['methodName'], $call['params']);
 			default:
-				$result = $this->query('system.multicall', $this->multicallBuffer);
+				$result = $this->query('system.multicall', array($this->multicallBuffer));
 				$this->multicallBuffer = array();
 				return $result;
 		}
