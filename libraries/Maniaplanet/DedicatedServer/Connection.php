@@ -27,12 +27,12 @@ class Connection
 	/**
 	 * @param string $host
 	 * @param int $port
-	 * @param int $timeout (in ms)
+	 * @param int $timeout (in s)
 	 * @param string $user
 	 * @param string $password
 	 * @return Connection
 	 */
-	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 50, $user = 'SuperAdmin', $password = 'SuperAdmin')
+	static function factory($host = '127.0.0.1', $port = 5000, $timeout = 5, $user = 'SuperAdmin', $password = 'SuperAdmin')
 	{
 		$key = $host.':'.$port;
 		if(!isset(self::$instances[$key]))
@@ -86,7 +86,7 @@ class Connection
 	 */
 	protected function __construct($host, $port, $timeout, $user, $password)
 	{
-		$this->xmlrpcClient = new Xmlrpc\GbxRemote($host, $port, array('open' => $timeout));
+		$this->xmlrpcClient = new Xmlrpc\GbxRemote($host, $port, $timeout);
 		$this->authenticate($user, $password);
 		$this->setApiVersion('2013-04-16');
 	}
