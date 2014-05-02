@@ -244,7 +244,7 @@ class Connection
 			throw new InvalidArgumentException('vote->cmdParam = '.print_r($vote->cmdParam, true));
 		}
 
-		$tmpCmd = Xmlrpc\Request::encode($vote->cmdName, $vote->cmdName);
+		$tmpCmd = Xmlrpc\Request::encode($vote->cmdName, $vote->cmdName, false);
 
 		return $this->execute(ucfirst(__FUNCTION__).'Ex', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -281,7 +281,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Xmlrpc\Request::encode('Kick', array($login));
+		$tmpCmd = Xmlrpc\Request::encode('Kick', array($login), false);
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -318,7 +318,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Xmlrpc\Request::encode('Ban', array($login));
+		$tmpCmd = Xmlrpc\Request::encode('Ban', array($login), false);
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -350,7 +350,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Xmlrpc\Request::encode('RestartMap', array());
+		$tmpCmd = Xmlrpc\Request::encode('RestartMap', array(), false);
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
@@ -382,7 +382,7 @@ class Connection
 			throw new InvalidArgumentException('voters = '.print_r($voters, true));
 		}
 
-		$tmpCmd = Xmlrpc\Request::encode('NextMap', array());
+		$tmpCmd = Xmlrpc\Request::encode('NextMap', array(), false);
 
 		return $this->execute('CallVoteEx', array($tmpCmd, $ratio, $timeout, $voters), $multicall);
 	}
