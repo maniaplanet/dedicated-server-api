@@ -253,9 +253,9 @@ class Connection
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function callVote(Structures\Vote $vote, $ratio=-1., $timeout=0, $voters=1, $multicall=false)
+	function callVote($vote, $ratio=-1., $timeout=0, $voters=1, $multicall=false)
 	{
-		if(is_null($vote))
+		if(!($vote instanceof Structures\Vote && $vote->isValid()))
 			throw new InvalidArgumentException('vote = '.print_r($vote, true));
 		if(!Structures\VoteRatio::isRatio($ratio))
 			throw new InvalidArgumentException('ratio = '.print_r($ratio, true));
@@ -446,7 +446,7 @@ class Connection
 	 * @deprecated
 	 * @see setCallVoteRatios()
 	 */
-	function setCallVoteRatiosEx($ratios, $replaceAll=true, $multicall=false)
+	function setCallVoteRatiosEx($replaceAll, $ratios, $multicall=false)
 	{
 		return $this->setCallVoteRatios($ratios, $replaceAll, $multicall);
 	}
