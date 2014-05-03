@@ -43,7 +43,7 @@ if(extension_loaded('xmlrpc'))
 
 			if($method === null)
 			{
-				if(is_array($value) && @xmlrpc_is_fault($value))
+				if(is_array($value) && xmlrpc_is_fault($value))
 					return array('fault', $value);
 				return array('response', $value);
 			}
@@ -89,10 +89,17 @@ else
 				case 'double':
 					return '<double>'.self::escape($v, $escape).'</double>';
 				case 'string':
+				case 'NULL':
+					if(!$v)
+						return '<string/>';
 					return '<string>'.self::escape($v, $escape).'</string>';
 				case 'object':
 					if($v instanceof Base64)
+					{
+						if(!$v->scalar)
+							return '<base64/>';
 						return '<base64>'.self::escape(base64_encode($v->scalar), $escape).'</base64>';
+					}
 					if($v instanceof \DateTime)
 						return '<dateTime.iso8601>'.self::escape($v->format(self::DATE_FORMAT), $escape).'</dateTime.iso8601>';
 					$v = get_object_vars($v);
