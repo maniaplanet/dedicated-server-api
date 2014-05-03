@@ -2128,6 +2128,33 @@ class Connection
 	}
 
 	/**
+	 * Defines the packmask of the server.
+	 * Only maps matching the packmask will be allowed on the server, so that player connecting to it know what to expect.
+	 * Only available when the server is stopped.
+	 * Only available to Admin.
+	 * @param string $packMask
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function setServerPackMask($packMask, $multicall=false)
+	{
+		if(!is_string($packMask))
+			throw new InvalidArgumentException('packMask = '.print_r($enable, true));
+
+		return $this->execute(ucfirst(__FUNCTION__), array($packMask), $multicall);
+	}
+
+	/**
+	 * Get the packmask of the server.
+	 * @return string
+	 */
+	function getServerPackMask()
+	{
+		return $this->execute(ucfirst(__FUNCTION__));
+	}
+
+	/**
 	 * Set the mods to apply on the clients.
 	 * Only available to Admin.
 	 * Requires a map restart to be taken into account.
