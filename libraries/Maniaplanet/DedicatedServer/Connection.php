@@ -432,7 +432,7 @@ class Connection
 			throw new InvalidArgumentException('ratios = '.print_r($ratios, true));
 		foreach($ratios as $i => &$ratio)
 		{
-			if(!$ratio->isValid())
+			if(!($ratio instanceof Structures\VoteRatio && $ratio->isValid()))
 				throw new InvalidArgumentException('ratios['.$i.'] = '.print_r($ratios, true));
 			$ratio = $ratio->toArray();
 		}
