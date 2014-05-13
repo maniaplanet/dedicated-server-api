@@ -2090,7 +2090,7 @@ class Connection
 	 * Only available to Admin.
 	 * A change of NextMaxPlayers, NextMaxSpectators, NextLadderMode, NextVehicleNetQuality,
 	 *  NextCallVoteTimeOut or UseChangingValidationSeed requires a map restart to be taken into account.
-	 * @param struct $options
+	 * @param array $options
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -2594,7 +2594,7 @@ class Connection
 	 * Only available to Admin.
 	 * @param string $arg1
 	 * @param string $arg2
-	 * @param struct $arg3
+	 * @param array $arg3
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -2605,7 +2605,7 @@ class Connection
 			throw new InvalidArgumentException('$arg1 = '.print_r($arg1, true));
 		if(!is_string($arg2))
 			throw new InvalidArgumentException('$arg2 = '.print_r($arg2, true));
-		if(!is_struct($arg3))
+		if(!is_array($arg3))
 			throw new InvalidArgumentException('$arg3 = '.print_r($arg3, true));
 
 		return $this->execute(ucfirst(__FUNCTION__), array($arg1, $arg2, $arg3), $multicall);
