@@ -2573,42 +2573,42 @@ class Connection
 	/**
 	 * Get the script cloud variables of given object.
 	 * Only available to Admin.
-	 * @param string $arg1
-	 * @param string $arg2
+	 * @param string $type
+	 * @param string $id
 	 * @param bool $multicall
 	 * @return array
 	 * @throws InvalidArgumentException
 	 */
-	function getScriptCloudVariables($arg1, $arg2, $multicall=false)
+	function getScriptCloudVariables($type, $id, $multicall=false)
 	{
-		if(!is_string($arg1))
-			throw new InvalidArgumentException('$arg1 = '.print_r($arg1, true));
-		if(!is_string($arg2))
-			throw new InvalidArgumentException('$arg2 = '.print_r($arg2, true));
+		if(!is_string($type))
+			throw new InvalidArgumentException('type = '.print_r($type, true));
+		if(!is_string($id))
+			throw new InvalidArgumentException('id = '.print_r($id, true));
 
-		return $this->execute(ucfirst(__FUNCTION__), array($arg1, $arg2), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($type, $id), $multicall);
 	}
 
 	/**
 	 * Set the script cloud variables of given object.
 	 * Only available to Admin.
-	 * @param string $arg1
-	 * @param string $arg2
-	 * @param array $arg3
+	 * @param string $type
+	 * @param string $id
+	 * @param array $variables
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
-	function setScriptCloudVariables($arg1, $arg2, $arg3, $multicall=false)
+	function setScriptCloudVariables($type, $id, $variables, $multicall=false)
 	{
-		if(!is_string($arg1))
-			throw new InvalidArgumentException('$arg1 = '.print_r($arg1, true));
-		if(!is_string($arg2))
-			throw new InvalidArgumentException('$arg2 = '.print_r($arg2, true));
-		if(!is_array($arg3))
-			throw new InvalidArgumentException('$arg3 = '.print_r($arg3, true));
+		if(!is_string($type))
+			throw new InvalidArgumentException('type = '.print_r($type, true));
+		if(!is_string($id))
+			throw new InvalidArgumentException('id = '.print_r($id, true));
+		if(!is_array($variables) || !$variables)
+			throw new InvalidArgumentException('variables = '.print_r($variables, true));
 
-		return $this->execute(ucfirst(__FUNCTION__), array($arg1, $arg2, $arg3), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($type, $id, $variables), $multicall);
 	}
 
 	/**
@@ -3940,6 +3940,46 @@ class Connection
 	function startServerInternet($multicall=false)
 	{
 		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+	}
+
+	/**
+	 * Join the server on lan.
+	 * Only available on client.
+	 * Only available to Admin.
+	 * @param string $host IPv4 with optionally a port (eg. '192.168.1.42:2350')
+	 * @param string $password
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function joinServerLan($host, $password='', $multicall=false)
+	{
+		if(!is_string($host))
+			throw new InvalidArgumentException('host = '.print_r($host, true));
+		if(!is_string($password))
+			throw new InvalidArgumentException('password = '.print_r($password, true));
+
+		return $this->execute(ucfirst(__FUNCTION__), array(array('Server' => $host, 'ServerPassword' => $password)), $multicall);
+	}
+
+	/**
+	 * Join the server on internet.
+	 * Only available on client.
+	 * Only available to Admin.
+	 * @param string $host Server login or IPv4 with optionally a port (eg. '192.168.1.42:2350')
+	 * @param string $password
+	 * @param bool $multicall
+	 * @return bool
+	 * @throws InvalidArgumentException
+	 */
+	function joinServerInternet($host, $password='', $multicall=false)
+	{
+		if(!is_string($host))
+			throw new InvalidArgumentException('host = '.print_r($host, true));
+		if(!is_string($password))
+			throw new InvalidArgumentException('password = '.print_r($password, true));
+
+		return $this->execute(ucfirst(__FUNCTION__), array(array('Server' => $host, 'ServerPassword' => $password)), $multicall);
 	}
 
 	/**
