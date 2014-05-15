@@ -2081,31 +2081,23 @@ class Connection
 	/**
 	 * Set new server options using the struct passed as parameters.
 	 * Mandatory fields:
-	 *  Name, Comment, Password, PasswordForSpectator, CallVoteRatio
-	 * Optional fields:
-	 *  NextMaxPlayers, NextMaxSpectators, IsP2PUpload, IsP2PDownload, NextLadderMode,
-	 *	NextVehicleNetQuality, NextCallVoteTimeOut, AllowMapDownload, AutoSaveReplays,
-	 *  RefereePassword, RefereeMode, AutoSaveValidationReplays, HideServer, UseChangingValidationSeed,
-	 *  ClientInputsMaxLatency, DisableHorns, DisableServiceAnnounces, KeepPlayerSlots.
+	 *  Name, Comment, Password, PasswordForSpectator and CallVoteRatio.
+	 * Ignored fields:
+	 *  LadderServerLimitMin, LadderServerLimitMax and those starting with Current.
+	 * All other fields are optional and can be set to null to be ignored.
 	 * Only available to Admin.
-	 * A change of NextMaxPlayers, NextMaxSpectators, NextLadderMode, NextVehicleNetQuality,
-	 *  NextCallVoteTimeOut or UseChangingValidationSeed requires a map restart to be taken into account.
-	 * @param array $options
+	 * A change of any field starting with Next requires a map restart to be taken into account.
+	 * @param Structures\ServerOptions $options
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
 	 */
 	function setServerOptions($options, $multicall=false)
 	{
-		if(!is_array($options)
-				|| !(isset($options['Name']) && is_string($options['Name']))
-				|| !(isset($options['Comment']) && is_string($options['Comment']))
-				|| !(isset($options['Password']) && is_string($options['Password']))
-				|| !(isset($options['PasswordForSpectator']) && is_string($options['PasswordForSpectator']))
-				|| !(isset($options['CallVoteRatio']) && Structures\VoteRatio::isRatio($options['CallVoteRatio'])))
+		if(!($options instanceof Structures\ServerOptions && $options->isValid()))
 			throw new InvalidArgumentException('options = '.print_r($options, true));
 
-		return $this->execute(ucfirst(__FUNCTION__), array($options), $multicall);
+		return $this->execute(ucfirst(__FUNCTION__), array($options->toSetterArray()), $multicall);
 	}
 
 	/**
@@ -2594,7 +2586,7 @@ class Connection
 	 * Only available to Admin.
 	 * @param string $type
 	 * @param string $id
-	 * @param array $variables
+	 * @param mixed[] $variables {mixed <variable name>, ...}
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -3548,7 +3540,7 @@ class Connection
 	/**
 	 * Set as next maps the list of maps with the specified filenames, if they are present in the selection.
 	 * Only available to Admin.
-	 * @param array $filenames Relative to the Maps path
+	 * @param string[] $filenames Relative to the Maps path
 	 * @param bool $multicall
 	 * @return int Number of maps actually chosen
 	 * @throws InvalidArgumentException
