@@ -935,6 +935,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -951,6 +952,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -1032,6 +1034,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -1048,6 +1051,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -1101,6 +1105,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 		if(!is_string($data))
 			throw new InvalidArgumentException('data = '.print_r($data, true));
 
@@ -1787,7 +1792,9 @@ class Connection
 	 */
 	function gameDataDirectory($multicall=false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		if($multicall)
+			return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+		return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -1798,7 +1805,9 @@ class Connection
 	 */
 	function getMapsDirectory($multicall=false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		if($multicall)
+			return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+		return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -1809,7 +1818,9 @@ class Connection
 	 */
 	function getSkinsDirectory($multicall=false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		if($multicall)
+			return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+		return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -2052,6 +2063,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -2072,6 +2084,7 @@ class Connection
 			throw new InvalidArgumentException('player = '.print_r($player, true));
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($login, $filename), $multicall);
 	}
@@ -2303,7 +2316,7 @@ class Connection
 	 * Only available to Admin.
 	 * Requires a map restart to be taken into account.
 	 * @param bool $override If true, even the maps with a custom music will be overridden by the server setting
-	 * @param string $music Url or filename for the music
+	 * @param string $music Url or filename relative to the GameData path
 	 * @param bool $multicall
 	 * @return bool
 	 * @throws InvalidArgumentException
@@ -2314,6 +2327,8 @@ class Connection
 			throw new InvalidArgumentException('override = '.print_r($override, true));
 		if(!is_string($music))
 			throw new InvalidArgumentException('music = '.print_r($music, true));
+		if(!preg_match('~^.+?://~', $music))
+			$music = $this->secureUtf8($music);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($override, $music), $multicall);
 	}
@@ -3004,6 +3019,7 @@ class Connection
 	{
 		if(!is_string($script))
 			throw new InvalidArgumentException('script = '.print_r($script, true));
+		$script = $this->secureUtf8($script);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($script), $multicall);
 	}
@@ -3015,7 +3031,9 @@ class Connection
 	 */
 	function getScriptName($multicall=false)
 	{
-		return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+		if($multicall)
+			return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+		return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
 	}
 
 	/**
@@ -3540,6 +3558,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		if($multicall)
 			return $this->execute(ucfirst(__FUNCTION__), array($filename), $this->structHandler('Map'));
@@ -3557,6 +3576,7 @@ class Connection
 	{
 		if(!is_string($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3593,6 +3613,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3609,6 +3630,7 @@ class Connection
 	{
 		if(!is_array($filenames))
 			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
+		$filenames = $this->secureUtf8($filenames);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
 	}
@@ -3625,6 +3647,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3641,6 +3664,7 @@ class Connection
 	{
 		if(!is_array($filenames))
 			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
+		$filenames = $this->secureUtf8($filenames);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
 	}
@@ -3657,6 +3681,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3673,6 +3698,7 @@ class Connection
 	{
 		if(!is_array($filenames))
 			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
+		$filenames = $this->secureUtf8($filenames);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
 	}
@@ -3689,6 +3715,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3705,6 +3732,7 @@ class Connection
 	{
 		if(!is_array($filenames))
 			throw new InvalidArgumentException('filenames = '.print_r($filenames, true));
+		$filenames = $this->secureUtf8($filenames);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filenames), $multicall);
 	}
@@ -3721,6 +3749,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3737,6 +3766,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3753,6 +3783,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -3769,6 +3800,7 @@ class Connection
 	{
 		if(!is_string($filename) || !strlen($filename))
 			throw new InvalidArgumentException('filename = '.print_r($filename, true));
+		$filename = $this->secureUtf8($filename);
 
 		return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
 	}
@@ -4196,6 +4228,33 @@ class Connection
 			return implode(',', $logins);
 		}
 		return $this->getLogin($players, $allowEmpty);
+	}
+
+	/**
+	 * @param string|string[] $str
+	 * @return string|string[]
+	 */
+	private function stripBom($str)
+	{
+		if(is_string($str))
+			return str_replace("\xEF\xBB\xBF", '', $str);
+		return array_map(array($this, 'stripBom'), $str);
+	}
+
+	/**
+	 * @param string|string[] $filename
+	 * @return string|string[]
+	 */
+	private function secureUtf8($filename)
+	{
+		if(is_string($filename))
+		{
+			$filename = $this->stripBom($filename);
+			if(mb_check_encoding($filename, 'ascii'))
+				return $filename;
+			return "\xEF\xBB\xBF".$filename;
+		}
+		return array_map(array($this, 'secureUtf8'), $filename);
 	}
 
 	/**
