@@ -82,6 +82,7 @@ class ServerOptions extends AbstractStructure
 			&& is_string($this->comment)
 			&& is_string($this->password)
 			&& is_string($this->passwordForSpectator)
+			&& is_int($this->nextCallVoteTimeOut)
 			&& VoteRatio::isRatio($this->callVoteRatio);
 	}
 
