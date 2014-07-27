@@ -9,6 +9,7 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class VoteRatio extends AbstractStructure
 {
+	const COMMAND_DEFAULT         = '*';
 	const COMMAND_SCRIPT_SETTINGS = 'SetModeScriptSettingsAndCommands';
 	const COMMAND_NEXT_MAP        = 'NextMap';
 	const COMMAND_JUMP_MAP        = 'JumpToMapIdent';
