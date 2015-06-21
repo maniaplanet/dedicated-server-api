@@ -32,6 +32,7 @@ class FaultException extends Exception
 			case 'Already waiting for a vote.':
 			case 'You must stop server first.':
 				return new LockedFeatureException($faultString, $faultCode);
+			case 'Can\'t kick server.':
 			case 'Login or Uid unknown.':
 			case 'Login unknown.':
 			case 'Payer login unknown.':
