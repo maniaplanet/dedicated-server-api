@@ -7,10 +7,10 @@
 
 namespace Maniaplanet\DedicatedServer\Structures;
 
-class Mod extends AbstractStructure
+class TokenInfos extends AbstractStructure
 {
-	/** var string */
-	public $env;
-	/** var string */
-	public $url;
+	/** @var int */
+	public $tokenCost;
+	/** @var bool */
+	public $canPayToken;
 }

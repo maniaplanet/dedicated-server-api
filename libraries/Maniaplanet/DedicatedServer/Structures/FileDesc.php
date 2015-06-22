@@ -7,22 +7,20 @@
 
 namespace Maniaplanet\DedicatedServer\Structures;
 
-class Music extends AbstractStructure
+class FileDesc extends AbstractStructure
 {
-	/** var bool */
-	public $override;
-	/** var string */
-	public $url;
-	/** var string */
-	public $file;
+	/** @var string */
+	public $fileName;
+	/** @var string */
+	public $checksum;
 
 	/**
-	 * @return Music
+	 * @return FileDesc
 	 */
 	public static function fromArray($array)
 	{
 		$object = parent::fromArray($array);
-		$object->file = str_replace("\xEF\xBB\xBF", '', $object->file);
+		$object->fileName = str_replace("\xEF\xBB\xBF", '', $object->fileName);
 		return $object;
 	}
 }
