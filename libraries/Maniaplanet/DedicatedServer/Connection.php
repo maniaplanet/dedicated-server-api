@@ -142,7 +142,7 @@ class Connection
 	 * @param bool|callable $multicall True to queue the request or false to execute it immediately
 	 * @return mixed
 	 */
-	protected function execute($methodName, $params=array(), $multicall=false)
+	public function execute($methodName, $params=array(), $multicall=false)
 	{
 		if($multicall)
 		{
