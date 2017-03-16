@@ -88,6 +88,7 @@ class FaultException extends Exception
 			case 'Unable to write the guest list file.':
 			case 'Unable to write the playlist file.':
 			case 'Could not save file.':
+			case 'couldn\'t write file.':
 			case 'Map unknown.':
 			case 'The playlist file does not exist.':
 			case 'Invalid url or file.':
