@@ -67,6 +67,7 @@ class FaultException extends Exception
 			case 'Map not complete.':
 			case 'Map corrupted.':
 			case 'Map lightmap is not up to date.':
+			case 'Map lightmap is not up to date. (will still load for now)':				
 			case 'The map doesn\'t match the server packmask.':
 				return new InvalidMapException($faultString, $faultCode);
 			case 'Ladder mode unknown.':
@@ -88,6 +89,7 @@ class FaultException extends Exception
 			case 'Unable to write the guest list file.':
 			case 'Unable to write the playlist file.':
 			case 'Could not save file.':
+			case 'couldn\'t write file.':
 			case 'Map unknown.':
 			case 'The playlist file does not exist.':
 			case 'Invalid url or file.':
