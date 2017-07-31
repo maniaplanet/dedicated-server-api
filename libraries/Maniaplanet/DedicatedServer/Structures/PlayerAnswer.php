@@ -9,8 +9,8 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class PlayerAnswer extends Player
 {
-	/** @var int */
-	public $playerId;
-	/** @var int */
-	public $result;
+    /** @var int */
+    public $playerId;
+    /** @var int */
+    public $result;
 }

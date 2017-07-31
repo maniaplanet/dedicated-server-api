@@ -9,20 +9,20 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class ZoneRanking extends AbstractStructure
 {
-	/** @var string */
-	public $path;
-	/** @var float */
-	public $score;
-	/** @var int */
-	public $ranking;
-	/** @var int */
-	public $totalCount;
+    /** @var string */
+    public $path;
+    /** @var float */
+    public $score;
+    /** @var int */
+    public $ranking;
+    /** @var int */
+    public $totalCount;
 
-	/**
-	 * @return string[]
-	 */
-	function getArrayFromPath()
-	{
-		return explode('|', $this->path);
-	}
+    /**
+     * @return string[]
+     */
+    function getArrayFromPath()
+    {
+        return explode('|', $this->path);
+    }
 }

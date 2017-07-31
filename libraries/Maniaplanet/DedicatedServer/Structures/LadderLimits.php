@@ -9,8 +9,8 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class LadderLimits extends AbstractStructure
 {
-	/** @var float */
-	public $ladderServerLimitMin;
-	/** @var float */
-	public $ladderServerLimitMax;
+    /** @var float */
+    public $ladderServerLimitMin;
+    /** @var float */
+    public $ladderServerLimitMax;
 }

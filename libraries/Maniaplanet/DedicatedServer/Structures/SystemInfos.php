@@ -9,24 +9,24 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class SystemInfos extends AbstractStructure
 {
-	/** @var string */
-	public $publishedIp;
-	/** @var int */
-	public $port;
-	/** @var int */
-	public $p2PPort;
-	/** @var string */
-	public $titleId;
-	/** @var string */
-	public $serverLogin;
-	/** @var int */
-	public $serverPlayerId;
-	/** @var int */
-	public $connectionDownloadRate;
-	/** @var int */
+    /** @var string */
+    public $publishedIp;
+    /** @var int */
+    public $port;
+    /** @var int */
+    public $p2PPort;
+    /** @var string */
+    public $titleId;
+    /** @var string */
+    public $serverLogin;
+    /** @var int */
+    public $serverPlayerId;
+    /** @var int */
+    public $connectionDownloadRate;
+    /** @var int */
     public $connectionUploadRate;
-	/** @var bool */
-	public $isServer;
-	/** @var bool */
-	public $isDedicated;
+    /** @var bool */
+    public $isServer;
+    /** @var bool */
+    public $isDedicated;
 }

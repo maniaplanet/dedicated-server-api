@@ -9,12 +9,12 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class ForcedSkin extends AbstractStructure
 {
-	/** @var string */
-	public $orig;
-	/** @var string */
-	public $name;
-	/** @var string */
-	public $checksum;
-	/** @var string */
-	public $url;
+    /** @var string */
+    public $orig;
+    /** @var string */
+    public $name;
+    /** @var string */
+    public $checksum;
+    /** @var string */
+    public $url;
 }

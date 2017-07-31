@@ -9,20 +9,20 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class PlayerRanking extends Player
 {
-	/** @var string */
-	public $nickName;
-	/** @var int */
-	public $playerId;
-	/** @var int */
-	public $rank;
-	/** @var int */
-	public $bestTime;
-	/** @var int[] */
-	public $bestCheckpoints;
-	/** @var int */
-	public $score;
-	/** @var int */
-	public $nbrLapsFinished;
-	/** @var float */
-	public $ladderScore;
+    /** @var string */
+    public $nickName;
+    /** @var int */
+    public $playerId;
+    /** @var int */
+    public $rank;
+    /** @var int */
+    public $bestTime;
+    /** @var int[] */
+    public $bestCheckpoints;
+    /** @var int */
+    public $score;
+    /** @var int */
+    public $nbrLapsFinished;
+    /** @var float */
+    public $ladderScore;
 }
