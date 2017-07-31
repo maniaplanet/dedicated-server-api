@@ -25,6 +25,7 @@ class FaultException extends Exception
 			case 'No map currently loaded.':
 			case 'No replay to save':
 			case 'Internal error.':
+			case 'Unable to retrieve validation data. ':				
 				return new UnavailableFeatureException($faultString, $faultCode);
 			case 'You must enable the callbacks to be able to do chat routing.':
 			case 'Chat routing not enabled.':
@@ -68,6 +69,7 @@ class FaultException extends Exception
 			case 'Map corrupted.':
 			case 'Map lightmap is not up to date.':
 			case 'The map doesn\'t match the server packmask.':
+			case 'The map environment is not available on the server (doesn\'t match the server packmask). ':				
 				return new InvalidMapException($faultString, $faultCode);
 			case 'Ladder mode unknown.':
 			case 'You cannot change the max players count: AllowSpectatorRelays is activated.':
