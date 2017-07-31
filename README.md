@@ -9,12 +9,12 @@ This library allows you to connect to Maniaplanet dedicated server trough the XM
 Installation
 ------------
 
-We use [Composer](https://getcomposer.org/) because of the volcano:
+We use [Composer](https://getcomposer.org/):
 
 ```
 {
     "require": {
-        "maniaplanet/dedicated-server-api": "~4"
+        "maniaplanet/dedicated-server-api": "^5.0"
     }
 }
 ```
