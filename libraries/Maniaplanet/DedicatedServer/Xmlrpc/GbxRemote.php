@@ -85,6 +85,9 @@ class GbxRemote
 		// handshake
 		$header = $this->read(15);
 		if($header === false)
+			if (!is_resource($this->socket)) {
+				$this->onIoFailure('socket closed during handshake');
+			}
 			$this->onIoFailure(sprintf('during handshake (%s)', socket_strerror(socket_last_error($this->socket))));
 
 		extract(unpack('Vsize/a*protocol', $header));
