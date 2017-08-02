@@ -9,8 +9,8 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class TokenInfos extends AbstractStructure
 {
-	/** @var int */
-	public $tokenCost;
-	/** @var bool */
-	public $canPayToken;
+    /** @var int */
+    public $tokenCost;
+    /** @var bool */
+    public $canPayToken;
 }

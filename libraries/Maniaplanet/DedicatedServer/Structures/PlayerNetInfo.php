@@ -9,14 +9,14 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class PlayerNetInfo extends Player
 {
-	/** @var string */
-	public $iPAddress;
-	/** @var int */
-	public $stateUpdateLatency;
-	/** @var int */
+    /** @var string */
+    public $iPAddress;
+    /** @var int */
+    public $stateUpdateLatency;
+    /** @var int */
     public $stateUpdatePeriod;
-	/** @var int */
+    /** @var int */
     public $latestNetworkActivity;
-	/** @var float */
+    /** @var float */
     public $packetLossRate;
 }

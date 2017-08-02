@@ -9,8 +9,8 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class Tag extends AbstractStructure
 {
-	/** @var string */
-	public $name;
-	/** @var string */
-	public $value;
+    /** @var string */
+    public $name;
+    /** @var string */
+    public $value;
 }

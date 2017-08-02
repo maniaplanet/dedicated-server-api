@@ -9,14 +9,14 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class Version extends AbstractStructure
 {
-	/** @var string */
-	public $name;
-	/** @var string */
-	public $titleId;
-	/** @var string */
-	public $version;
-	/** @var string */
-	public $build;
-	/** @var string */
-	public $apiVersion;
+    /** @var string */
+    public $name;
+    /** @var string */
+    public $titleId;
+    /** @var string */
+    public $version;
+    /** @var string */
+    public $build;
+    /** @var string */
+    public $apiVersion;
 }

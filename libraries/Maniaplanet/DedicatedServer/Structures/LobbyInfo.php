@@ -9,12 +9,12 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class LobbyInfo extends AbstractStructure
 {
-	/** var bool */
-	public $isLobby;
-	/** var int */
-	public $lobbyPlayers;
-	/** var int */
-	public $lobbyMaxPlayers;
-	/** var float */
-	public $lobbyPlayersLevel;
+    /** var bool */
+    public $isLobby;
+    /** var int */
+    public $lobbyPlayers;
+    /** var int */
+    public $lobbyMaxPlayers;
+    /** var float */
+    public $lobbyPlayersLevel;
 }

@@ -9,8 +9,8 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class PlayerBan extends Player
 {
-	/** @var string */
-	public $clientName;
-	/** @var string */
-	public $iPAddress;
+    /** @var string */
+    public $clientName;
+    /** @var string */
+    public $iPAddress;
 }

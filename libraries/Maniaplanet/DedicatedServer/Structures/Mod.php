@@ -9,8 +9,8 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class Mod extends AbstractStructure
 {
-	/** var string */
-	public $env;
-	/** var string */
-	public $url;
+    /** var string */
+    public $env;
+    /** var string */
+    public $url;
 }

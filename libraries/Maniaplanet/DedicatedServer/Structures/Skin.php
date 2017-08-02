@@ -9,18 +9,18 @@ namespace Maniaplanet\DedicatedServer\Structures;
 
 class Skin extends AbstractStructure
 {
-	/** @var string */
-	public $environnement;
-	/** @var FileDesc */
-	public $packDesc;
+    /** @var string */
+    public $environnement;
+    /** @var FileDesc */
+    public $packDesc;
 
-	/**
-	 * @return Skin
-	 */
-	public static function fromArray($array)
-	{
-		$object = parent::fromArray($array);
-		$object->packDesc = FileDesc::fromArray($object->packDesc);
-		return $object;
-	}
+    /**
+     * @return Skin
+     */
+    public static function fromArray($array)
+    {
+        $object = parent::fromArray($array);
+        $object->packDesc = FileDesc::fromArray($object->packDesc);
+        return $object;
+    }
 }
