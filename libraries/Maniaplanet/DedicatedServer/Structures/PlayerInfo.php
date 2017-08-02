@@ -61,7 +61,7 @@ class PlayerInfo extends Player
     /**
      * @return PlayerInfo
      */
-    static public function fromArray($array)
+    public static function fromArray($array)
     {
         $object = parent::fromArray($array);
 

@@ -53,7 +53,7 @@ class PlayerDetailedInfo extends Player
     /**
      * @return PlayerDetailedInfo
      */
-    static public function fromArray($array)
+    public static function fromArray($array)
     {
         $object = parent::fromArray($array);
         $object->avatar = FileDesc::fromArray($object->avatar);

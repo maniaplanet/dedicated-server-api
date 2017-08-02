@@ -94,10 +94,12 @@ class ServerOptions extends AbstractStructure
     {
         $out = array();
         foreach (get_object_vars($this) as $key => $value) {
-            if (substr($key, 0, 7) == 'current' || $value === null)
+            if (substr($key, 0, 7) == 'current' || $value === null) {
                 continue;
-            if ($key == 'nextUseChangingValidationSeed')
+            }
+            if ($key == 'nextUseChangingValidationSeed') {
                 $key = 'useChangingValidationSeed';
+            }
             $out[ucfirst($key)] = $value;
         }
         return $out;

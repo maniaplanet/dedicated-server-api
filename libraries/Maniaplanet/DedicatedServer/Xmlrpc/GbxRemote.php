@@ -43,25 +43,28 @@ class GbxRemote
     private function connect($host, $port, $timeout)
     {
         $this->socket = @fsockopen($host, $port, $errno, $errstr, $timeout);
-        if (!$this->socket)
+        if (!$this->socket) {
             throw new TransportException('Cannot open socket', TransportException::NOT_INITIALIZED);
+        }
 
         stream_set_read_buffer($this->socket, 0);
         stream_set_write_buffer($this->socket, 0);
 
         // handshake
         $header = $this->read(15);
-        if ($header === false)
+        if ($header === false) {
             if (!is_resource($this->socket)) {
                 $this->onIoFailure('socket closed during handshake');
             }
-        $this->onIoFailure(sprintf('during handshake (%s)', socket_strerror(socket_last_error($this->socket))));
+            $this->onIoFailure(sprintf('during handshake (%s)', socket_strerror(socket_last_error($this->socket))));
+        }
 
         extract(unpack('Vsize/a*protocol', $header));
         /** @var $size int */
         /** @var $protocol string */
-        if ($size != 11 || $protocol != 'GBXRemote 2')
+        if ($size != 11 || $protocol != 'GBXRemote 2') {
             throw new TransportException('Wrong protocol header', TransportException::WRONG_PROTOCOL);
+        }
         $this->lastNetworkActivity = time();
     }
 
@@ -76,8 +79,9 @@ class GbxRemote
         $data = '';
         while (strlen($data) < $size) {
             $buf = @fread($this->socket, $size - strlen($data));
-            if ($buf === '' || $buf === false)
+            if ($buf === '' || $buf === false) {
                 return false;
+            }
             $data .= $buf;
         }
 
@@ -92,8 +96,9 @@ class GbxRemote
     private function onIoFailure($when)
     {
         $meta = stream_get_meta_data($this->socket);
-        if ($meta['timed_out'])
+        if ($meta['timed_out']) {
             throw new TransportException('Connection timed out ' . $when, TransportException::TIMED_OUT);
+        }
         throw new TransportException('Connection interrupted ' . $when, TransportException::INTERRUPTED);
     }
 
@@ -141,8 +146,9 @@ class GbxRemote
      */
     private function assertConnected()
     {
-        if (!$this->socket)
+        if (!$this->socket) {
             throw new TransportException('Connection not initialized', TransportException::NOT_INITIALIZED);
+        }
     }
 
     /**
@@ -170,11 +176,13 @@ class GbxRemote
                 return array($this->query($call['methodName'], $call['params']));
             default:
                 $result = $this->query('system.multicall', array($this->multicallBuffer));
-                foreach ($result as &$value)
-                    if (isset($value['faultCode']))
+                foreach ($result as &$value) {
+                    if (isset($value['faultCode'])) {
                         $value = FaultException::create($value['faultString'], $value['faultCode']);
-                    else
+                    } else {
                         $value = $value[0];
+                    }
+                }
                 $this->multicallBuffer = array();
                 return $result;
         }
@@ -192,8 +200,9 @@ class GbxRemote
         $xml = Request::encode($method, $args);
 
         if (strlen($xml) > self::MAX_REQUEST_SIZE - 8) {
-            if ($method != 'system.multicall' || count($args[0]) < 2)
+            if ($method != 'system.multicall' || count($args[0]) < 2) {
                 throw new MessageException('Request too large', MessageException::REQUEST_TOO_LARGE);
+            }
 
             $mid = count($args[0]) >> 1;
             $res1 = $this->query('system.multicall', array(array_slice($args[0], 0, $mid)));
@@ -211,11 +220,13 @@ class GbxRemote
      */
     private function writeMessage($xml)
     {
-        if ($this->requestHandle == (int)0xffffffff)
+        if ($this->requestHandle == (int)0xffffffff) {
             $this->requestHandle = (int)0x80000000;
+        }
         $data = pack('V2', strlen($xml), ++$this->requestHandle) . $xml;
-        if (!$this->write($data))
+        if (!$this->write($data)) {
             $this->onIoFailure('while writing');
+        }
         $this->lastNetworkActivity = time();
     }
 
@@ -230,8 +241,9 @@ class GbxRemote
 
         while (strlen($data) > 0) {
             $written = @fwrite($this->socket, $data);
-            if ($written === 0 || $written === false)
+            if ($written === 0 || $written === false) {
                 return false;
+            }
 
             $data = substr($data, $written);
         }
@@ -254,8 +266,9 @@ class GbxRemote
                 case 'fault':
                     throw FaultException::create($value['faultString'], $value['faultCode']);
                 case 'response':
-                    if ($handle == $this->requestHandle)
+                    if ($handle == $this->requestHandle) {
                         return $value;
+                    }
                     break;
                 case 'call':
                     $this->callbacksBuffer[] = $value;
@@ -271,21 +284,25 @@ class GbxRemote
     private function readMessage()
     {
         $header = $this->read(8);
-        if ($header === false)
+        if ($header === false) {
             $this->onIoFailure('while reading header');
+        }
 
         extract(unpack('Vsize/Vhandle', $header));
         /** @var $size int */
         /** @var $handle int */
-        if ($size == 0 || $handle == 0)
+        if ($size == 0 || $handle == 0) {
             throw new TransportException('Incorrect header', TransportException::PROTOCOL_ERROR);
+        }
 
-        if ($size > self::MAX_RESPONSE_SIZE)
+        if ($size > self::MAX_RESPONSE_SIZE) {
             throw new MessageException('Response too large', MessageException::RESPONSE_TOO_LARGE);
+        }
 
         $data = $this->read($size);
-        if ($data === false)
+        if ($data === false) {
             $this->onIoFailure('while reading data');
+        }
 
         $this->lastNetworkActivity = time();
         return array($handle, $data);

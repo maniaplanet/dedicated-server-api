@@ -28,7 +28,7 @@ class NetworkStats extends AbstractStructure
     /** @var PlayerNetInfo[] */
     public $playerNetInfos;
 
-    static public function fromArray($array)
+    public static function fromArray($array)
     {
         $object = parent::fromArray($array);
         $object->playerNetInfos = PlayerNetInfo::fromArrayOfArray($object->playerNetInfos);

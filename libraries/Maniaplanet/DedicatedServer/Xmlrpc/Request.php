@@ -24,8 +24,9 @@ if (extension_loaded('xmlrpc')) {
         static function encode($method, $args, $escape = true)
         {
             $opts = self::$options;
-            if (!$escape)
+            if (!$escape) {
                 $opts['escaping'] = array();
+            }
             return xmlrpc_encode_request($method, $args, $opts);
         }
 
@@ -37,12 +38,14 @@ if (extension_loaded('xmlrpc')) {
         static function decode($message)
         {
             $value = xmlrpc_decode_request($message, $method, 'utf-8');
-            if ($value === null)
+            if ($value === null) {
                 throw new ParseException();
+            }
 
             if ($method === null) {
-                if (is_array($value) && xmlrpc_is_fault($value))
+                if (is_array($value) && xmlrpc_is_fault($value)) {
                     return array('fault', $value);
+                }
                 return array('response', $value);
             }
             return array('call', array($method, $value));
@@ -61,12 +64,14 @@ if (extension_loaded('xmlrpc')) {
         static function encode($method, $args, $escape = true)
         {
             $xml = '<?xml version="1.0" encoding="utf-8"?><methodCall><methodName>' . self::escape($method, $escape) . '</methodName>';
-            if (!$args)
+            if (!$args) {
                 return $xml . '<params/></methodCall>';
+            }
 
             $xml .= '<params>';
-            foreach ($args as $arg)
+            foreach ($args as $arg) {
                 $xml .= '<param><value>' . self::encodeValue($arg, $escape) . '</value></param>';
+            }
             return $xml . '</params></methodCall>';
         }
 
@@ -85,33 +90,39 @@ if (extension_loaded('xmlrpc')) {
                     return '<double>' . $v . '</double>';
                 case 'string':
                 case 'NULL':
-                    if (!$v)
+                    if (!$v) {
                         return '<string/>';
+                    }
                     return '<string>' . self::escape($v, $escape) . '</string>';
                 case 'object':
                     if ($v instanceof Base64) {
-                        if (!$v->scalar)
+                        if (!$v->scalar) {
                             return '<base64/>';
+                        }
                         return '<base64>' . base64_encode($v->scalar) . '</base64>';
                     }
-                    if ($v instanceof \DateTime)
+                    if ($v instanceof \DateTime) {
                         return '<dateTime.iso8601>' . $v->format(self::DATE_FORMAT) . '</dateTime.iso8601>';
+                    }
                     $v = get_object_vars($v);
                 // fallthrough
                 case 'array':
                     // empty array case
-                    if (!$v)
+                    if (!$v) {
                         return '<array><data/></array>';
+                    }
                     $return = '';
                     // pure array case
                     if (array_keys($v) === range(0, count($v) - 1)) {
-                        foreach ($v as $item)
+                        foreach ($v as $item) {
                             $return .= '<value>' . self::encodeValue($item, $escape) . '</value>';
+                        }
                         return '<array><data>' . $return . '</data></array>';
                     }
                     // else it's a struct
-                    foreach ($v as $name => $value)
+                    foreach ($v as $name => $value) {
                         $return .= '<member><name>' . self::escape($name, $escape) . '</name><value>' . self::encodeValue($value, $escape) . '</value></member>';
+                    }
                     return '<struct>' . $return . '</struct>';
             }
             return '';
@@ -124,8 +135,9 @@ if (extension_loaded('xmlrpc')) {
          */
         private static function escape($str, $escape = true)
         {
-            if ($escape)
+            if ($escape) {
                 return '<![CDATA[' . str_replace(']]>', ']]]]><![CDATA[>', $str) . ']]>';
+            }
             return $str;
         }
 
@@ -137,17 +149,20 @@ if (extension_loaded('xmlrpc')) {
         static function decode($message)
         {
             $xml = @simplexml_load_string($message);
-            if (!$xml)
+            if (!$xml) {
                 throw new ParseException();
+            }
 
             if ($xml->getName() == 'methodResponse') {
-                if ($xml->fault)
+                if ($xml->fault) {
                     return array('fault', self::decodeValue($xml->fault->value));
+                }
                 return array('response', self::decodeValue($xml->params->param->value));
             }
             $params = array();
-            foreach ($xml->params->param as $param)
+            foreach ($xml->params->param as $param) {
                 $params[] = self::decodeValue($param->value);
+            }
             return array('call', array((string)$xml->methodName, $params));
         }
 
@@ -175,13 +190,15 @@ if (extension_loaded('xmlrpc')) {
                     return \DateTime::createFromFormat(self::DATE_FORMAT, (string)$elt);
                 case 'array':
                     $arr = array();
-                    foreach ($elt->data->value as $v)
+                    foreach ($elt->data->value as $v) {
                         $arr[] = self::decodeValue($v);
+                    }
                     return $arr;
                 case 'struct':
                     $struct = array();
-                    foreach ($elt as $member)
+                    foreach ($elt as $member) {
                         $struct[(string)$member->name] = self::decodeValue($member->value);
+                    }
                     return $struct;
             }
         }

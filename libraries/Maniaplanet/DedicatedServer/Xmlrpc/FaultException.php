@@ -93,10 +93,12 @@ class FaultException extends Exception
             case 'Invalid url.':
                 return new FileException($faultString, $faultCode);
         }
-        if (preg_match('~^Unknown setting \'.*\'\.$~iu', $faultString))
+        if (preg_match('~^Unknown setting \'.*\'\.$~iu', $faultString)) {
             return new GameModeException($faultString, $faultCode);
-        if (preg_match('~^Couldn\'t load \'.*\'\.$~iu', $faultString))
+        }
+        if (preg_match('~^Couldn\'t load \'.*\'\.$~iu', $faultString)) {
             return new FileException($faultString, $faultCode);
+        }
 
         return new self($faultString, $faultCode);
     }
