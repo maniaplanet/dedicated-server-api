@@ -9,7 +9,7 @@ namespace Maniaplanet\DedicatedServer\Xmlrpc;
 
 class GbxRemote
 {
-    const MAX_REQUEST_SIZE = 0x200000; // 2MB
+    const MAX_REQUEST_SIZE = 0x400000; // 4MB
     const MAX_RESPONSE_SIZE = 0x400000; // 4MB
 
     public static $received;
