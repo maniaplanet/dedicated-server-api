@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Maniaplanet\DedicatedServer;
 
+use Maniaplanet\DedicatedServer\Structures\ServerOptions;
+
 /**
  * Dedicated Server Connection Instance
  * Methods returns nothing if $multicall = true
@@ -32,7 +34,7 @@ class Connection
     /** @var string */
     protected $user;
     /** @var callable[] */
-    private $multicallHandlers = array();
+    private $multicallHandlers = [];
 
     public function __construct(
         $host = '127.0.0.1',
@@ -81,7 +83,7 @@ class Connection
      * @param bool|callable $multicall True to queue the request or false to execute it immediately
      * @return mixed
      */
-    public function execute($methodName, $params = array(), $multicall = false)
+    public function execute($methodName, $params = [], $multicall = false)
     {
         if ($multicall) {
             $this->xmlrpcClient->addCall($methodName, $params);
@@ -150,7 +152,7 @@ class Connection
                 $response = call_user_func($this->multicallHandlers[$i], $response);
             }
         }
-        $this->multicallHandlers = array();
+        $this->multicallHandlers = [];
         return $responses;
     }
 
@@ -191,7 +193,7 @@ class Connection
     public function getVersion($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Version'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Version'));
         }
         return Structures\Version::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -214,7 +216,7 @@ class Connection
     public function getStatus($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Status'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Status'));
         }
         return Structures\Status::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -227,7 +229,7 @@ class Connection
      */
     public function quitGame($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -372,7 +374,7 @@ class Connection
      */
     public function cancelVote($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -383,7 +385,7 @@ class Connection
     public function getCurrentCallVote($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Vote'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Vote'));
         }
         return Structures\Vote::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -407,7 +409,7 @@ class Connection
      */
     public function getCallVoteTimeOut($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -434,7 +436,7 @@ class Connection
      */
     public function getCallVoteRatio($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -466,7 +468,7 @@ class Connection
     public function getCallVoteRatios($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__) . 'Ex', array(), $this->structHandler('VoteRatio', true));
+            return $this->execute(ucfirst(__FUNCTION__) . 'Ex', [], $this->structHandler('VoteRatio', true));
         }
         return Structures\VoteRatio::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__) . 'Ex'));
     }
@@ -509,7 +511,7 @@ class Connection
     private function getLogins($players, $allowEmpty = false)
     {
         if (is_array($players)) {
-            $logins = array();
+            $logins = [];
             foreach ($players as $player) {
                 $login = $this->getLogin($player);
                 if ($login === false) {
@@ -561,7 +563,7 @@ class Connection
      */
     public function getChatLines($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -678,7 +680,7 @@ class Connection
         if ($logins) {
             return $this->execute(ucfirst(__FUNCTION__) . 'ToLogin', array($logins), $multicall);
         }
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -691,7 +693,7 @@ class Connection
     public function getManialinkPageAnswers($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('PlayerAnswer', true));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('PlayerAnswer', true));
         }
         return Structures\PlayerAnswer::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -828,7 +830,7 @@ class Connection
      */
     public function cleanBanList($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -890,7 +892,7 @@ class Connection
      */
     public function cleanBlackList($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -916,11 +918,8 @@ class Connection
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function loadBlackList($filename = '', $multicall = false)
+    public function loadBlackList(string $filename = '', $multicall = false)
     {
-        if (!is_string($filename)) {
-            throw new InvalidArgumentException('filename = ' . print_r($filename, true));
-        }
         $filename = $this->secureUtf8($filename);
 
         return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -962,11 +961,8 @@ class Connection
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function saveBlackList($filename = '', $multicall = false)
+    public function saveBlackList(string $filename = '', $multicall = false)
     {
-        if (!is_string($filename)) {
-            throw new InvalidArgumentException('filename = ' . print_r($filename, true));
-        }
         $filename = $this->secureUtf8($filename);
 
         return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -1016,7 +1012,7 @@ class Connection
      */
     public function cleanGuestList($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1072,14 +1068,11 @@ class Connection
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function setBuddyNotification($player, $enable, $multicall = false)
+    public function setBuddyNotification($player, bool $enable, $multicall = false)
     {
         $login = $this->getLogin($player, true);
         if ($login === false) {
             throw new InvalidArgumentException('player = ' . print_r($player, true));
-        }
-        if (!is_bool($enable)) {
-            throw new InvalidArgumentException('enable = ' . print_r($enable, true));
         }
 
         return $this->execute(ucfirst(__FUNCTION__), array($login, $enable), $multicall);
@@ -1111,12 +1104,9 @@ class Connection
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function writeFile(string $filename, $data, $multicall = false)
+    public function writeFile(string $filename, string $data, $multicall = false)
     {
         $filename = $this->secureUtf8($filename);
-        if (!is_string($data)) {
-            throw new InvalidArgumentException('data = ' . print_r($data, true));
-        }
 
         $data = new Xmlrpc\Base64($data);
         return $this->execute(ucfirst(__FUNCTION__), array($filename, $data), $multicall);
@@ -1231,7 +1221,7 @@ class Connection
      */
     public function cleanIgnoreList($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1342,7 +1332,7 @@ class Connection
      */
     public function getServerPlanets($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1353,7 +1343,7 @@ class Connection
     public function getSystemInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('SystemInfos'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('SystemInfos'));
         }
         return Structures\SystemInfos::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -1387,7 +1377,7 @@ class Connection
     public function getServerTags($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Tag', true));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Tag', true));
         }
         return Structures\Tag::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -1425,7 +1415,7 @@ class Connection
      */
     public function resetServerTags($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1447,7 +1437,7 @@ class Connection
      */
     public function getServerName($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1469,7 +1459,7 @@ class Connection
      */
     public function getServerComment($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1496,7 +1486,7 @@ class Connection
      */
     public function getHideServer($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1506,7 +1496,7 @@ class Connection
      */
     public function isRelayServer($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1528,7 +1518,7 @@ class Connection
      */
     public function getServerPassword($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1551,7 +1541,7 @@ class Connection
      */
     public function getServerPasswordForSpectator($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1575,7 +1565,7 @@ class Connection
      */
     public function getMaxPlayers($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1599,7 +1589,7 @@ class Connection
      */
     public function getMaxSpectators($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1639,7 +1629,7 @@ class Connection
     public function getLobbyInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('LobbyInfo'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('LobbyInfo'));
         }
         return Structures\LobbyInfo::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -1679,7 +1669,7 @@ class Connection
      */
     public function isKeepingPlayerSlots($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1701,7 +1691,7 @@ class Connection
      */
     public function isP2PUpload($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1728,7 +1718,7 @@ class Connection
      */
     public function isP2PDownload($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1755,7 +1745,7 @@ class Connection
      */
     public function isMapDownloadAllowed($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1767,7 +1757,7 @@ class Connection
     public function gameDataDirectory($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+            return $this->execute(ucfirst(__FUNCTION__), [], array($this, 'stripBom'));
         }
         return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -1781,7 +1771,7 @@ class Connection
     public function getMapsDirectory($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+            return $this->execute(ucfirst(__FUNCTION__), [], array($this, 'stripBom'));
         }
         return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -1795,7 +1785,7 @@ class Connection
     public function getSkinsDirectory($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+            return $this->execute(ucfirst(__FUNCTION__), [], array($this, 'stripBom'));
         }
         return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -1841,7 +1831,7 @@ class Connection
      */
     public function getForcedClubLinks($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1852,7 +1842,7 @@ class Connection
      */
     public function connectFakePlayer($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1906,7 +1896,7 @@ class Connection
      */
     public function areHornsDisabled($multicall = false): bool
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1928,7 +1918,7 @@ class Connection
      */
     public function areServiceAnnouncesDisabled($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1968,7 +1958,7 @@ class Connection
      */
     public function isAutoSaveReplaysEnabled($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -1978,7 +1968,7 @@ class Connection
      */
     public function isAutoSaveValidationReplaysEnabled($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2063,7 +2053,7 @@ class Connection
      */
     public function getLadderMode($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2074,7 +2064,7 @@ class Connection
     public function getLadderServerLimits($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('LadderLimits'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('LadderLimits'));
         }
         return Structures\LadderLimits::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2104,7 +2094,7 @@ class Connection
      */
     public function getVehicleNetQuality($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2121,9 +2111,9 @@ class Connection
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function setServerOptions($options, $multicall = false)
+    public function setServerOptions(ServerOptions $options, $multicall = false)
     {
-        if (!($options instanceof Structures\ServerOptions && $options->isValid())) {
+        if ($options->isValid() === false) {
             throw new InvalidArgumentException('options = ' . print_r($options, true));
         }
 
@@ -2138,7 +2128,7 @@ class Connection
     public function getServerOptions($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('ServerOptions'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('ServerOptions'));
         }
         return Structures\ServerOptions::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2167,7 +2157,7 @@ class Connection
      */
     public function getForcedTeams($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2198,7 +2188,7 @@ class Connection
      */
     public function getServerPackMask($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2240,7 +2230,7 @@ class Connection
     public function getForcedMods($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), function ($v) {
+            return $this->execute(ucfirst(__FUNCTION__), [], function ($v) {
                 $v['Mods'] = Structures\Mod::fromArrayOfArray($v['Mods']);
                 return $v;
             });
@@ -2277,7 +2267,7 @@ class Connection
     public function getForcedMusic($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Music'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Music'));
         }
         return Structures\Music::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2319,7 +2309,7 @@ class Connection
     public function getForcedSkins($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('ForcedSkin', true));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('ForcedSkin', true));
         }
         return Structures\ForcedSkin::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2332,7 +2322,7 @@ class Connection
      */
     public function getLastConnectionErrorMessage($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2355,7 +2345,7 @@ class Connection
      */
     public function getRefereePassword($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2382,7 +2372,7 @@ class Connection
      */
     public function getRefereeMode($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2410,7 +2400,7 @@ class Connection
      */
     public function getUseChangingValidationSeed($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2434,7 +2424,7 @@ class Connection
      */
     public function getClientInputsMaxLatency($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2461,7 +2451,7 @@ class Connection
      */
     public function getWarmUp($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2471,7 +2461,7 @@ class Connection
      */
     public function getModeScriptText($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2499,7 +2489,7 @@ class Connection
     public function getModeScriptInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('ScriptInfo'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('ScriptInfo'));
         }
         return Structures\ScriptInfo::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2511,7 +2501,7 @@ class Connection
      */
     public function getModeScriptSettings($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2576,7 +2566,7 @@ class Connection
      */
     public function getModeScriptVariables($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2710,7 +2700,7 @@ class Connection
      */
     public function autoTeamBalance($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2721,7 +2711,7 @@ class Connection
      */
     public function stopServer($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2732,7 +2722,7 @@ class Connection
      */
     public function forceEndRound($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2761,7 +2751,7 @@ class Connection
     public function getCurrentGameInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('GameInfos'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('GameInfos'));
         }
         return Structures\GameInfos::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2774,7 +2764,7 @@ class Connection
     public function getNextGameInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('GameInfos'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('GameInfos'));
         }
         return Structures\GameInfos::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2787,7 +2777,7 @@ class Connection
     public function getGameInfos($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('GameInfos', true));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('GameInfos', true));
         }
         return Structures\GameInfos::fromArrayOfArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2817,7 +2807,7 @@ class Connection
      */
     public function getGameMode($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2844,7 +2834,7 @@ class Connection
      */
     public function getChatTime($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2872,7 +2862,7 @@ class Connection
      */
     public function getFinishTimeout($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2900,7 +2890,7 @@ class Connection
      */
     public function getAllWarmUpDuration($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2928,7 +2918,7 @@ class Connection
      */
     public function getDisableRespawn($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2956,7 +2946,7 @@ class Connection
      */
     public function getForceShowAllOpponents($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -2986,7 +2976,7 @@ class Connection
     public function getScriptName($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), array($this, 'stripBom'));
+            return $this->execute(ucfirst(__FUNCTION__), [], array($this, 'stripBom'));
         }
         return $this->stripBom($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -2998,7 +2988,7 @@ class Connection
      */
     public function getCurrentMapIndex($multicall = false): int
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3008,7 +2998,7 @@ class Connection
      */
     public function getNextMapIndex($multicall = false): int
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3063,7 +3053,7 @@ class Connection
     public function getCurrentMapInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Map'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Map'));
         }
         return Structures\Map::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -3076,7 +3066,7 @@ class Connection
     public function getNextMapInfo($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('Map'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('Map'));
         }
         return Structures\Map::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -3088,11 +3078,8 @@ class Connection
      * @return Structures\Map
      * @throws InvalidArgumentException
      */
-    public function getMapInfo($filename, $multicall = false)
+    public function getMapInfo(string $filename, $multicall = false)
     {
-        if (!is_string($filename)) {
-            throw new InvalidArgumentException('filename = ' . print_r($filename, true));
-        }
         $filename = $this->secureUtf8($filename);
 
         if ($multicall) {
@@ -3108,11 +3095,8 @@ class Connection
      * @return bool
      * @throws InvalidArgumentException
      */
-    public function checkMapForCurrentServerParams($filename, $multicall = false)
+    public function checkMapForCurrentServerParams(string $filename, $multicall = false)
     {
-        if (!is_string($filename)) {
-            throw new InvalidArgumentException('filename = ' . print_r($filename, true));
-        }
         $filename = $this->secureUtf8($filename);
 
         return $this->execute(ucfirst(__FUNCTION__), array($filename), $multicall);
@@ -3491,7 +3475,7 @@ class Connection
      */
     public function getCurrentWinnerTeam($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3644,7 +3628,7 @@ class Connection
      */
     public function manualFlowControlProceed($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3655,7 +3639,7 @@ class Connection
      */
     public function manualFlowControlIsEnabled($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3667,7 +3651,7 @@ class Connection
      */
     public function manualFlowControlGetCurTransition($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3677,7 +3661,7 @@ class Connection
      */
     public function checkEndMatchCondition($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3689,7 +3673,7 @@ class Connection
     public function getNetworkStats($multicall = false)
     {
         if ($multicall) {
-            return $this->execute(ucfirst(__FUNCTION__), array(), $this->structHandler('NetworkStats'));
+            return $this->execute(ucfirst(__FUNCTION__), [], $this->structHandler('NetworkStats'));
         }
         return Structures\NetworkStats::fromArray($this->execute(ucfirst(__FUNCTION__)));
     }
@@ -3702,7 +3686,7 @@ class Connection
      */
     public function startServerLan($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**
@@ -3713,7 +3697,7 @@ class Connection
      */
     public function startServerInternet($multicall = false)
     {
-        return $this->execute(ucfirst(__FUNCTION__), array(), $multicall);
+        return $this->execute(ucfirst(__FUNCTION__), [], $multicall);
     }
 
     /**

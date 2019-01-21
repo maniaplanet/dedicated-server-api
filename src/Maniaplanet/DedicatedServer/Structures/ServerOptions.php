@@ -76,7 +76,7 @@ class ServerOptions extends AbstractStructure
      * @internal
      * @return bool
      */
-    function isValid()
+    function isValid(): bool
     {
         return is_string($this->name)
             && is_string($this->comment)
