@@ -17,6 +17,8 @@ use Maniaplanet\DedicatedServer\Structures\ServerOptions;
  */
 class Connection
 {
+    const API_2011_02_21 = '2011-02-21';
+
     const API_2011_08_01 = '2011-08-01';
     const API_2011_10_06 = '2011-10-06';
     const API_2012_06_19 = '2012-06-19';
@@ -46,7 +48,9 @@ class Connection
     ) {
         $this->xmlrpcClient = new Xmlrpc\GbxRemote($host, $port, $timeout);
         $this->authenticate($user, $password);
-        $this->setApiVersion($apiVersion);
+        if ($apiVersion > self::API_2011_02_21) {
+            $this->setApiVersion($apiVersion);
+        }
     }
 
     /**
@@ -1644,7 +1648,7 @@ class Connection
      * @param bool $multicall
      * @return bool
      */
-    public function customizeQuitDialog(string $manialink, string$sendToServer = '', bool $askFavorite = true, int $quitButtonDelay = 0, $multicall = false)
+    public function customizeQuitDialog(string $manialink, string $sendToServer = '', bool $askFavorite = true, int $quitButtonDelay = 0, $multicall = false)
     {
         return $this->execute(ucfirst(__FUNCTION__), array($manialink, $sendToServer, $askFavorite, $quitButtonDelay), $multicall);
     }
