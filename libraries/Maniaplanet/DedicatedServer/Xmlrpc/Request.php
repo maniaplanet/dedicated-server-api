@@ -90,7 +90,7 @@ if (extension_loaded('xmlrpc')) {
                     return '<double>' . $v . '</double>';
                 case 'string':
                 case 'NULL':
-                    if (!$v) {
+                    if (!$v && $v != "0") {
                         return '<string/>';
                     }
                     return '<string>' . self::escape($v, $escape) . '</string>';
