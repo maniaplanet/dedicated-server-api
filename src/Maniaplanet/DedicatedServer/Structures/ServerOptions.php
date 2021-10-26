@@ -76,7 +76,7 @@ class ServerOptions extends AbstractStructure
      * @internal
      * @return bool
      */
-    function isValid()
+    public function isValid(): bool
     {
         return is_string($this->name)
             && is_string($this->comment)
@@ -90,14 +90,14 @@ class ServerOptions extends AbstractStructure
      * @internal
      * @return mixed[]
      */
-    function toSetterArray()
+    public function toSetterArray()
     {
-        $out = array();
+        $out = [];
         foreach (get_object_vars($this) as $key => $value) {
-            if (substr($key, 0, 7) == 'current' || $value === null) {
+            if (str_starts_with($key, 'current') || $value === null) {
                 continue;
             }
-            if ($key == 'nextUseChangingValidationSeed') {
+            if ($key === 'nextUseChangingValidationSeed') {
                 $key = 'useChangingValidationSeed';
             }
             $out[ucfirst($key)] = $value;

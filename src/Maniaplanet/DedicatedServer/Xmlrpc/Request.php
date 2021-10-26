@@ -10,11 +10,11 @@ namespace Maniaplanet\DedicatedServer\Xmlrpc;
 if (extension_loaded('xmlrpc')) {
     abstract class Request
     {
-        private static $options = array(
+        private static $options = [
             'encoding' => 'utf-8',
             'escaping' => 'markup',
             'verbosity' => 'no_white_space'
-        );
+        ];
 
         /**
          * @param string $method
@@ -25,7 +25,7 @@ if (extension_loaded('xmlrpc')) {
         {
             $opts = self::$options;
             if (!$escape) {
-                $opts['escaping'] = array();
+                $opts['escaping'] = [];
             }
             return xmlrpc_encode_request($method, $args, $opts);
         }
@@ -44,11 +44,11 @@ if (extension_loaded('xmlrpc')) {
 
             if ($method === null) {
                 if (is_array($value) && xmlrpc_is_fault($value)) {
-                    return array('fault', $value);
+                    return ['fault', $value];
                 }
-                return array('response', $value);
+                return ['response', $value];
             }
-            return array('call', array($method, $value));
+            return ['call', [$method, $value]];
         }
     }
 } else {
@@ -155,15 +155,15 @@ if (extension_loaded('xmlrpc')) {
 
             if ($xml->getName() == 'methodResponse') {
                 if ($xml->fault) {
-                    return array('fault', self::decodeValue($xml->fault->value));
+                    return ['fault', self::decodeValue($xml->fault->value)];
                 }
-                return array('response', self::decodeValue($xml->params->param->value));
+                return ['response', self::decodeValue($xml->params->param->value)];
             }
-            $params = array();
+            $params = [];
             foreach ($xml->params->param as $param) {
                 $params[] = self::decodeValue($param->value);
             }
-            return array('call', array((string)$xml->methodName, $params));
+            return ['call', [(string)$xml->methodName, $params]];
         }
 
         /**
@@ -189,13 +189,13 @@ if (extension_loaded('xmlrpc')) {
                 case 'dateTime.iso8601':
                     return \DateTime::createFromFormat(self::DATE_FORMAT, (string)$elt);
                 case 'array':
-                    $arr = array();
+                    $arr = [];
                     foreach ($elt->data->value as $v) {
                         $arr[] = self::decodeValue($v);
                     }
                     return $arr;
                 case 'struct':
-                    $struct = array();
+                    $struct = [];
                     foreach ($elt as $member) {
                         $struct[(string)$member->name] = self::decodeValue($member->value);
                     }

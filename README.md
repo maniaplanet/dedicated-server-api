@@ -14,7 +14,7 @@ We use [Composer](https://getcomposer.org/):
 ```
 {
     "require": {
-        "maniaplanet/dedicated-server-api": "^5.0"
+        "maniaplanet/dedicated-server-api": "^6.0"
     }
 }
 ```

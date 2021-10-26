@@ -15,7 +15,7 @@ abstract class AbstractStructure
             return $array;
         }
 
-        $result = array();
+        $result = [];
         foreach ($array as $key => $value) {
             $result[$key] = static::fromArray($value);
         }
@@ -51,7 +51,7 @@ abstract class AbstractStructure
 
     function toArray()
     {
-        $out = array();
+        $out = [];
         foreach (get_object_vars($this) as $key => $value) {
             $out[ucfirst($key)] = $value;
         }

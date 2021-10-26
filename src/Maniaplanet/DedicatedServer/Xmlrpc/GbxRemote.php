@@ -16,11 +16,11 @@ class GbxRemote
     public static $sent;
 
     private $socket;
-    private $readTimeout = array('sec' => 5, 'usec' => 0);
-    private $writeTimeout = array('sec' => 5, 'usec' => 0);
+    private $readTimeout = ['sec' => 5, 'usec' => 0];
+    private $writeTimeout = ['sec' => 5, 'usec' => 0];
     private $requestHandle;
-    private $callbacksBuffer = array();
-    private $multicallBuffer = array();
+    private $callbacksBuffer = [];
+    private $multicallBuffer = [];
     private $lastNetworkActivity = 0;
 
     /**
@@ -56,7 +56,7 @@ class GbxRemote
             if (!is_resource($this->socket)) {
                 $this->onIoFailure('socket closed during handshake');
             }
-            $this->onIoFailure(sprintf('during handshake (%s)', socket_strerror(socket_last_error($this->socket))));
+            $this->onIoFailure(sprintf('during handshake (%s)', socket_strerror(socket_last_error())));
         }
 
         extract(unpack('Vsize/a*protocol', $header));
@@ -107,7 +107,7 @@ class GbxRemote
         $this->terminate();
     }
 
-    function terminate()
+    public function terminate()
     {
         if ($this->socket) {
             fclose($this->socket);
@@ -120,7 +120,7 @@ class GbxRemote
      * @param int $read read timeout (in ms), 0 to leave unchanged
      * @param int $write write timeout (in ms), 0 to leave unchanged
      */
-    function setTimeouts($read = 0, $write = 0)
+    public function setTimeouts($read = 0, $write = 0)
     {
         if ($read) {
             $this->readTimeout['sec'] = (int)($read / 1000);
@@ -157,10 +157,10 @@ class GbxRemote
      */
     function addCall($method, $args)
     {
-        $this->multicallBuffer[] = array(
+        $this->multicallBuffer[] = [
             'methodName' => $method,
             'params' => $args
-        );
+        ];
     }
 
     /**
@@ -170,12 +170,12 @@ class GbxRemote
     {
         switch (count($this->multicallBuffer)) {
             case 0:
-                return array();
+                return [];
             case 1:
                 $call = array_shift($this->multicallBuffer);
-                return array($this->query($call['methodName'], $call['params']));
+                return [$this->query($call['methodName'], $call['params'])];
             default:
-                $result = $this->query('system.multicall', array($this->multicallBuffer));
+                $result = $this->query('system.multicall', [$this->multicallBuffer]);
                 foreach ($result as &$value) {
                     if (isset($value['faultCode'])) {
                         $value = FaultException::create($value['faultString'], $value['faultCode']);
@@ -183,7 +183,7 @@ class GbxRemote
                         $value = $value[0];
                     }
                 }
-                $this->multicallBuffer = array();
+                $this->multicallBuffer = [];
                 return $result;
         }
     }
@@ -194,7 +194,7 @@ class GbxRemote
      * @return mixed
      * @throws MessageException
      */
-    function query($method, $args = array())
+    function query($method, $args = [])
     {
         $this->assertConnected();
         $xml = Request::encode($method, $args);
@@ -205,8 +205,8 @@ class GbxRemote
             }
 
             $mid = count($args[0]) >> 1;
-            $res1 = $this->query('system.multicall', array(array_slice($args[0], 0, $mid)));
-            $res2 = $this->query('system.multicall', array(array_slice($args[0], $mid)));
+            $res1 = $this->query('system.multicall', [array_slice($args[0], 0, $mid)]);
+            $res2 = $this->query('system.multicall', [array_slice($args[0], $mid)]);
             return array_merge($res1, $res2);
         }
 
@@ -258,7 +258,7 @@ class GbxRemote
      */
     private function flush($waitResponse = false)
     {
-        $r = array($this->socket);
+        $r = [$this->socket];
         while ($waitResponse || @stream_select($r, $w, $e, 0) > 0) {
             list($handle, $xml) = $this->readMessage();
             list($type, $value) = Request::decode($xml);
@@ -305,7 +305,7 @@ class GbxRemote
         }
 
         $this->lastNetworkActivity = time();
-        return array($handle, $data);
+        return [$handle, $data];
     }
 
     /**
@@ -316,7 +316,7 @@ class GbxRemote
         $this->assertConnected();
         $this->flush();
         $cb = $this->callbacksBuffer;
-        $this->callbacksBuffer = array();
+        $this->callbacksBuffer = [];
         return $cb;
     }
 }
