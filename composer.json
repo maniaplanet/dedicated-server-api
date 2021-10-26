@@ -4,7 +4,7 @@
     "description": "XML-RPC library to connect to Maniaplanet server",
     "keywords": ["Maniaplanet", "Shootmania", "Trackmania"],
     "homepage": "https://github.com/maniaplanet/dedicated-server-api",
-	"license": "LGPL-3.0",
+    "license": "LGPL-3.0",
     "authors": [
         {
             "name": "Nadeo",
@@ -12,11 +12,11 @@
             "homepage": "http://www.nadeo.com/"
         }
     ],
-	"support": {
+    "support": {
         "forum": "http://forum.maniaplanet.com/viewforum.php?f=40"
     },
     "require": {
-        "php": ">=7.2"
+        "php": "^8.0"
     },
     "autoload": {
         "psr-4": {
