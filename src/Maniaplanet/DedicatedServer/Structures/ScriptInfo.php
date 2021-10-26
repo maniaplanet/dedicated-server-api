@@ -18,9 +18,9 @@ class ScriptInfo extends AbstractStructure
     /** @var string */
     public $version;
     /** @var ScriptSettings[] */
-    public $paramDescs = array();
+    public $paramDescs = [];
     /** @var Command[] */
-    public $commandDescs = array();
+    public $commandDescs = [];
 
     /**
      * @return ScriptInfo

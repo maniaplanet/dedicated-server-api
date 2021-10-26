@@ -46,7 +46,7 @@ class PlayerDetailedInfo extends Player
     /** @var string */
     public $broadcasterLogin;
     /** @var string[] */
-    public $allies = array();
+    public $allies = [];
     /** @var string */
     public $clubLink;
 

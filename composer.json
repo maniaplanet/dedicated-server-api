@@ -16,7 +16,8 @@
         "forum": "http://forum.maniaplanet.com/viewforum.php?f=40"
     },
     "require": {
-        "php": "^8.0"
+        "php": "^8.0",
+        "ext-sockets": "*"
     },
     "autoload": {
         "psr-4": {

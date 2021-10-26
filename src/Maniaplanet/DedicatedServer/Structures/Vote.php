@@ -27,7 +27,7 @@ class Vote extends AbstractStructure
      * @param string $cmdName
      * @param mixed[] $cmdParam
      */
-    function __construct($cmdName = '', $cmdParam = array())
+    function __construct($cmdName = '', $cmdParam = [])
     {
         $this->cmdName = $cmdName;
         $this->cmdParam = $cmdParam;
