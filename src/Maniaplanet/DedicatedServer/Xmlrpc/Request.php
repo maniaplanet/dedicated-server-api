@@ -89,11 +89,12 @@ if (extension_loaded('xmlrpc')) {
                 case 'double':
                     return '<double>' . $v . '</double>';
                 case 'string':
-                case 'NULL':
-                    if (!$v) {
+                    if (strlen($value) === 0) {
                         return '<string/>';
                     }
                     return '<string>' . self::escape($v, $escape) . '</string>';
+                case 'NULL':
+                    return '<string/>';
                 case 'object':
                     if ($v instanceof Base64) {
                         if (!$v->scalar) {
